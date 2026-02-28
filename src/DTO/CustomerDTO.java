@@ -26,10 +26,23 @@ public class CustomerDTO {
     public String getPhone(){return phone;}
     public String getEmail(){return email;}
     public String getAddress(){return address;}
-    public int getLoyaltyPointes(){return loyaltyPoints;}
+    public int getLoyaltyPoints(){return loyaltyPoints;}
     public LocalDateTime getCreatedAt(){return createdAt;}
     public LocalDateTime getLastPurchaseAt(){return lastPurchaseAt;}
     public BigDecimal getTotalSpent(){return totalSpent;}
     public CustomerType getCustomerType(){return type;}
     public CustomerStatus getCustomerStatus(){return status;} 
+
+    public void setId(int id){this.id = id;}
+    public void setCode(String code){this.code = code;}
+    public void setFullName(String fullName){this.fullName = fullName;}
+    public void setPhone(String phone){this.phone = phone;}
+    public void setEmail(String email){this.email = email;}
+    public void setAddress(String address){this.address = address;}
+    public void setLoyaltyPoints(int loyaltyPoints){this.loyaltyPoints = loyaltyPoints;}
+    public void setCreatedAt(LocalDateTime createdAt){this.createdAt = createdAt;}
+    public void setLastPurchaseAt(LocalDateTime lastPurchaseAt){this.lastPurchaseAt = lastPurchaseAt;}
+    public void setTotalSpent(BigDecimal totalSpent){this.totalSpent = totalSpent;}
+    public void setCustomerType(CustomerType type){this.type = type;}
+    public void setCustomerStatus(CustomerStatus status){this.status = status;}
 }
