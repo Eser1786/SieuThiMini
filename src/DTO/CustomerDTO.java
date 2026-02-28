@@ -30,8 +30,8 @@ public class CustomerDTO {
     public LocalDateTime getCreatedAt(){return createdAt;}
     public LocalDateTime getLastPurchaseAt(){return lastPurchaseAt;}
     public BigDecimal getTotalSpent(){return totalSpent;}
-    public CustomerType getCustomerType(){return type;}
-    public CustomerStatus getCustomerStatus(){return status;} 
+    public CustomerType getType(){return type;}
+    public CustomerStatus getStatus(){return status;} 
 
     public void setId(int id){this.id = id;}
     public void setCode(String code){this.code = code;}
@@ -43,6 +43,18 @@ public class CustomerDTO {
     public void setCreatedAt(LocalDateTime createdAt){this.createdAt = createdAt;}
     public void setLastPurchaseAt(LocalDateTime lastPurchaseAt){this.lastPurchaseAt = lastPurchaseAt;}
     public void setTotalSpent(BigDecimal totalSpent){this.totalSpent = totalSpent;}
-    public void setCustomerType(CustomerType type){this.type = type;}
-    public void setCustomerStatus(CustomerStatus status){this.status = status;}
+    public void setType(CustomerType type){this.type = type;}
+    public void setStatus(CustomerStatus status){this.status = status;}
+
+    @Override
+    public String toString(){
+        return "CustomerDTO{" + 
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", phone='" + phone + '\'' +
+                ", type=" + type +
+                ", status=" + status +
+                '}';
+    }
 }
