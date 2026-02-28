@@ -14,3 +14,11 @@ lấy code trên github mới nhất về
 
 3. git push
    Đẩy code lên github
+
+## Cách sử dụng docker
+
+1. docker compose up -d
+   Kích hoạt docker -> có thể sử dụng database
+
+2. docker compose down
+   tắt docker
