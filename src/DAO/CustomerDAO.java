@@ -132,14 +132,7 @@ public class CustomerDAO {
         return result;
     }
 
-    public static void main(String[] args){
-        CustomerDAO a = new CustomerDAO();
-        if(a.hasCustomerID(1)){
-            System.out.println("yes");
-        } else{
-            System.out.println("no");
-        }
-    }
+    
 
     
 }
