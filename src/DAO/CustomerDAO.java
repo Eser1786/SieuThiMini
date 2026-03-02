@@ -132,6 +132,26 @@ public class CustomerDAO {
         return result;
     }
 
+    public boolean hasCustomerCode(String code){
+        boolean result = false;
+        if(openConnection()){
+            try{
+                String sql = "SELECT * FROM customers WHERE customer_code = '" + code +"'";
+                Statement stmt = con.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                result = rs.next();
+            }catch(SQLException e){
+                System.out.println("Không thể thực hiện tìm khách hàng theo code \n CustomerDAO - hasCustomerCode \n");
+                e.printStackTrace();
+            }finally{
+                closeConnection();
+            }
+        }
+        return result;
+    }
+
+    
+
     
 
     
