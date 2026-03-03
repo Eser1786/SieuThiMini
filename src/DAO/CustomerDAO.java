@@ -65,7 +65,7 @@ public class CustomerDAO {
 
                     customer.setTotalSpent(rs.getBigDecimal("total_spent"));
                     customer.setType(CustomerType.fromString(rs.getString("customer_type")));
-                    customer.setStatus(CustomerStatus.fromString(rs.getString("customer_status")));
+                    customer.setStatus(CustomerStatus.fromString(rs.getString("status")));
                     
                     arr.add(customer);
                 }
