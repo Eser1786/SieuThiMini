@@ -150,8 +150,24 @@ public class CustomerDAO {
         return result;
     }
 
+    public boolean hasCustomerPhone(String phone){
+        boolean result = false;
+        if(openConnection()){
+            try{
+                String sql = "SELECT * FROM customers WHERE phone = '" + phone +"'";
+                Statement stmt = con.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                result = rs.next();
+            }catch(SQLException e){
+                System.out.println("Không thể thực hiện tìm khách hàng theo số điện thoại \n CustomerDAO - hasCustomerPhone \n");
+                e.printStackTrace();
+            }finally{
+                closeConnection();
+            }
+        }
+        return result;
+    }
     
-
     
 
     
