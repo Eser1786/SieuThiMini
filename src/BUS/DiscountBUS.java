@@ -1,13 +1,10 @@
 package BUS;
 import DTO.DiscountDTO;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import java.util.ArrayList;
 
-import DTO.enums.DiscountEnum.DiscountType;
-import DTO.enums.DiscountEnum.DiscountStatus;
-import java.sql.*;
+
 import DAO.DiscountDAO;
 public class DiscountBUS {
     private DiscountDAO discountDAO;
