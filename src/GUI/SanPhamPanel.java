@@ -328,4 +328,12 @@ public class SanPhamPanel extends JPanel {
         add(themCard, CARD_THEM);
         innerCard.show(this, CARD_TABLE);
     }
+    public static void main(String[] args) {
+        JFrame f = new JFrame("Quản lý Sản phẩm");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.setSize(900, 600);
+        f.setLocationRelativeTo(null);
+        f.setContentPane(new SanPhamPanel());
+        f.setVisible(true);
+    }
 }

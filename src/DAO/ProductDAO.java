@@ -34,52 +34,73 @@ public class ProductDAO {
         }
     }
 
-    public java.util.ArrayList<DTO.ProductDTO> getAllProducts(){
-        java.util.ArrayList<DTO.ProductDTO> list = new java.util.ArrayList<>();
-        if(openConnection()){
-            try{
-                String sql = "SELECT * FROM products";
-                Statement stmt = con.createStatement();
-                ResultSet rs = stmt.executeQuery(sql);
-                while(rs.next()){
-                    DTO.ProductDTO p = new DTO.ProductDTO();
-                    p.setId(rs.getInt("product_id"));
-                    p.setCode(rs.getString("product_code"));
-                    p.setName(rs.getString("name"));
-                    p.setDescription(rs.getString("description"));
-                    DTO.SupplierDTO sup = new DTO.SupplierDTO();
-                    sup.setID(rs.getInt("supplier_id"));
-                    p.setSupplier(sup);
-                    DTO.CategoryDTO cat = new DTO.CategoryDTO();
-                    cat.setID(rs.getInt("category_id"));
-                    p.setCategory(cat);
-                    p.setCostPrice(rs.getBigDecimal("cost_price"));
-                    p.setSellingPrice(rs.getBigDecimal("selling_price"));
-                    p.setTotalQuantity(rs.getLong("total_quantity"));
-                    p.setMinStockLevel(rs.getLong("min_stock_level"));
-                    p.setMadeIn(rs.getString("made_in"));
-                    java.sql.Date pd = rs.getDate("production_date");
-                    if(pd!=null) p.setProductionDate(pd.toLocalDate());
-                    java.sql.Date ed = rs.getDate("expire_date");
-                    if(ed!=null) p.setExpireDate(ed.toLocalDate());
-                    p.setPosition(rs.getString("position"));
-                    p.setUnit(rs.getString("unit"));
-                    p.setStatus(rs.getString("status"));
-                    p.setIsVisible(rs.getBoolean("is_visible"));
-                    Timestamp ct = rs.getTimestamp("created_at");
-                    if(ct!=null) p.setCreatedAt(ct.toLocalDateTime());
-                    Timestamp ut = rs.getTimestamp("updated_at");
-                    if(ut!=null) p.setUpdatedAt(ut.toLocalDateTime());
-                    list.add(p);
-                }
-            }catch(SQLException e){
-                e.printStackTrace();
-            }finally{
-                closeConnection();
+   public java.util.ArrayList<DTO.ProductDTO> getAllProducts(){
+    java.util.ArrayList<DTO.ProductDTO> list = new java.util.ArrayList<>();
+    if(openConnection()){
+        try{
+            String sql = """
+                SELECT p.*, s.name AS supplier_name
+                FROM products p
+                LEFT JOIN suppliers s 
+                ON p.supplier_id = s.supplier_id
+            """;
+
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while(rs.next()){
+                DTO.ProductDTO p = new DTO.ProductDTO();
+
+                p.setId(rs.getInt("product_id"));
+                p.setCode(rs.getString("product_code"));
+                p.setName(rs.getString("name"));
+                p.setDescription(rs.getString("description"));
+
+                // 🔥 Supplier
+                DTO.SupplierDTO sup = new DTO.SupplierDTO();
+                sup.setID(rs.getInt("supplier_id"));
+                sup.setName(rs.getString("supplier_name")); // 👈 LẤY TÊN Ở ĐÂY
+                p.setSupplier(sup);
+
+                // Category giữ nguyên nếu chưa cần name
+                DTO.CategoryDTO cat = new DTO.CategoryDTO();
+                cat.setID(rs.getInt("category_id"));
+                p.setCategory(cat);
+
+                p.setCostPrice(rs.getBigDecimal("cost_price"));
+                p.setSellingPrice(rs.getBigDecimal("selling_price"));
+                p.setTotalQuantity(rs.getLong("total_quantity"));
+                p.setMinStockLevel(rs.getLong("min_stock_level"));
+                p.setMadeIn(rs.getString("made_in"));
+
+                java.sql.Date pd = rs.getDate("production_date");
+                if(pd!=null) p.setProductionDate(pd.toLocalDate());
+
+                java.sql.Date ed = rs.getDate("expire_date");
+                if(ed!=null) p.setExpireDate(ed.toLocalDate());
+
+                p.setPosition(rs.getString("position"));
+                p.setUnit(rs.getString("unit"));
+                p.setStatus(rs.getString("status"));
+                p.setIsVisible(rs.getBoolean("is_visible"));
+
+                Timestamp ct = rs.getTimestamp("created_at");
+                if(ct!=null) p.setCreatedAt(ct.toLocalDateTime());
+
+                Timestamp ut = rs.getTimestamp("updated_at");
+                if(ut!=null) p.setUpdatedAt(ut.toLocalDateTime());
+
+                list.add(p);
             }
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }finally{
+            closeConnection();
         }
-        return list;
     }
+    return list;
+}
 
     public boolean addProduct(DTO.ProductDTO p){
         if(!openConnection()) return false;
@@ -128,4 +149,5 @@ public class ProductDAO {
             closeConnection();
         }
     }
+    
 }
