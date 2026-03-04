@@ -22,3 +22,4 @@ public enum CustomerType {
         throw new IllegalArgumentException("Không tìm thấy loại khách hàng: " + text);
     }
 }
+

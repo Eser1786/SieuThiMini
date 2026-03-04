@@ -39,14 +39,4 @@ public class DBConnection {
         }
     } 
 
-    public static void main(String[] args){
-        try{
-            if(openConnection()){
-                System.out.print("success");
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        
-    }
 }
