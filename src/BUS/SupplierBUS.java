@@ -1,7 +1,6 @@
 package BUS;
 import DTO.SupplierDTO;
 import java.time.LocalDateTime;
-import java.sql.*;
 import DAO.SupplierDAO;
 public class SupplierBUS {
     private SupplierDAO supplierDAO;
