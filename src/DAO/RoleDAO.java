@@ -63,7 +63,7 @@ public class RoleDAO {
                 pstmt.setString(1, role.getName());
                 pstmt.setString(2, role.getDescription());
                 int rowsAffected = pstmt.executeUpdate();
-                return rowsAffected > 0;
+                return rowsAffected > 0;                  
             }catch(SQLException e){
                 System.out.println("Không thể thêm vai trò mới");
                 e.printStackTrace();
