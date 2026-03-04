@@ -9,7 +9,6 @@ public class ProductDTO {
     private CategoryDTO category;
     private int costPrice;
     private int sellingPrice;
-    private int totalQuantity;// có cần không? nếu số lượng là dữ liệu động
-    
+    private int totalQuantity;
     
 }
