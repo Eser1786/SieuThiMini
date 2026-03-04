@@ -83,7 +83,7 @@ add(topPanel, BorderLayout.NORTH);
             setHorizontalAlignment(SwingConstants.CENTER);
             return this;
         }
-        loadSuppliers();
+        
     }
 );
     // ====== TABLE STYLE ======
@@ -130,6 +130,7 @@ add(topPanel, BorderLayout.NORTH);
     add(scroll, BorderLayout.CENTER);
 
     loadData();
+    loadSuppliers();
 }
   private void loadData() {
     ProductBUS bus = new ProductBUS();
