@@ -22,7 +22,7 @@ public class DiscountDTO {
    public DiscountDTO() {
     }
 
-    public DiscountDTO(Long discountId, String name, DiscountType discountType,
+    public DiscountDTO(int id, String name, DiscountType discountType,
                        BigDecimal value, BigDecimal minOrderAmount,
                        LocalDate startDate, LocalDate endDate,
                        String description, DiscountStatus status,
