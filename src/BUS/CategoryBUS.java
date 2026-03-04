@@ -2,10 +2,10 @@ package BUS;
 
 import DTO.CategoryDTO;
 import DAO.CategoryDAO;
-import java.sql.*;
+// import java.sql.*;
 import java.util.ArrayList;
 
-import DAO.CategoryDAO;
+// import DAO.CategoryDAO;
 public class CategoryBUS {
     private CategoryDAO categoryDAO;
     public CategoryBUS() {
