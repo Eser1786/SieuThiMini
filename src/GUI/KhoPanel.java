@@ -11,6 +11,9 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class KhoPanel extends JPanel {
+    private JTextField txtSearch;
+    private JComboBox<String> cbSupplier;
+    private JTable table;
     private DefaultTableModel model;
     public KhoPanel() {
     setLayout(new BorderLayout(15,15));
@@ -21,7 +24,21 @@ public class KhoPanel extends JPanel {
     title.setFont(new Font("Segoe UI", Font.BOLD, 28));
     title.setForeground(new Color(0x4B3F72));
     add(title, BorderLayout.NORTH);
+            setLayout(new BorderLayout());
 
+JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+topPanel.setBackground(new Color(0xF8F7FF));
+
+txtSearch = new JTextField(15);
+cbSupplier = new JComboBox<>();
+
+topPanel.add(new JLabel("Tìm kiếm:"));
+topPanel.add(txtSearch);
+
+topPanel.add(new JLabel("Nhà cung cấp:"));
+topPanel.add(cbSupplier);
+
+add(topPanel, BorderLayout.NORTH);
     String[] headers = {"Hình ảnh","STT","Mã SP","Tên SP","SL","Nhà cung cấp","Trạng thái"};
 
     model = new DefaultTableModel(headers, 0);
@@ -66,6 +83,7 @@ public class KhoPanel extends JPanel {
             setHorizontalAlignment(SwingConstants.CENTER);
             return this;
         }
+        loadSuppliers();
     }
 );
     // ====== TABLE STYLE ======
@@ -144,6 +162,29 @@ public class KhoPanel extends JPanel {
                 p.getSupplier() != null ? p.getSupplier().getName() : "",
                 status
         });
+    }
+}
+private void loadSuppliers() {
+    ProductBUS bus = new ProductBUS();
+    ArrayList<ProductDTO> list = bus.getAllProducts();
+
+    cbSupplier.removeAllItems();
+    cbSupplier.addItem("Tất cả");
+
+    for (ProductDTO p : list) {
+        String supplierName = p.getSupplier().getName();
+
+        boolean exists = false;
+        for (int i = 0; i < cbSupplier.getItemCount(); i++) {
+            if (cbSupplier.getItemAt(i).equals(supplierName)) {
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists) {
+            cbSupplier.addItem(supplierName);
+        }
     }
 }
     public static void main(String[] args) {
