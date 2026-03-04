@@ -27,6 +27,6 @@ public class SupplierBUS {
         }
         supplier.setCreatedAt(LocalDateTime.now());
         return supplierDAO.addSupplier(supplier);
-    }
+    } 
     
 }
