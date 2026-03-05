@@ -28,22 +28,37 @@ public class KhoPanel extends JPanel {
         title.setForeground(new Color(0x4B3F72));
         add(title, BorderLayout.NORTH);
 
-JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-topPanel.setBackground(new Color(0xF8F7FF));
+JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 25));
+        topPanel.setBackground(new Color(0xF8F7FF));
+        topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xCCCCCC)));
 
-txtSearch = new JTextField(15);
-cbSupplier = new JComboBox<>();
+        // search field styled like DonHangPanel
+        txtSearch = new JTextField();
+        txtSearch.setPreferredSize(new Dimension(229, 42));
+        txtSearch.setFont(new Font("Arial", Font.PLAIN, 22));
+        txtSearch.setBackground(new Color(0xD9D9D9));
+        txtSearch.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
 
-topPanel.add(new JLabel("Tìm kiếm:"));
-topPanel.add(txtSearch);
+        // comboboxes style
+        cbSupplier = new JComboBox<>();
+        cbSupplier.setPreferredSize(new Dimension(220, 42));
+        cbSupplier.setFont(new Font("Arial", Font.PLAIN, 22));
+        cbSupplier.setBackground(new Color(0xD9D9D9));
 
-topPanel.add(new JLabel("Nhà cung cấp:"));
-topPanel.add(cbSupplier);
-cbStatus = new JComboBox<>();
+        cbStatus = new JComboBox<>();
+        cbStatus.setPreferredSize(new Dimension(220, 42));
+        cbStatus.setFont(new Font("Arial", Font.PLAIN, 22));
+        cbStatus.setBackground(new Color(0xD9D9D9));
 
-topPanel.add(new JLabel("Trạng thái:"));
-topPanel.add(cbStatus);
-add(topPanel, BorderLayout.NORTH);
+        topPanel.add(new JLabel("Tìm kiếm:"));
+        topPanel.add(txtSearch);
+
+        topPanel.add(new JLabel("Nhà cung cấp:"));
+        topPanel.add(cbSupplier);
+
+        topPanel.add(new JLabel("Trạng thái:"));
+        topPanel.add(cbStatus);
+        add(topPanel, BorderLayout.NORTH);
     String[] headers = {"Hình ảnh","Mã SP","Tên SP","SL","Nhà cung cấp","Trạng thái"};
 
     model = new DefaultTableModel(headers, 0) {
