@@ -258,7 +258,9 @@ public class ExportUtils {
      * ─────────────────────────────────────────────
      */
     public static JButton makeExportButton(String label, Color bg) {
-        JButton btn = new JButton(label);
+        // Tẩy emoji nếu có vì font mặc định Java trên Windows thường lỗi ô vuông
+        String cleanLabel = label.replace("📄", "").replace("📊", "").trim();
+        JButton btn = new JButton(cleanLabel);
         btn.setFont(new Font("Arial", Font.BOLD, 16));
         btn.setBackground(bg);
         btn.setForeground(Color.WHITE);

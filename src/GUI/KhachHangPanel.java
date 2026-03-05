@@ -77,24 +77,26 @@ public class KhachHangPanel extends JPanel {
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
         bang.setRowSorter(sorter); // Cho phép sắp xếp khi click vào header
 
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 10));
-        top.setPreferredSize(new Dimension(1174, 94));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
+        top.setPreferredSize(new Dimension(0, 94));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.BLACK, 1),
-                BorderFactory.createEmptyBorder(20, 10, 20, 10)));
+                BorderFactory.createEmptyBorder(0, 10, 0, 10)));
 
         String[] boloc = { "Tất cả", "Đồng", "Bạc", "Vàng", "Kim cương", "Hoạt động", "Không hoạt động" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
-        cbLoc.setPreferredSize(new Dimension(254, 42));
-        cbLoc.setFont(new Font("Arial", Font.PLAIN, 24));
+        cbLoc.setPreferredSize(new Dimension(220, 42));
+        cbLoc.setFont(new Font("Arial", Font.PLAIN, 22));
         cbLoc.setBackground(new Color(0xD9D9D9));
 
         JPanel timkiem = new JPanel(new BorderLayout());
         timkiem.setPreferredSize(new Dimension(229, 42));
         timkiem.setBackground(new Color(0xD9D9D9));
         JTextField tim = new JTextField();
-        tim.setFont(new Font("Arial", Font.PLAIN, 24));
+        tim.setFont(new Font("Arial", Font.PLAIN, 22));
+        tim.setBackground(new Color(0xD9D9D9));
+        tim.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
         timkiem.add(tim, BorderLayout.CENTER);
 
         JButton nuttim = new JButton("🔍");
@@ -119,8 +121,8 @@ public class KhachHangPanel extends JPanel {
         JButton them = new JButton("+ Thêm khách hàng");
         them.setFocusPainted(false);
         them.setBackground(new Color(0xD9D9D9));
-        them.setPreferredSize(new Dimension(254, 42));
-        them.setFont(new Font("Arial", Font.BOLD, 22));
+        them.setPreferredSize(new Dimension(220, 42));
+        them.setFont(new Font("Arial", Font.BOLD, 18));
         them.setCursor(new Cursor(Cursor.HAND_CURSOR));
         them.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
