@@ -1,5 +1,8 @@
 package DTO;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 public class EmployeeDTO {
     private int id;
     private String code;
@@ -13,26 +16,26 @@ public class EmployeeDTO {
     private int roleId;       // foreign key to roles
 
     // getters/setters
-    public int getId() { return id; }
     public void setId(int id) { this.id = id; }
-    public String getCode() { return code; }
+    public int getId() { return id; }
     public void setCode(String code) { this.code = code; }
-    public String getFullName() { return fullName; }
+    public String getCode() { return code; }
     public void setFullName(String fullName) { this.fullName = fullName; }
-    public String getUsername() { return username; }
+    public String getFullName() { return fullName; }
     public void setUsername(String username) { this.username = username; }
-    public String getPasswordHash() { return passwordHash; }
+    public String getUsername() { return username; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
-    public String getPhone() { return phone; }
+    public String getPasswordHash() { return passwordHash; }
     public void setPhone(String phone) { this.phone = phone; }
-    public String getEmail() { return email; }
+    public String getPhone() { return phone; }
     public void setEmail(String email) { this.email = email; }
-    public java.time.LocalDateTime getHireDate() { return hireDate; }
-    public void setHireDate(java.time.LocalDateTime hireDate) { this.hireDate = hireDate; }
-    public java.math.BigDecimal getSalary() { return salary; }
-    public void setSalary(java.math.BigDecimal salary) { this.salary = salary; }
-    public int getRoleId() { return roleId; }
+    public String getEmail() { return email; }
+    public void setHireDate(LocalDateTime hireDate) { this.hireDate = hireDate; }
+    public LocalDateTime getHireDate() { return hireDate; }
+    public void setSalary(BigDecimal salary) { this.salary = salary; }
+    public BigDecimal getSalary() { return salary; }
     public void setRoleId(int roleId) { this.roleId = roleId; }
+    public int getRoleId() { return roleId; }
 
     @Override
     public String toString() {

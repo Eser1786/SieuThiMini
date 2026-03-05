@@ -1,7 +1,7 @@
 package GUI;
 
 import javax.swing.*;
-import java.awt.*;
+
 
 /**
  * Top-level frame.  Delegates everything to MainPanel.

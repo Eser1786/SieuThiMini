@@ -62,6 +62,7 @@ INSERT
     IGNORE INTO products (
         product_code,
         name,
+        image_path,
         category_id,
         supplier_id,
         cost_price,
@@ -78,14 +79,15 @@ INSERT
 VALUES
     (
         'SP001',
-        'Sữa tươi Vinamilk 1L',
+        '7 Up',
+        'img\7up.png',
         3,
         1,
         22000.00,
         32000.00,
         120,
         20,
-        'Hộp',
+        'Lon',
         'Việt Nam',
         '2026-02-01',
         '2026-05-01',
@@ -95,6 +97,7 @@ VALUES
     (
         'SP002',
         'Mì Hảo Hảo tôm chua cay',
+        'img\mitrontrung.png',
         2,
         3,
         3500.00,
@@ -110,7 +113,8 @@ VALUES
     ),
     (
         'SP003',
-        'Nước suối Lavie 500ml',
+        'Fanta Việt Quất',
+        'img\Fanta Viet Quat.png',
         1,
         1,
         4000.00,
@@ -184,11 +188,11 @@ INSERT
     IGNORE INTO role_permissions (role_id, permission_id)
 VALUES
     (1, 1),
-(1, 2),
-(1, 3),
-(1, 4),
+    (1, 2),
+    (1, 3),
+    (1, 4),
     (2, 1),
-(2, 3),
+    (2, 3),
     (3, 1);
 
 -- 8. employees (sau khi roles có dữ liệu)

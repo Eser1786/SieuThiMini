@@ -168,7 +168,42 @@ public class CustomerDAO {
         return result;
     }
     
-    
+    public CustomerDTO getCustomerByID(int id){
+        CustomerDTO customer = new CustomerDTO();
+        if(openConnection()){
+            try{
+                String sql = "SELECT * FROM customers WHERE customer_id = " + id;
+                Statement stmt = con.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                if(rs.next()){
+                    customer.setId(rs.getInt("customer_id"));
+                    customer.setCode(rs.getString("customer_code"));
+                    customer.setFullName(rs.getString("full_name"));
+                    customer.setPhone(rs.getString("phone"));
+                    customer.setEmail(rs.getString("email"));
+                    customer.setAddress(rs.getString("address"));
+                    customer.setLoyaltyPoints(rs.getInt("loyalty_points"));
 
-    
+                    Timestamp tsCreated = rs.getTimestamp("created_at");
+                    customer.setCreatedAt(tsCreated != null ? tsCreated.toLocalDateTime() : null);
+
+                    Timestamp tsLastPurchase = rs.getTimestamp("last_purchase");
+                    customer.setLastPurchaseAt(tsLastPurchase != null ? tsLastPurchase.toLocalDateTime() : null);
+
+                    customer.setTotalSpent(rs.getBigDecimal("total_spent"));
+                    customer.setType(CustomerType.fromString(rs.getString("customer_type")));
+                    customer.setStatus(CustomerStatus.fromString(rs.getString("status")));
+
+                }else{
+                    System.out.println("Không tìm thấy id của khách hàng! \n CustomerDAO - getCustomerByID \n");
+                }
+            }catch(SQLException e){
+                System.out.println("Không thể thực hiện việc tìm id của khách hàng \n CustomerDAO - getCustomerByID \n");
+                e.printStackTrace();
+            }finally{
+                closeConnection();
+            }
+        }
+        return customer;
+    }
 }
