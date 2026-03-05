@@ -15,22 +15,37 @@ public class ExportUtils {
 
     /*
      * ─────────────────────────────────────────────
+     * Helper: Tạo JFileChooser với System Look And Feel
+     * ─────────────────────────────────────────────
+     */
+    private static JFileChooser getSystemFileChooser(String title, String extDesc, String ext) {
+        // Lưu lại L&F hiện tại
+        LookAndFeel oldLaf = UIManager.getLookAndFeel();
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {
+        }
+
+        JFileChooser fc = new JFileChooser();
+        fc.setDialogTitle(title);
+        fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(extDesc, ext));
+
+        // Khôi phục L&F cũ để không ảnh hưởng app
+        try {
+            UIManager.setLookAndFeel(oldLaf);
+        } catch (Exception ignored) {
+        }
+        return fc;
+    }
+
+    /*
+     * ─────────────────────────────────────────────
      * XUẤT CSV (Excel đọc được)
      * ─────────────────────────────────────────────
      */
-    /**
-     * Mở hộp thoại chọn nơi lưu, rồi ghi toàn bộ bảng ra file .csv
-     * với BOM UTF-8 để Excel hiển thị tiếng Việt đúng.
-     *
-     * @param parent  component cha để dialog hiện đúng vị trí
-     * @param model   model của JTable cần xuất
-     * @param tenFile tên file mặc định (không cần đuôi)
-     */
     public static void xuatCSV(Component parent, DefaultTableModel model, String tenFile) {
-        JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Lưu file Excel (CSV)");
+        JFileChooser fc = getSystemFileChooser("Lưu file Excel (CSV)", "CSV Files (*.csv)", "csv");
         fc.setSelectedFile(new File(tenFile + ".csv"));
-        fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("CSV Files (*.csv)", "csv"));
 
         if (fc.showSaveDialog(parent) != JFileChooser.APPROVE_OPTION)
             return;
@@ -49,7 +64,6 @@ public class ExportUtils {
             int cols = model.getColumnCount();
             StringBuilder sb = new StringBuilder();
             for (int c = 0; c < cols; c++) {
-                // Bỏ cột "Thao tác" ở cuối nếu có
                 if (model.getColumnName(c).equalsIgnoreCase("Thao tác"))
                     continue;
                 if (sb.length() > 0)
@@ -93,15 +107,17 @@ public class ExportUtils {
      * XUẤT PDF (dùng Java Print API + Graphics2D)
      * ─────────────────────────────────────────────
      */
-    /**
-     * Render nội dung bảng ra PDF bằng Java Print API.
-     * Hiển thị print dialog để người dùng chọn máy in / xuất PDF.
-     *
-     * @param parent component cha
-     * @param model  model của JTable
-     * @param tieuDe tiêu đề in trên đầu trang
-     */
     public static void xuatPDF(Component parent, DefaultTableModel model, String tieuDe) {
+        JFileChooser fc = getSystemFileChooser("Lưu file PDF", "PDF Files (*.pdf)", "pdf");
+        fc.setSelectedFile(new File(tieuDe + ".pdf"));
+
+        if (fc.showSaveDialog(parent) != JFileChooser.APPROVE_OPTION)
+            return;
+
+        File file = fc.getSelectedFile();
+        if (!file.getName().toLowerCase().endsWith(".pdf"))
+            file = new File(file.getAbsolutePath() + ".pdf");
+
         PrinterJob job = PrinterJob.getPrinterJob();
 
         // Thiết lập trang nằm ngang (landscape) nếu nhiều cột
@@ -109,24 +125,51 @@ public class ExportUtils {
         Paper paper = pf.getPaper();
         if (model.getColumnCount() > 6) {
             pf.setOrientation(PageFormat.LANDSCAPE);
-            paper.setImageableArea(20, 20, paper.getWidth() - 40, paper.getHeight() - 40);
         } else {
             pf.setOrientation(PageFormat.PORTRAIT);
-            paper.setImageableArea(20, 20, paper.getWidth() - 40, paper.getHeight() - 40);
         }
+        paper.setImageableArea(20, 20, paper.getWidth() - 40, paper.getHeight() - 40);
         pf.setPaper(paper);
 
         job.setPrintable(new TablePrintable(model, tieuDe), pf);
         job.setJobName(tieuDe);
 
-        if (job.printDialog()) {
-            try {
-                job.print();
-            } catch (PrinterException ex) {
-                JOptionPane.showMessageDialog(parent,
-                        "Lỗi khi in/xuất PDF: " + ex.getMessage(),
-                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+        // Tìm máy in Microsoft Print to PDF để in thẳng ra file
+        boolean foundPdfPrinter = false;
+        try {
+            javax.print.PrintService[] services = java.awt.print.PrinterJob.lookupPrintServices();
+            for (javax.print.PrintService ps : services) {
+                if (ps.getName().contains("Print to PDF")) {
+                    job.setPrintService(ps);
+                    foundPdfPrinter = true;
+                    break;
+                }
             }
+        } catch (Exception ignored) {
+        }
+
+        try {
+            if (foundPdfPrinter) {
+                // In ngầm thẳng ra tệp
+                javax.print.attribute.HashPrintRequestAttributeSet attributes = new javax.print.attribute.HashPrintRequestAttributeSet();
+                attributes.add(new javax.print.attribute.standard.Destination(file.toURI()));
+                job.print(attributes);
+                JOptionPane.showMessageDialog(parent,
+                        "Xuất file thành công!\n" + file.getAbsolutePath(),
+                        "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                // Nếu không có driver PDF, bung dialog (ít xảy ra trên Win10)
+                if (job.printDialog()) {
+                    job.print();
+                    JOptionPane.showMessageDialog(parent,
+                            "In/Xuất PDF thành công!",
+                            "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        } catch (PrinterException ex) {
+            JOptionPane.showMessageDialog(parent,
+                    "Lỗi khi in/xuất PDF: " + ex.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
