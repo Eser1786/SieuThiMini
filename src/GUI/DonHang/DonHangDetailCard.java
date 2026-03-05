@@ -64,7 +64,7 @@ class DonHangDetailCard extends JPanel {
                 BorderFactory.createLineBorder(new Color(0xDDDDDD)),
                 BorderFactory.createEmptyBorder(20, 40, 30, 40)));
         body.setMinimumSize(new Dimension(650, 0));
-        body.setPreferredSize(new Dimension(750, 940));
+        body.setPreferredSize(new Dimension(750, 1020));
 
         GridBagConstraints g = new GridBagConstraints();
         g.fill = GridBagConstraints.HORIZONTAL;
@@ -119,6 +119,8 @@ class DonHangDetailCard extends JPanel {
         tblSP.setShowVerticalLines(false);
         tblSP.setShowHorizontalLines(true);
         tblSP.setGridColor(new Color(0xEEEEEE));
+        tblSP.setFillsViewportHeight(true);
+        tblSP.setPreferredScrollableViewportSize(new Dimension(580, 150));
         tblSP.getColumnModel().getColumn(0).setPreferredWidth(45);
         tblSP.getColumnModel().getColumn(0).setMaxWidth(55);
         tblSP.getColumnModel().getColumn(1).setPreferredWidth(260);
@@ -126,7 +128,6 @@ class DonHangDetailCard extends JPanel {
         tblSP.getColumnModel().getColumn(3).setPreferredWidth(115);
         tblSP.getColumnModel().getColumn(4).setPreferredWidth(115);
         JScrollPane spScroll = new JScrollPane(tblSP);
-        spScroll.setPreferredSize(new Dimension(0, 220));
         spScroll.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, Color.BLACK));
 
         g.gridx = 0; g.gridy = 12; g.gridwidth = 2; g.weightx = 1.0;
