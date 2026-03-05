@@ -11,6 +11,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class KhoPanel extends JPanel {
+    private JComboBox<String> cbStatus;
     private JTextField txtSearch;
     private JComboBox<String> cbSupplier;
     private JTable table;
@@ -37,7 +38,10 @@ topPanel.add(txtSearch);
 
 topPanel.add(new JLabel("Nhà cung cấp:"));
 topPanel.add(cbSupplier);
+cbStatus = new JComboBox<>();
 
+topPanel.add(new JLabel("Trạng thái:"));
+topPanel.add(cbStatus);
 add(topPanel, BorderLayout.NORTH);
     String[] headers = {"Hình ảnh","STT","Mã SP","Tên SP","SL","Nhà cung cấp","Trạng thái"};
 
@@ -97,7 +101,7 @@ add(topPanel, BorderLayout.NORTH);
 
     // ====== HEADER STYLE ======
     table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-    table.getTableHeader().setBackground(new Color(0x6C5CE7));
+    table.getTableHeader().setBackground(new Color(0xAF9FCB));
     table.getTableHeader().setForeground(Color.WHITE);
     table.getTableHeader().setPreferredSize(new Dimension(100, 40));
 
@@ -129,30 +133,59 @@ add(topPanel, BorderLayout.NORTH);
 
     add(scroll, BorderLayout.CENTER);
 
-    loadData();
+    loadStatusFilter();
     loadSuppliers();
+    loadData();
+
+    txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+    public void insertUpdate(javax.swing.event.DocumentEvent e) { loadData(); }
+    public void removeUpdate(javax.swing.event.DocumentEvent e) { loadData(); }
+    public void changedUpdate(javax.swing.event.DocumentEvent e) { loadData(); }
+    
+});
+
+// Khi đổi nhà cung cấp
+cbSupplier.addActionListener(e -> loadData());
+cbStatus.addActionListener(e -> loadData());
 }
-  private void loadData() {
+private void loadData() {
     ProductBUS bus = new ProductBUS();
     ArrayList<ProductDTO> list = bus.getAllProducts();
 
-    model.setRowCount(0);
+    String keyword = txtSearch.getText().trim().toLowerCase();
+    String selectedSupplier = cbSupplier.getSelectedItem().toString();
+    String selectedStatus = "Tất cả";
 
+if (cbStatus.getSelectedItem() != null) {
+    selectedStatus = cbStatus.getSelectedItem().toString();
+}
+    model.setRowCount(0);
     int stt = 1;
+
     for (ProductDTO p : list) {
 
+        String productName = p.getName().toLowerCase();
+        String supplierName = p.getSupplier().getName();
+
+        // 🔎 lọc theo tên
+        if (!productName.contains(keyword)) continue;
+
+        // 📦 lọc theo nhà cung cấp
+        if (!selectedSupplier.equals("Tất cả")
+                && !supplierName.equals(selectedSupplier)) continue;
+
+        // 👉 tính trạng thái
         long quantity = p.getTotalQuantity();
         long minStock = p.getMinStockLevel();
 
         String status;
+        if (quantity == 0) status = "Hết hàng";
+        else if (quantity < minStock) status = "Gần hết";
+        else status = "Còn hàng";
 
-        if (quantity == 0) {
-            status = "Hết hàng";
-        } else if (quantity < minStock) {
-            status = "Gần hết";
-        } else {
-            status = "Còn hàng";
-        }
+        // 🔥 Lọc theo trạng thái
+if (!selectedStatus.equals("Tất cả")
+        && !status.equals(selectedStatus)) continue;
 
         model.addRow(new Object[]{
                 "",
@@ -160,7 +193,7 @@ add(topPanel, BorderLayout.NORTH);
                 p.getCode(),
                 p.getName(),
                 quantity,
-                p.getSupplier() != null ? p.getSupplier().getName() : "",
+                supplierName,
                 status
         });
     }
@@ -187,6 +220,14 @@ private void loadSuppliers() {
             cbSupplier.addItem(supplierName);
         }
     }
+}
+private void loadStatusFilter() {
+    cbStatus.removeAllItems();
+    cbStatus.addItem("Tất cả");
+    cbStatus.addItem("Còn hàng");
+    cbStatus.addItem("Gần hết");
+    cbStatus.addItem("Hết hàng");
+    cbStatus.setSelectedIndex(0);
 }
     public static void main(String[] args) {
         JFrame f = new JFrame("Quản Lý Kho");
