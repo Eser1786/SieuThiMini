@@ -3,6 +3,7 @@ package DTO;
 public class ProductDTO {
     private int id;
     private String code;
+    private String imagePath;
     private String name;
     private String description;
     private SupplierDTO supplier;
@@ -26,6 +27,8 @@ public class ProductDTO {
     public void setId(int id) { this.id = id; }
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
+    public String getImagePath() { return imagePath; }
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getDescription() { return description; }
@@ -66,6 +69,7 @@ public class ProductDTO {
         return "ProductDTO{" +
                 "id=" + id +
                 ", code='" + code + '\'' +
+                ", imagePath='" + imagePath + '\'' +
                 ", name='" + name + '\'' +
                 ", category=" + (category != null ? category.getName() : "null") +
                 ", supplier=" + (supplier != null ? supplier.getName() : "null") +

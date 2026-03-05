@@ -53,6 +53,7 @@ public class ProductDAO {
 
                 p.setId(rs.getInt("product_id"));
                 p.setCode(rs.getString("product_code"));
+                p.setImagePath(rs.getString("image_path")); // thêm trường đường dẫn ảnh
                 p.setName(rs.getString("name"));
                 p.setDescription(rs.getString("description"));
 
@@ -105,26 +106,27 @@ public class ProductDAO {
     public boolean addProduct(DTO.ProductDTO p){
         if(!openConnection()) return false;
         try{
-            String sql = "INSERT INTO products(product_code,name,description,category_id,supplier_id,cost_price,selling_price,total_quantity,min_stock_level,made_in,production_date,expire_date,position,unit,status,is_visible,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO products(product_code,image_path,name,description,category_id,supplier_id,cost_price,selling_price,total_quantity,min_stock_level,made_in,production_date,expire_date,position,unit,status,is_visible,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement pstmt = con.prepareStatement(sql);
             pstmt.setString(1, p.getCode());
-            pstmt.setString(2, p.getName());
-            pstmt.setString(3, p.getDescription());
-            pstmt.setInt(4, p.getCategory()!=null ? p.getCategory().getID() : 0);
-            pstmt.setInt(5, p.getSupplier()!=null ? p.getSupplier().getID() : 0);
-            pstmt.setBigDecimal(6, p.getCostPrice());
-            pstmt.setBigDecimal(7, p.getSellingPrice());
-            pstmt.setLong(8, p.getTotalQuantity());
-            pstmt.setLong(9, p.getMinStockLevel());
-            pstmt.setString(10, p.getMadeIn());
-            pstmt.setDate(11, p.getProductionDate()!=null ? java.sql.Date.valueOf(p.getProductionDate()) : null);
-            pstmt.setDate(12, p.getExpireDate()!=null ? java.sql.Date.valueOf(p.getExpireDate()) : null);
-            pstmt.setString(13, p.getPosition());
-            pstmt.setString(14, p.getUnit());
-            pstmt.setString(15, p.getStatus());
-            pstmt.setBoolean(16, p.getIsVisible());
-            pstmt.setTimestamp(17, p.getCreatedAt()!=null ? Timestamp.valueOf(p.getCreatedAt()) : null);
-            pstmt.setTimestamp(18, p.getUpdatedAt()!=null ? Timestamp.valueOf(p.getUpdatedAt()) : null);
+            pstmt.setString(2, p.getImagePath()); // đường dẫn hình
+            pstmt.setString(3, p.getName());
+            pstmt.setString(4, p.getDescription());
+            pstmt.setInt(5, p.getCategory()!=null ? p.getCategory().getID() : 0);
+            pstmt.setInt(6, p.getSupplier()!=null ? p.getSupplier().getID() : 0);
+            pstmt.setBigDecimal(7, p.getCostPrice());
+            pstmt.setBigDecimal(8, p.getSellingPrice());
+            pstmt.setLong(9, p.getTotalQuantity());
+            pstmt.setLong(10, p.getMinStockLevel());
+            pstmt.setString(11, p.getMadeIn());
+            pstmt.setDate(12, p.getProductionDate()!=null ? java.sql.Date.valueOf(p.getProductionDate()) : null);
+            pstmt.setDate(13, p.getExpireDate()!=null ? java.sql.Date.valueOf(p.getExpireDate()) : null);
+            pstmt.setString(14, p.getPosition());
+            pstmt.setString(15, p.getUnit());
+            pstmt.setString(16, p.getStatus());
+            pstmt.setBoolean(17, p.getIsVisible());
+            pstmt.setTimestamp(18, p.getCreatedAt()!=null ? Timestamp.valueOf(p.getCreatedAt()) : null);
+            pstmt.setTimestamp(19, p.getUpdatedAt()!=null ? Timestamp.valueOf(p.getUpdatedAt()) : null);
             return pstmt.executeUpdate() > 0;
         }catch(SQLException e){
             e.printStackTrace();
@@ -133,7 +135,7 @@ public class ProductDAO {
             closeConnection();
         }
     }
-
+    
     public boolean hasProductId(int id){
         if(!openConnection()) return false;
         try{

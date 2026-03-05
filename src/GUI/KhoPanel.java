@@ -45,8 +45,37 @@ topPanel.add(cbStatus);
 add(topPanel, BorderLayout.NORTH);
     String[] headers = {"Hình ảnh","STT","Mã SP","Tên SP","SL","Nhà cung cấp","Trạng thái"};
 
-    model = new DefaultTableModel(headers, 0);
-    JTable table = new JTable(model);
+    model = new DefaultTableModel(headers, 0) {
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 0) return ImageIcon.class;
+            return Object.class;
+        }
+    };
+    table = new JTable(model);
+    table.setRowHeight(55);
+
+   
+    // renderer for image column
+    table.getColumnModel().getColumn(0).setCellRenderer(
+    new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
+
+            JLabel label = (JLabel) super.getTableCellRendererComponent(
+                    table, value, isSelected, hasFocus, row, column);
+
+            if (value instanceof ImageIcon) {
+                label.setIcon((ImageIcon) value);
+                label.setText("");
+            }
+            label.setHorizontalAlignment(SwingConstants.CENTER);
+            return label;
+        }
+});
+
     table.getColumnModel().getColumn(6).setCellRenderer(
     new DefaultTableCellRenderer() {
         @Override
@@ -112,8 +141,13 @@ add(topPanel, BorderLayout.NORTH);
                 JTable table, Object value, boolean isSelected,
                 boolean hasFocus, int row, int column) {
 
-            Component c = super.getTableCellRendererComponent(
+            JLabel c = (JLabel) super.getTableCellRendererComponent(
                     table, value, isSelected, hasFocus, row, column);
+
+            if (value instanceof ImageIcon) {
+                c.setIcon((ImageIcon) value);
+                c.setText("");
+            }
 
             if (!isSelected) {
                 if (row % 2 == 0) {
@@ -148,6 +182,7 @@ add(topPanel, BorderLayout.NORTH);
 cbSupplier.addActionListener(e -> loadData());
 cbStatus.addActionListener(e -> loadData());
 }
+
 private void loadData() {
     ProductBUS bus = new ProductBUS();
     ArrayList<ProductDTO> list = bus.getAllProducts();
@@ -188,7 +223,7 @@ if (!selectedStatus.equals("Tất cả")
         && !status.equals(selectedStatus)) continue;
 
         model.addRow(new Object[]{
-                "",
+                loadProductIcon(p.getImagePath()),
                 stt++,
                 p.getCode(),
                 p.getName(),
@@ -198,6 +233,34 @@ if (!selectedStatus.equals("Tất cả")
         });
     }
 }
+private ImageIcon loadProductIcon(String path) {
+    if (path == null || path.isEmpty()) return null;
+
+    String normalized = path.replace('\\','/');
+    java.io.File file = new java.io.File(normalized);
+    System.out.println("[debug] path='" + path + "' normalized='" + normalized + "' exists=" + file.exists());
+
+    try {
+        ImageIcon icon;
+        if (file.exists()) {
+            icon = new ImageIcon(file.getAbsolutePath());
+        } else {
+            java.net.URL url = getClass().getResource("/" + normalized);
+            System.out.println("[debug] resource url=" + url);
+            if (url != null) {
+                icon = new ImageIcon(url);
+            } else {
+                return null;
+            }
+        }
+        Image img = icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+        return new ImageIcon(img);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;
+    }
+}
+
 private void loadSuppliers() {
     ProductBUS bus = new ProductBUS();
     ArrayList<ProductDTO> list = bus.getAllProducts();
