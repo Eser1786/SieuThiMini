@@ -33,6 +33,10 @@ public class UIUtils {
                 g2.dispose();
                 super.paintComponent(g);
             }
+            @Override
+            public Dimension getMaximumSize() {
+                return getPreferredSize();
+            }
         };
         btn.setFont(new Font("Arial", Font.BOLD, 13));
         btn.setBackground(bg);
@@ -41,7 +45,7 @@ public class UIUtils {
         btn.setContentAreaFilled(false);
         btn.setBorderPainted(false);
         btn.setOpaque(false);
-        btn.setPreferredSize(new Dimension(60, 32));
+        btn.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return btn;
     }

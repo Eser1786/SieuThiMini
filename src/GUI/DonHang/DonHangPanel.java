@@ -23,6 +23,7 @@ public class DonHangPanel extends JPanel {
 
     DefaultTableModel tableModel;
     int currentRow = -1;
+    final java.util.HashMap<String, String> nhanVienMap = new java.util.HashMap<>();
 
     private final DonHangDetailCard  detailCard;
     private final DonHangInvoiceCard invoiceCard;

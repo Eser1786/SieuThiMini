@@ -41,7 +41,7 @@ public class MainPanel extends JPanel {
         // ── Header ──────────────────────────────────
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(new Color(0x2F2C35));
-        header.setPreferredSize(new Dimension(1440, 60));
+        header.setPreferredSize(new Dimension(0, 60));
 
         JPanel headerLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
         headerLeft.setBackground(new Color(0x2F2C35));
@@ -62,7 +62,7 @@ public class MainPanel extends JPanel {
         // ── Sidebar nav ─────────────────────────────
         JPanel nav = new JPanel();
         nav.setLayout(new BoxLayout(nav, BoxLayout.Y_AXIS));
-        nav.setPreferredSize(new Dimension(180, 700));
+        nav.setPreferredSize(new Dimension(180, 0));
         nav.setBackground(new Color(0xD1C4E9));
         nav.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.BLACK, 1),

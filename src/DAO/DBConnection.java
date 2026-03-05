@@ -12,7 +12,7 @@ public class DBConnection {
                                       "&allowPublicKeyRetrieval=true" +
                                       "&serverTimezone=UTC" +
                                       "&useUnicode=true" +
-                                      "&characterEncoding=UTF-8";
+                                      "&characterEncoding=utf8mb4";
 
     private static final String USER = "sieuthimini_user";
     private static final String PASSWORD = "sieuthimini_pass123";

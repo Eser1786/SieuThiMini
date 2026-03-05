@@ -54,12 +54,12 @@ public class SanPhamPanel extends JPanel {
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
         bang.setRowSorter(sorter);
 
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 10));
-        top.setPreferredSize(new Dimension(1174, 94));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
+        top.setPreferredSize(new Dimension(0, 94));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.BLACK, 1),
-                BorderFactory.createEmptyBorder(20, 10, 20, 10)));
+                BorderFactory.createEmptyBorder(0, 10, 0, 10)));
 
         String[] boloc = { "Tất cả", "Còn hàng", "Hết hàng", "Có khuyến mãi", "Cận date" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
@@ -176,7 +176,7 @@ public class SanPhamPanel extends JPanel {
         bang.setRowHeight(52);
         bang.setFont(new Font("Arial", Font.PLAIN, 16));
         bang.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
-        bang.getTableHeader().setPreferredSize(new Dimension(1166, 52));
+        bang.getTableHeader().setPreferredSize(new Dimension(0, 52));
         bang.getTableHeader().setBackground(new Color(0xAF9FCB));
         bang.getTableHeader().setForeground(Color.WHITE);
         bang.getTableHeader().setReorderingAllowed(false);
@@ -357,8 +357,30 @@ public class SanPhamPanel extends JPanel {
             editingRow = -1;
             innerCard.show(this, CARD_TABLE);
         });
+        JButton btnHuy = new JButton("HỦY");
+        btnHuy.setFont(new Font("Arial", Font.BOLD, 24));
+        btnHuy.setBackground(new Color(0xFF7043));
+        btnHuy.setForeground(Color.WHITE);
+        btnHuy.setFocusPainted(false);
+        btnHuy.setBorderPainted(false);
+        btnHuy.setPreferredSize(new Dimension(160, 52));
+        btnHuy.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnHuy.addActionListener(e -> {
+            String msg = editingRow >= 0
+                    ? "Bỏ các thay đổi trên sản phẩm này?"
+                    : "Bỏ thông tin sản phẩm mới đang nhập?";
+            int c = JOptionPane.showConfirmDialog(SanPhamPanel.this, msg,
+                    "Xác nhận hủy", JOptionPane.YES_NO_OPTION);
+            if (c == JOptionPane.YES_OPTION) {
+                tfTen.setText(""); tfMa.setText(""); tfSL.setText("");
+                tfGia.setText(""); tfDate.setText(""); tfKM.setText("");
+                editingRow = -1;
+                innerCard.show(SanPhamPanel.this, CARD_TABLE);
+            }
+        });
         JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btnWrapper.setBackground(new Color(0xF0EFF8));
+        btnWrapper.add(btnHuy);
         btnWrapper.add(btnLuu);
         themCard.add(btnWrapper, BorderLayout.SOUTH);
 

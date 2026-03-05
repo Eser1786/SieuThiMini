@@ -229,7 +229,7 @@ public class KhachHangPanel extends JPanel {
         bang.setRowHeight(52);
         bang.setFont(new Font("Arial", Font.PLAIN, 16));
         bang.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
-        bang.getTableHeader().setPreferredSize(new Dimension(1166, 52));
+        bang.getTableHeader().setPreferredSize(new Dimension(0, 52));
         bang.getTableHeader().setBackground(new Color(0xAF9FCB));
         bang.getTableHeader().setForeground(Color.WHITE);
         bang.getTableHeader().setReorderingAllowed(false);
@@ -509,6 +509,18 @@ public class KhachHangPanel extends JPanel {
         btnXoa.setPreferredSize(new Dimension(160, 52));
         btnXoa.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+        JButton btnHoanTac = new JButton("HOÀN TÁC");
+        btnHoanTac.setFont(new Font("Arial", Font.BOLD, 24));
+        btnHoanTac.setBackground(new Color(0xFF7043));
+        btnHoanTac.setForeground(Color.WHITE);
+        btnHoanTac.setFocusPainted(false);
+        btnHoanTac.setBorderPainted(false);
+        btnHoanTac.setPreferredSize(new Dimension(180, 52));
+        btnHoanTac.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnHoanTac.setVisible(false);
+
+        String[] origVals = new String[11]; // snapshot khi bấm SỬA
+
         btnLuu.addActionListener(e -> {
             if (editingRow == -1) {
                 // Chế độ thêm mới
@@ -521,11 +533,34 @@ public class KhachHangPanel extends JPanel {
 
         btnSua.addActionListener(e -> {
             if (editingRow >= 0) {
+                // Snapshot giá trị trước khi sửa
+                origVals[0]  = tfMaKH.getText();      origVals[1]  = tfTen.getText();
+                origVals[2]  = tfSdt.getText();        origVals[3]  = tfEmail.getText();
+                origVals[4]  = tfDiaChi.getText();     origVals[5]  = tfDiem.getText();
+                origVals[6]  = tfTgDK.getText();       origVals[7]  = tfLanCuoiMua.getText();
+                origVals[8]  = tfTongTien.getText();   origVals[9]  = tfHang.getText();
+                origVals[10] = tfTrangThai.getText();
                 // Chuyển sang chế độ sửa
                 enableFormFields(true);
                 btnSua.setVisible(false);
-                btnLuu.setVisible(true);
-                btnXoa.setVisible(true);
+                btnHoanTac.setVisible(true);
+            }
+        });
+
+        btnHoanTac.addActionListener(e -> {
+            int c = JOptionPane.showConfirmDialog(KhachHangPanel.this,
+                    "Bỏ các thay đổi và khôi phục dữ liệu gốc?",
+                    "Hoàn tác", JOptionPane.YES_NO_OPTION);
+            if (c == JOptionPane.YES_OPTION) {
+                tfMaKH.setText(origVals[0]);       tfTen.setText(origVals[1]);
+                tfSdt.setText(origVals[2]);         tfEmail.setText(origVals[3]);
+                tfDiaChi.setText(origVals[4]);      tfDiem.setText(origVals[5]);
+                tfTgDK.setText(origVals[6]);        tfLanCuoiMua.setText(origVals[7]);
+                tfTongTien.setText(origVals[8]);    tfHang.setText(origVals[9]);
+                tfTrangThai.setText(origVals[10]);
+                enableFormFields(false);
+                btnHoanTac.setVisible(false);
+                btnSua.setVisible(true);
             }
         });
 
@@ -546,6 +581,7 @@ public class KhachHangPanel extends JPanel {
 
         btnWrapper.add(btnLuu);
         btnWrapper.add(btnSua);
+        btnWrapper.add(btnHoanTac);
         btnWrapper.add(btnXoa);
         themCard.add(btnWrapper, BorderLayout.SOUTH);
 

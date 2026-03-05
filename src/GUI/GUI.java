@@ -1,6 +1,7 @@
 package GUI;
 
 import javax.swing.*;
+import java.awt.Dimension;
 
 /**
  * Top-level frame. Delegates everything to MainPanel.
@@ -9,6 +10,7 @@ public class GUI extends JFrame {
     public GUI() {
         setTitle("Siu Thị 36");
         setSize(1440, 1024);
+        setMinimumSize(new Dimension(1000, 700));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 

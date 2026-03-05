@@ -17,7 +17,10 @@ class DonHangDetailCard extends JPanel {
     private DefaultTableModel chitietModel;
 
     /* ── footer buttons ── */
-    private JButton btnSua, btnLuu, btnXoa, btnInHoaDon;
+    private JButton btnSua, btnLuu, btnXoa, btnInHoaDon, btnHuyDon, btnThanhToan, btnXacNhan, btnHoanTac;
+    /* ── edit snapshot (for undo) ── */
+    private String origTenND, origSdt, origDiaChi, origTongTT, origTrangThai;
+    private JLabel lbNhanVien;
 
     DonHangDetailCard(DonHangPanel parent) {
         this.parent = parent;
@@ -37,12 +40,13 @@ class DonHangDetailCard extends JPanel {
         JLabel lblTitle = new JLabel("Xem chi tiết đơn hàng");
         lblTitle.setFont(new Font("Arial", Font.BOLD, 16));
         lblTitle.setForeground(new Color(0x999999));
-        JButton btnBack = new JButton("← Quay lại");
-        btnBack.setFont(new Font("Arial", Font.BOLD, 14));
-        btnBack.setBackground(new Color(0xFFFFFF));
-        btnBack.setForeground(new Color(0x666666));
+        JButton btnBack = new JButton("← Quay lại danh sách");
+        btnBack.setFont(new Font("Arial", Font.BOLD, 22));
+        btnBack.setBackground(new Color(0x9B8EA8));
+        btnBack.setForeground(Color.WHITE);
         btnBack.setFocusPainted(false);
-        btnBack.setPreferredSize(new Dimension(130, 36));
+        btnBack.setBorderPainted(false);
+        btnBack.setPreferredSize(new Dimension(300, 48));
         btnBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnBack.addActionListener(e -> parent.showCard(DonHangPanel.CARD_TABLE));
         header.add(lblTitle, BorderLayout.WEST);
@@ -79,7 +83,7 @@ class DonHangDetailCard extends JPanel {
         });
         cbTrangThai.setFont(valFont);
         cbTrangThai.setEnabled(false);
-        JLabel lbNhanVien = makeVal(valFont);
+        lbNhanVien = makeVal(valFont);
         lbNhanVien.setText("Nguyễn Thị Thẹo");
 
         addSection(body, g, 0, "Thông tin đơn hàng", secFont, secBg);
@@ -153,10 +157,13 @@ class DonHangDetailCard extends JPanel {
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 16));
         footer.setBackground(new Color(0xF4F4F4));
 
-        btnSua      = DonHangPanel.makeFootBtn("Sửa",        new Color(0x6677C8));
-        btnLuu      = DonHangPanel.makeFootBtn("Lưu",        new Color(0x4CAF50));
-        btnXoa      = DonHangPanel.makeFootBtn("Xóa",        new Color(0xE53935));
-        btnInHoaDon = DonHangPanel.makeFootBtn("In hoá đơn", new Color(0x8C9EFF));
+        btnSua       = DonHangPanel.makeFootBtn("Sửa",        new Color(0x6677C8));
+        btnLuu       = DonHangPanel.makeFootBtn("Lưu",        new Color(0x4CAF50));
+        btnXoa       = DonHangPanel.makeFootBtn("Xóa",        new Color(0xE53935));
+        btnInHoaDon  = DonHangPanel.makeFootBtn("In hoá đơn", new Color(0x8C9EFF));
+        btnHuyDon    = DonHangPanel.makeFootBtn("Hủy đơn",   new Color(0xB83434));
+        btnThanhToan = DonHangPanel.makeFootBtn("Thanh toán", new Color(0x2E7D32));
+        btnXacNhan   = DonHangPanel.makeFootBtn("Xác nhận",  new Color(0x1565C0));
 
         btnSua.addActionListener(e -> setDetailEditable(true));
         btnLuu.addActionListener(e -> saveDetailChanges());
@@ -165,11 +172,64 @@ class DonHangDetailCard extends JPanel {
             if (parent.currentRow < 0) return;
             parent.showInvoice(parent.currentRow);
         });
+        btnHuyDon.addActionListener(e -> {
+            if (parent.currentRow < 0) return;
+            int c = JOptionPane.showConfirmDialog(this,
+                    "Huỷ đơn " + parent.tableModel.getValueAt(parent.currentRow, 0) + "?",
+                    "Xác nhận", JOptionPane.YES_NO_OPTION);
+            if (c == JOptionPane.YES_OPTION) {
+                parent.tableModel.setValueAt("Đã hủy", parent.currentRow, 5);
+                JOptionPane.showMessageDialog(this, "Đơn hàng đã được huỷ.",
+                        "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                loadDetail(parent.currentRow);
+            }
+        });
+        btnThanhToan.addActionListener(e -> {
+            if (parent.currentRow < 0) return;
+            String maDon    = parent.tableModel.getValueAt(parent.currentRow, 0).toString();
+            String tongTien = parent.tableModel.getValueAt(parent.currentRow, 4).toString();
+            JOptionPane.showMessageDialog(this,
+                    "Xác nhận thanh toán đơn hàng " + maDon + "\nSố tiền: " + tongTien,
+                    "Thanh toán", JOptionPane.INFORMATION_MESSAGE);
+        });
 
+        btnXacNhan.addActionListener(e -> {
+            if (parent.currentRow < 0) return;
+            int c = JOptionPane.showConfirmDialog(this,
+                    "Xác nhận đơn hàng " + parent.tableModel.getValueAt(parent.currentRow, 0) + "?",
+                    "Xác nhận đơn hàng", JOptionPane.YES_NO_OPTION);
+            if (c != JOptionPane.YES_OPTION) return;
+            parent.tableModel.setValueAt("Đã xác nhận", parent.currentRow, 5);
+            JOptionPane.showMessageDialog(this, "Đã xác nhận đơn hàng.",
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            loadDetail(parent.currentRow);
+        });
+        btnHoanTac = DonHangPanel.makeFootBtn("Hoàn tác", new Color(0xFF7043));
+        btnHoanTac.addActionListener(e -> {
+            int c = JOptionPane.showConfirmDialog(this,
+                    "Bỏ các thay đổi và khôi phục dữ liệu gốc?",
+                    "Hoàn tác", JOptionPane.YES_NO_OPTION);
+            if (c == JOptionPane.YES_OPTION) {
+                cbTrangThai.setSelectedItem(origTrangThai);
+                tfTenND.setText(origTenND);
+                tfSdt.setText(origSdt);
+                tfDiaChi.setText(origDiaChi);
+                tfTongTT.setText(origTongTT);
+                setDetailEditable(false);
+            }
+        });
         btnLuu.setVisible(false);
+        btnHuyDon.setVisible(false);
+        btnThanhToan.setVisible(false);
+        btnXacNhan.setVisible(false);
+        btnHoanTac.setVisible(false);
+        footer.add(btnThanhToan);
+        footer.add(btnXacNhan);
         footer.add(btnSua);
         footer.add(btnLuu);
+        footer.add(btnHoanTac);
         footer.add(btnInHoaDon);
+        footer.add(btnHuyDon);
         footer.add(btnXoa);
         setDetailEditable(false);
         add(footer, BorderLayout.SOUTH);
@@ -184,6 +244,8 @@ class DonHangDetailCard extends JPanel {
         lbMaDon.setText(maDon);
         lbNgayDat.setText("05/03/2026 (22:28)");
         lbNgayGiao.setText("06/03/2026 (08:00)");
+        if (lbNhanVien != null)
+            lbNhanVien.setText(parent.nhanVienMap.getOrDefault(maDon, "Nguyễn Thị Thẹo"));
         cbTrangThai.setSelectedItem(trangThai);
         tfTenND.setText(nguoiMua);
         lbIdTK.setText("TK" + (100000 + modelRow));
@@ -201,17 +263,28 @@ class DonHangDetailCard extends JPanel {
         lbMaGiam.setText("10.000đ");
         tfTongTT.setText(tongTien);
         lbHinhThuc.setText("Thanh toán khi nhận hàng");
+        btnHuyDon.setVisible(trangThai.equals("Chờ xác nhận") || trangThai.equals("Đã xác nhận"));
+        btnThanhToan.setVisible(!trangThai.equals("Đã hủy"));
+        btnXacNhan.setVisible(trangThai.equals("Chờ xác nhận"));
         setDetailEditable(false);
     }
 
     void setDetailEditable(boolean editable) {
+        if (editable) {
+            origTrangThai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString() : "";
+            origTenND  = tfTenND.getText();
+            origSdt    = tfSdt.getText();
+            origDiaChi = tfDiaChi.getText();
+            origTongTT = tfTongTT.getText();
+        }
         if (cbTrangThai != null) cbTrangThai.setEnabled(editable);
         tfTenND.setEditable(editable);
         tfSdt.setEditable(editable);
         tfDiaChi.setEditable(editable);
         tfTongTT.setEditable(editable);
-        if (btnSua != null) btnSua.setVisible(!editable);
-        if (btnLuu != null) btnLuu.setVisible(editable);
+        if (btnSua    != null) btnSua.setVisible(!editable);
+        if (btnLuu    != null) btnLuu.setVisible(editable);
+        if (btnHoanTac != null) btnHoanTac.setVisible(editable);
     }
 
     private void saveDetailChanges() {
@@ -224,37 +297,38 @@ class DonHangDetailCard extends JPanel {
         String trangThai = cbTrangThai.getSelectedItem() != null
                 ? cbTrangThai.getSelectedItem().toString() : "";
 
+        java.util.List<String> errors = new java.util.ArrayList<>();
+        JComponent firstBad = null;
+
         if (ten.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Tên người đặt không được để trống.",
-                    "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
-            tfTenND.requestFocus(); return;
-        }
-        if (!ten.matches("[\\p{L} .'-]+")) {
-            JOptionPane.showMessageDialog(this,
-                    "Tên người đặt không hợp lệ (không chứa số hoặc ký tự đặc biệt).",
-                    "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
-            tfTenND.requestFocus(); return;
+            errors.add("• Tên người đặt không được để trống.");
+            firstBad = tfTenND;
+        } else if (!ten.matches("[\\p{L} .'-]+")) {
+            errors.add("• Tên người đặt không hợp lệ (không chứa số hoặc ký tự đặc biệt).");
+            firstBad = tfTenND;
         }
         if (!sdt.matches("0[0-9]{9}")) {
-            JOptionPane.showMessageDialog(this,
-                    "Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.",
-                    "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
-            tfSdt.requestFocus(); return;
+            errors.add("• Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.");
+            if (firstBad == null) firstBad = tfSdt;
         }
         if (diaChi.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Địa chỉ không được để trống.",
-                    "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
-            tfDiaChi.requestFocus(); return;
+            errors.add("• Địa chỉ không được để trống.");
+            if (firstBad == null) firstBad = tfDiaChi;
         }
         String soTien = tongTien.replaceAll("[đĐ.,\\s]", "");
         try {
             long amount = Long.parseLong(soTien);
             if (amount <= 0) throw new NumberFormatException();
         } catch (NumberFormatException ex) {
+            errors.add("• Tổng số tiền phải là số dương hợp lệ (ví dụ: 90.000đ hoặc 90000).");
+            if (firstBad == null) firstBad = tfTongTT;
+        }
+        if (!errors.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "Tổng số tiền phải là số dương hợp lệ (ví dụ: 90.000đ hoặc 90000).",
+                    String.join("\n", errors),
                     "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
-            tfTongTT.requestFocus(); return;
+            if (firstBad != null) firstBad.requestFocus();
+            return;
         }
 
         parent.tableModel.setValueAt(ten,      parent.currentRow, 1);

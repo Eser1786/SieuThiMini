@@ -122,6 +122,12 @@ class DonHangTableCard extends JPanel {
         bang.setIntercellSpacing(new Dimension(0, 1));
         bang.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         bang.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        int[] prefWidths = { 70, 120, 80, 90, 110, 130, 200 };
+        int[] minWidths  = { 55,  80, 60,  70,  85, 100,  80 };
+        for (int i = 0; i < prefWidths.length; i++) {
+            bang.getColumnModel().getColumn(i).setPreferredWidth(prefWidths[i]);
+            bang.getColumnModel().getColumn(i).setMinWidth(minWidths[i]);
+        }
 
         DefaultTableCellRenderer altR = new DefaultTableCellRenderer() {
             @Override
@@ -189,6 +195,7 @@ class DonHangTableCard extends JPanel {
 
         JScrollPane scroll = new JScrollPane(bang);
         scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         add(top, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
     }
@@ -196,50 +203,53 @@ class DonHangTableCard extends JPanel {
     private JPanel buildActionPanel(JTable table, int viewRow, boolean withAction) {
         int    modelRow  = table.convertRowIndexToModel(viewRow);
         String trangThai = parent.tableModel.getValueAt(modelRow, 5).toString();
+        Color  rowBg     = viewRow % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA);
 
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 7));
-        p.setBackground(viewRow % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
-        p.setOpaque(true);
+        // Inner panel holds the buttons with FlowLayout (wraps if needed)
+        JPanel inner = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 4));
+        inner.setOpaque(false);
 
-        JButton btnXem = UIUtils.makeActionButton("Xem", new Color(0x6677C8));
-        p.add(btnXem);
+        JButton btnXem = UIUtils.makeActionButton("Chi tiết", new Color(0x6677C8));
+        inner.add(btnXem);
 
-        switch (trangThai) {
-            case "Chờ xác nhận" -> {
-                JButton btnXN  = UIUtils.makeActionButton("Duyệt", new Color(0x6677C8));
-                JButton btnHuy = UIUtils.makeActionButton("Hủy",   new Color(0xB83434));
-                p.add(btnXN); p.add(btnHuy);
-                if (withAction) {
-                    btnXN.addActionListener(e  -> { stopEdit(table); xacNhanDon(table, modelRow); });
-                    btnHuy.addActionListener(e -> { stopEdit(table); huyDon(table, modelRow); });
-                }
-            }
-            case "Đã xác nhận" -> {
-                JButton btnIn  = UIUtils.makeActionButton("In",  new Color(0x6677C8));
-                JButton btnHuy = UIUtils.makeActionButton("Hủy", new Color(0xB83434));
-                p.add(btnIn); p.add(btnHuy);
-                if (withAction) {
-                    btnIn.addActionListener(e  -> { stopEdit(table); parent.showInvoice(modelRow); });
-                    btnHuy.addActionListener(e -> { stopEdit(table); huyDon(table, modelRow); });
-                }
-            }
-            case "Chờ vận chuyển", "Đang giao", "Đã giao" -> {
-                JButton btnTheo = UIUtils.makeActionButton("Theo dõi", new Color(0x00838F));
-                p.add(btnTheo);
-                if (withAction)
-                    btnTheo.addActionListener(e -> {
-                        stopEdit(table);
-                        JOptionPane.showMessageDialog(this,
-                                "Mã đơn: " + parent.tableModel.getValueAt(modelRow, 0) +
-                                "\nTrạng thái: " + trangThai,
-                                "Theo dõi đơn hàng", JOptionPane.INFORMATION_MESSAGE);
-                    });
+        if (trangThai.equals("Chờ xác nhận")) {
+            JButton btnXN = UIUtils.makeActionButton("Xác nhận", new Color(0x6677C8));
+            inner.add(btnXN);
+            if (withAction)
+                btnXN.addActionListener(e -> {
+                    stopEdit(table);
+                    String maDon = parent.tableModel.getValueAt(modelRow, 0).toString();
+                    int c = JOptionPane.showConfirmDialog(this,
+                            "Xác nhận đơn hàng " + maDon + "?",
+                            "Xác nhận", JOptionPane.YES_NO_OPTION);
+                    if (c == JOptionPane.YES_OPTION) xacNhanDon(table, modelRow);
+                });
+        }
+
+        if (!trangThai.equals("Đã hủy")) {
+            JButton btnTT = UIUtils.makeActionButton("Thanh toán", new Color(0x2E7D32));
+            inner.add(btnTT);
+            if (withAction) {
+                String maDon    = parent.tableModel.getValueAt(modelRow, 0).toString();
+                String tongTien = parent.tableModel.getValueAt(modelRow, 4).toString();
+                btnTT.addActionListener(e -> {
+                    stopEdit(table);
+                    JOptionPane.showMessageDialog(this,
+                            "Xác nhận thanh toán đơn hàng " + maDon + "\nSố tiền: " + tongTien,
+                            "Thanh toán", JOptionPane.INFORMATION_MESSAGE);
+                });
             }
         }
 
         if (withAction)
             btnXem.addActionListener(e -> { stopEdit(table); parent.showDetail(modelRow); });
-        return p;
+
+        // Outer panel centers inner both vertically and horizontally
+        JPanel outer = new JPanel(new GridBagLayout());
+        outer.setBackground(rowBg);
+        outer.setOpaque(true);
+        outer.add(inner); // GridBagLayout default: center
+        return outer;
     }
 
     private void stopEdit(JTable t) {

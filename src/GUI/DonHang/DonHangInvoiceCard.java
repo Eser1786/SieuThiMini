@@ -27,12 +27,13 @@ class DonHangInvoiceCard extends JPanel {
         JLabel ivTitle = new JLabel("In mã vận đơn");
         ivTitle.setFont(new Font("Arial", Font.BOLD, 16));
         ivTitle.setForeground(new Color(0x999999));
-        JButton btnBack = new JButton("← Quay lại");
-        btnBack.setFont(new Font("Arial", Font.BOLD, 14));
-        btnBack.setBackground(new Color(0xFFFFFF));
-        btnBack.setForeground(new Color(0x666666));
+        JButton btnBack = new JButton("← Quay lại danh sách");
+        btnBack.setFont(new Font("Arial", Font.BOLD, 22));
+        btnBack.setBackground(new Color(0x9B8EA8));
+        btnBack.setForeground(Color.WHITE);
         btnBack.setFocusPainted(false);
-        btnBack.setPreferredSize(new Dimension(130, 36));
+        btnBack.setBorderPainted(false);
+        btnBack.setPreferredSize(new Dimension(300, 48));
         btnBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnBack.addActionListener(e -> parent.showCard(DonHangPanel.CARD_DETAIL));
         ivHeader.add(ivTitle, BorderLayout.WEST);
