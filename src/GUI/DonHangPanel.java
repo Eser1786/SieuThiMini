@@ -879,17 +879,31 @@ public class DonHangPanel extends JPanel {
         header.add(btnBack, BorderLayout.EAST);
         card.add(header, BorderLayout.NORTH);
 
-        /* Body — GridBagLayout */
+        /* Body Wrapper — Căn giữa form */
+        JPanel wrapper = new JPanel(new GridBagLayout());
+        wrapper.setBackground(new Color(0xF0EFF8));
+
+        /* Body — Form dạng thẻ (Card) trắng */
         JPanel body = new JPanel(new GridBagLayout());
-        body.setBackground(new Color(0xF0EFF8));
-        body.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
+        body.setBackground(Color.WHITE);
+        body.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xDDDDDD), 1),
+                BorderFactory.createEmptyBorder(30, 50, 30, 50)));
+
         GridBagConstraints g = new GridBagConstraints();
         g.fill = GridBagConstraints.HORIZONTAL;
         g.insets = new Insets(8, 8, 8, 8);
 
+        // Khung giữ độ rộng 750px cho thẻ form
+        g.gridx = 0;
+        g.gridy = 0;
+        g.gridwidth = 2;
+        body.add(Box.createHorizontalStrut(750), g);
+        g.gridwidth = 1;
+
         Font lbFont = new Font("Arial", Font.BOLD, 15);
         Font secFont = new Font("Arial", Font.BOLD, 16);
-        Color secBg = new Color(0xD1C4E9);
+        Color secBg = new Color(0xF3F0FA); // Màu tím nhạt, hợp với nền trắng
 
         // Các trường nhập liệu
         JTextField tfTenND = UIUtils.makeField();
@@ -907,11 +921,11 @@ public class DonHangPanel extends JPanel {
         taNotes.setBorder(BorderFactory.createLineBorder(new Color(0xAAAAAA)));
 
         // ── Thông tin người đặt ──
-        addSec(body, g, 0, "Thông tin người đặt hàng", secFont, secBg);
-        addRow2(body, g, 1, "Tên người mua:", makeValEdit(tfTenND), lbFont);
-        addRow2(body, g, 2, "Số điện thoại:", makeValEdit(tfSdt), lbFont);
+        addSec(body, g, 1, "Thông tin người đặt hàng", secFont, secBg);
+        addRow2(body, g, 2, "Tên người mua:", makeValEdit(tfTenND), lbFont);
+        addRow2(body, g, 3, "Số điện thoại:", makeValEdit(tfSdt), lbFont);
         g.gridx = 0;
-        g.gridy = 3;
+        g.gridy = 4;
         g.weightx = 0.2;
         JLabel lbDC = new JLabel("Địa chỉ giao hàng:");
         lbDC.setFont(lbFont);
@@ -921,9 +935,9 @@ public class DonHangPanel extends JPanel {
         body.add(tfDiaChi, g);
 
         // ── Thông tin thanh toán ──
-        addSec(body, g, 4, "Thanh toán", secFont, secBg);
+        addSec(body, g, 5, "Thanh toán", secFont, secBg);
         g.gridx = 0;
-        g.gridy = 5;
+        g.gridy = 6;
         g.weightx = 0.2;
         JLabel lbHT = new JLabel("Hình thức thanh toán:");
         lbHT.setFont(lbFont);
@@ -933,16 +947,16 @@ public class DonHangPanel extends JPanel {
         body.add(cbHinhThuc, g);
 
         // ── Ghi chú ──
-        addSec(body, g, 6, "Ghi chú đơn hàng", secFont, secBg);
+        addSec(body, g, 7, "Ghi chú đơn hàng", secFont, secBg);
         g.gridx = 0;
-        g.gridy = 7;
+        g.gridy = 8;
         g.gridwidth = 2;
         g.weightx = 1.0;
         body.add(new JScrollPane(taNotes), g);
         g.gridwidth = 1;
 
-        // ── Sản phẩm (bảng mini thêm SP thủ công) ──
-        addSec(body, g, 8, "Sản phẩm (nhập thủ công)", secFont, secBg);
+        // ── Sản phẩm (nhập thủ công) ──
+        addSec(body, g, 9, "Sản phẩm (nhập thủ công)", secFont, secBg);
 
         String[] spCols = { "Tên sản phẩm", "Số lượng", "Đơn giá" };
         DefaultTableModel spModel = new DefaultTableModel(spCols, 0) {
@@ -964,7 +978,7 @@ public class DonHangPanel extends JPanel {
         spScroll.setPreferredSize(new Dimension(0, 130));
 
         g.gridx = 0;
-        g.gridy = 9;
+        g.gridy = 10;
         g.gridwidth = 2;
         g.weightx = 1.0;
         body.add(spScroll, g);
@@ -1004,20 +1018,30 @@ public class DonHangPanel extends JPanel {
         spBtnPanel.add(btnXoaSP);
 
         g.gridx = 0;
-        g.gridy = 10;
+        g.gridy = 11;
         g.gridwidth = 2;
         g.weightx = 1.0;
         body.add(spBtnPanel, g);
         g.gridwidth = 1;
 
-        // Padding cuối
+        // Padding cuối của thân form
         g.gridx = 0;
-        g.gridy = 11;
+        g.gridy = 12;
         g.gridwidth = 2;
         g.weighty = 1.0;
         body.add(Box.createVerticalGlue(), g);
 
-        JScrollPane bodyScroll = new JScrollPane(body);
+        // Bọc form (card) vào wrapper trung tâm
+        GridBagConstraints wgc = new GridBagConstraints();
+        wgc.gridx = 0;
+        wgc.gridy = 0;
+        wgc.anchor = GridBagConstraints.NORTH;
+        wgc.weightx = 1.0;
+        wgc.weighty = 1.0;
+        wgc.insets = new Insets(30, 0, 40, 0); // Lề trên/dưới
+        wrapper.add(body, wgc);
+
+        JScrollPane bodyScroll = new JScrollPane(wrapper);
         bodyScroll.setBorder(BorderFactory.createEmptyBorder());
         bodyScroll.getVerticalScrollBar().setUnitIncrement(16);
         card.add(bodyScroll, BorderLayout.CENTER);
