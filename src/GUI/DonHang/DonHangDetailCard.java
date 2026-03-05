@@ -13,7 +13,7 @@ class DonHangDetailCard extends JPanel {
     private JLabel lbMaDon, lbNgayDat, lbNgayGiao, lbIdTK;
     private JComboBox<String> cbTrangThai;
     private JTextField tfTenND, tfSdt, tfDiaChi, tfTongTT;
-    private JLabel lbTongCong, lbPhiVC, lbMaGiam, lbHinhThuc;
+    private JLabel lbTongCong, lbVAT, lbPhiVC, lbMaGiam, lbHinhThuc;
     private DefaultTableModel chitietModel;
 
     /* ── footer buttons ── */
@@ -64,7 +64,7 @@ class DonHangDetailCard extends JPanel {
                 BorderFactory.createLineBorder(new Color(0xDDDDDD)),
                 BorderFactory.createEmptyBorder(20, 40, 30, 40)));
         body.setMinimumSize(new Dimension(650, 0));
-        body.setPreferredSize(new Dimension(750, 850));
+        body.setPreferredSize(new Dimension(750, 940));
 
         GridBagConstraints g = new GridBagConstraints();
         g.fill = GridBagConstraints.HORIZONTAL;
@@ -117,9 +117,16 @@ class DonHangDetailCard extends JPanel {
         tblSP.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
         tblSP.setRowHeight(30);
         tblSP.setShowVerticalLines(false);
-        tblSP.setGridColor(Color.WHITE);
+        tblSP.setShowHorizontalLines(true);
+        tblSP.setGridColor(new Color(0xEEEEEE));
+        tblSP.getColumnModel().getColumn(0).setPreferredWidth(45);
+        tblSP.getColumnModel().getColumn(0).setMaxWidth(55);
+        tblSP.getColumnModel().getColumn(1).setPreferredWidth(260);
+        tblSP.getColumnModel().getColumn(2).setPreferredWidth(75);
+        tblSP.getColumnModel().getColumn(3).setPreferredWidth(115);
+        tblSP.getColumnModel().getColumn(4).setPreferredWidth(115);
         JScrollPane spScroll = new JScrollPane(tblSP);
-        spScroll.setPreferredSize(new Dimension(0, 160));
+        spScroll.setPreferredSize(new Dimension(0, 220));
         spScroll.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, Color.BLACK));
 
         g.gridx = 0; g.gridy = 12; g.gridwidth = 2; g.weightx = 1.0;
@@ -127,18 +134,20 @@ class DonHangDetailCard extends JPanel {
         g.gridwidth = 1;
 
         lbTongCong = makeVal(valFont);
+        lbVAT      = makeVal(valFont);
         lbPhiVC    = makeVal(valFont);
         lbMaGiam   = makeVal(valFont);
         tfTongTT   = UIUtils.makeField();
         lbHinhThuc = makeVal(valFont);
 
         addRow2(body, g, 13, "Tổng cộng (ước tính):",       lbTongCong, valFont);
-        addRow2(body, g, 14, "Phí vận chuyển:",              lbPhiVC,    valFont);
-        addRow2(body, g, 15, "Mã giảm giá:",                 lbMaGiam,   valFont);
-        addRow2(body, g, 16, "Tổng số tiền cần thanh toán:", tfTongTT,   valFont);
-        addRow2(body, g, 17, "Hình thức thanh toán:",        lbHinhThuc, valFont);
+        addRow2(body, g, 14, "VAT (10%):",                   lbVAT,      valFont);
+        addRow2(body, g, 15, "Phí vận chuyển:",              lbPhiVC,    valFont);
+        addRow2(body, g, 16, "Khuyến mãi:",                  lbMaGiam,   valFont);
+        addRow2(body, g, 17, "Tổng số tiền cần thanh toán:", tfTongTT,   valFont);
+        addRow2(body, g, 18, "Hình thức thanh toán:",        lbHinhThuc, valFont);
 
-        g.gridx = 0; g.gridy = 18; g.gridwidth = 2; g.weighty = 1.0;
+        g.gridx = 0; g.gridy = 19; g.gridwidth = 2; g.weighty = 1.0;
         body.add(Box.createVerticalGlue(), g);
 
         GridBagConstraints wgc = new GridBagConstraints();
@@ -256,7 +265,10 @@ class DonHangDetailCard extends JPanel {
             tfSdt.setText(od.phone);
             tfDiaChi.setText(od.diaChi);
             lbHinhThuc.setText(od.payMethod);
-            lbMaGiam.setText(od.maKM.isEmpty() ? "-" : od.maKM);
+            String discDisplay = od.maKM.isEmpty()
+                ? (od.discAmt > 0 ? "Giảm " + String.format("%,.0fđ", (double) od.discAmt) : "-")
+                : od.maKM + (od.discAmt > 0 ? " (giảm " + String.format("%,.0fđ", (double) od.discAmt) + ")" : "");
+            lbMaGiam.setText(discDisplay);
             lbIdTK.setText("-");
             chitietModel.setRowCount(0);
             long sub = 0; int stt = 1;
@@ -269,6 +281,7 @@ class DonHangDetailCard extends JPanel {
             }
             long tot = Math.max(0, sub - od.discAmt);
             lbTongCong.setText(String.format("%,.0fđ", (double) sub));
+            lbVAT.setText(String.format("%,.0fđ", (double) (tot * 10L / 110)));
             lbPhiVC.setText("Miễn phí");
             tfTongTT.setText(String.format("%,.0fđ", (double) tot));
         } else {
@@ -286,12 +299,10 @@ class DonHangDetailCard extends JPanel {
             chitietModel.addRow(new Object[]{ "2", "SP004 - Mì ý sốt kem",    1, "36.000đ", "36.000đ" });
             chitietModel.addRow(new Object[]{ "3", "SP005 - Pepsi không calo", 1, "10.000đ", "10.000đ" });
             lbTongCong.setText("96.000đ");
+            lbVAT.setText(String.format("%,.0fđ", (double) (Long.parseLong(tongTien.replaceAll("[^0-9]", "")) * 10L / 110)));
             lbPhiVC.setText("Miễn phí");
             tfTongTT.setText(tongTien);
         }
-        btnHuyDon.setVisible(trangThai.equals("Chờ xác nhận") || trangThai.equals("Đã xác nhận"));
-        btnThanhToan.setVisible(!trangThai.equals("Đã hủy"));
-        btnXacNhan.setVisible(trangThai.equals("Chờ xác nhận"));
         setDetailEditable(false);
     }
 
@@ -308,9 +319,21 @@ class DonHangDetailCard extends JPanel {
         tfSdt.setEditable(editable);
         tfDiaChi.setEditable(editable);
         tfTongTT.setEditable(editable);
-        if (btnSua    != null) btnSua.setVisible(!editable);
-        if (btnLuu    != null) btnLuu.setVisible(editable);
-        if (btnHoanTac != null) btnHoanTac.setVisible(editable);
+        if (btnSua      != null) btnSua.setVisible(!editable);
+        if (btnLuu      != null) btnLuu.setVisible(editable);
+        if (btnHoanTac  != null) btnHoanTac.setVisible(editable);
+        if (btnXoa      != null) btnXoa.setVisible(!editable);
+        if (btnInHoaDon != null) btnInHoaDon.setVisible(!editable);
+        if (editable) {
+            if (btnHuyDon    != null) btnHuyDon.setVisible(false);
+            if (btnThanhToan != null) btnThanhToan.setVisible(false);
+            if (btnXacNhan   != null) btnXacNhan.setVisible(false);
+        } else if (parent.currentRow >= 0) {
+            String tt = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString() : "";
+            if (btnHuyDon    != null) btnHuyDon.setVisible(tt.equals("Chờ xác nhận") || tt.equals("Đã xác nhận"));
+            if (btnThanhToan != null) btnThanhToan.setVisible(!tt.equals("Đã hủy"));
+            if (btnXacNhan   != null) btnXacNhan.setVisible(tt.equals("Chờ xác nhận"));
+        }
     }
 
     private void saveDetailChanges() {

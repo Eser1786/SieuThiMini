@@ -79,31 +79,55 @@ class DonHangInvoiceCard extends JPanel {
         receipt.setOpaque(false);
         receipt.setLayout(new BoxLayout(receipt, BoxLayout.Y_AXIS));
         receipt.setBorder(BorderFactory.createEmptyBorder(22, 30, 22, 30));
-        receipt.setPreferredSize(new Dimension(370, 570));
+        receipt.setPreferredSize(new Dimension(430, 660));
 
         receipt.add(rLine("TH36", new Font("Arial", Font.BOLD, 26)));
         receipt.add(Box.createVerticalStrut(4));
         receipt.add(dotLine());
         receipt.add(rLine("Hoá đơn giao hàng | Mã đơn: " + maDon, new Font("Arial", Font.PLAIN, 12)));
-        receipt.add(rLine("Quầy: TH36-01    NV: NGUYỄN THỊ THÉO",  new Font("Arial", Font.PLAIN, 12)));
-        receipt.add(rLine("05/03/2026  (22:28)", new Font("Arial", Font.PLAIN, 12)));
+        String nv = parent.nhanVienMap.getOrDefault(maDon, "NGUYỄN THỊ THÉO").toUpperCase();
+        receipt.add(rLine("Quầy: TH36-01    NV: " + nv, new Font("Arial", Font.PLAIN, 12)));
+        String timestamp = parent.timeMap.getOrDefault(maDon, "05/03/2026 (22:28)");
+        receipt.add(rLine(timestamp, new Font("Arial", Font.PLAIN, 12)));
         receipt.add(dotLine());
         receipt.add(gridRow(true, "Tên", "SL", "Đơn giá", "Thành tiền"));
 
-        String[][] items = {
-                { "1.Cơm nắm cá hồi mayo", "1", "16.000", "16.000" },
-                { "2.Mì ý sốt kem",        "1", "36.000", "36.000" },
-                { "3.Pepsi không calo",     "1", "10.000", "10.000" },
-                { "4.Kem si cu la",         "2", "18.000", "38.000" },
-        };
-        for (String[] it : items) receipt.add(gridRow(false, it));
+        DonHangPanel.OrderDetailData od = parent.orderDataMap.get(maDon);
+        long subTotal = 0;
+        if (od != null && !od.items.isEmpty()) {
+            int stt = 1;
+            for (DonHangPanel.OrderDetailData.Item it : od.items) {
+                long line = it.unitPrice * it.qty; subTotal += line;
+                receipt.add(gridRow(false,
+                    stt + "." + it.name,
+                    String.valueOf(it.qty),
+                    String.format("%,.0f", (double) it.unitPrice),
+                    String.format("%,.0f", (double) line)));
+                stt++;
+            }
+        } else {
+            String[][] fallback = {
+                { "1.Nước F trái K",  "2", "25.000", "50.000" },
+                { "2.Mì ý sốt kem",   "1", "36.000", "36.000" },
+                { "3.Pepsi kg calo",  "1", "10.000", "10.000" },
+            };
+            for (String[] s : fallback) {
+                subTotal += Long.parseLong(s[3].replaceAll("[^0-9]", ""));
+                receipt.add(gridRow(false, s));
+            }
+        }
         receipt.add(dotLine());
 
-        sumRow(receipt, "Tổng",                   "100.000");
-        sumRow(receipt, "Chiết khấu",             "10.000");
-        sumRow(receipt, "VAT(10%)",               "3.636");
-        sumRow(receipt, "Tổng tiền",              tongTT);
-        sumRow(receipt, "Tiền khách trả",         tongTT);
+        long disc = od != null ? od.discAmt : 0;
+        long tot  = od != null ? Math.max(0, subTotal - disc)
+                               : Long.parseLong(tongTT.replaceAll("[^0-9]", ""));
+        long vat  = tot * 10 / 110;
+
+        sumRow(receipt, "Tổng",                   String.format("%,.0f", (double) subTotal));
+        if (disc > 0) sumRow(receipt, "Chiết khấu", String.format("%,.0f", (double) disc));
+        sumRow(receipt, "VAT(10%)",               String.format("%,.0f", (double) vat));
+        sumRow(receipt, "Tổng tiền",              String.format("%,.0fđ", (double) tot));
+        sumRow(receipt, "Tiền khách trả",         String.format("%,.0fđ", (double) tot));
         sumRow(receipt, "Tiền trả lại cho khách", "0");
         receipt.add(dotLine());
 
@@ -151,23 +175,28 @@ class DonHangInvoiceCard extends JPanel {
     private JLabel rLine(String t, Font f) {
         JLabel l = new JLabel(t, SwingConstants.CENTER);
         l.setFont(f); l.setAlignmentX(Component.CENTER_ALIGNMENT);
-        l.setMaximumSize(new Dimension(400, 22)); return l;
+        l.setMaximumSize(new Dimension(480, 22)); return l;
     }
 
     private JLabel dotLine() {
         JLabel l = new JLabel("................................................................", SwingConstants.CENTER);
         l.setFont(new Font("Courier New", Font.PLAIN, 11));
         l.setAlignmentX(Component.CENTER_ALIGNMENT);
-        l.setMaximumSize(new Dimension(400, 18)); return l;
+        l.setMaximumSize(new Dimension(480, 18)); return l;
     }
 
     private JPanel gridRow(boolean bold, String... cells) {
-        JPanel row = new JPanel(new GridLayout(1, cells.length));
-        row.setOpaque(false); row.setMaximumSize(new Dimension(400, 24));
-        for (String c : cells) {
-            JLabel l = new JLabel(c, SwingConstants.CENTER);
+        JPanel row = new JPanel(new GridBagLayout());
+        row.setOpaque(false); row.setMaximumSize(new Dimension(480, 24));
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.gridy = 0; gc.fill = GridBagConstraints.HORIZONTAL;
+        int[] weights = { 50, 12, 19, 19 };
+        for (int i = 0; i < cells.length; i++) {
+            gc.gridx = i;
+            gc.weightx = i < weights.length ? weights[i] : 10;
+            JLabel l = new JLabel(cells[i], i == 0 ? SwingConstants.LEFT : SwingConstants.CENTER);
             l.setFont(new Font("Arial", bold ? Font.BOLD : Font.PLAIN, 12));
-            row.add(l);
+            row.add(l, gc);
         }
         return row;
     }

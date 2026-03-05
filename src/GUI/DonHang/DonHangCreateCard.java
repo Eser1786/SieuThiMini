@@ -581,7 +581,7 @@ class DonHangCreateCard extends JPanel {
             if (cf != JOptionPane.YES_OPTION) return;
 
             parent.tableModel.addRow(new Object[]{ maDon, ten, totalQty,
-                maKM.isEmpty() ? "-" : maKM,
+                discAmt > 0 ? "-" + String.format("%,.0fđ", (double) discAmt) : "-",
                 String.format("%,.0f", (double) tongCong) + "\u0111",
                 "Ch\u1edd x\u00e1c nh\u1eadn", "" });
             parent.nhanVienMap.put(maDon, nhanVien);

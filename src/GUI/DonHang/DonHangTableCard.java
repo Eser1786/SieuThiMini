@@ -9,12 +9,12 @@ import java.awt.*;
 class DonHangTableCard extends JPanel {
 
     private static final Object[][] SAMPLE_ORDERS = {
-            { "HD001", "Beheocon",    5, "KM001",  "90.000đ",  "Chờ xác nhận"   },
-            { "HD002", "Nguyễn Anh", 3, "-",      "150.000đ", "Đã xác nhận"    },
-            { "HD003", "Lê Hoàng",   7, "KM2025", "280.000đ", "Chờ vận chuyển" },
-            { "HD004", "Trần Bảo",   2, "KM005",  "45.000đ",  "Đang giao"      },
-            { "HD005", "Phạm Thu",   4, "-",      "200.000đ", "Đã giao"        },
-            { "HD006", "Võ Minh",    1, "-",      "36.000đ",  "Đã hủy"         },
+            { "HD001", "Beheocon",    5, "-10.000đ",  "90.000đ",  "Chờ xác nhận"   },
+            { "HD002", "Nguyễn Anh", 3, "-",           "150.000đ", "Đã xác nhận"    },
+            { "HD003", "Lê Hoàng",   7, "-25.000đ",  "280.000đ", "Chờ vận chuyển" },
+            { "HD004", "Trần Bảo",   2, "-5.000đ",   "45.000đ",  "Đang giao"      },
+            { "HD005", "Phạm Thu",   4, "-",           "200.000đ", "Đã giao"        },
+            { "HD006", "Võ Minh",    1, "-",           "36.000đ",  "Đã hủy"         },
     };
 
     private final DonHangPanel parent;
@@ -28,7 +28,7 @@ class DonHangTableCard extends JPanel {
 
     private void build() {
         /* ── Khởi tạo tableModel trên parent ── */
-        String[] cols = { "Mã đơn", "Người mua", "Số lượng SP", "Khuyến mãi",
+        String[] cols = { "Mã đơn", "Người mua", "Số lượng SP", "Giảm giá",
                 "Tổng số tiền", "Tình trạng", "Thao tác" };
         parent.tableModel = new DefaultTableModel(cols, 0) {
             @Override
