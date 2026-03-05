@@ -1,0 +1,24 @@
+# ── Compiled output ──────────────────────────────
+bin/
+out/
+*.class
+
+# ── Build tools ──────────────────────────────────
+*.jar
+!lib/*.jar
+
+# ── Eclipse project files ────────────────────────
+.classpath
+.project
+.settings/
+
+# ── VSCode ───────────────────────────────────────
+.vscode/
+
+# ── IntelliJ ─────────────────────────────────────
+.idea/
+*.iml
+
+# ── OS ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
