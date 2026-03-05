@@ -1,5 +1,13 @@
 package GUI;
 
+import GUI.DonHang.DonHangPanel;
+import GUI.KhachHang.KhachHangPanel;
+import GUI.Kho.KhoPanel;
+import GUI.KhuyenMai.KhuyenMaiPanel;
+import GUI.NhanVien.NhanVienPanel;
+import GUI.SanPham.SanPhamPanel;
+import GUI.TrangChu.TrangChuPanel;
+import GUI.User.UserPanel;
 import javax.swing.*;
 import java.awt.*;
 

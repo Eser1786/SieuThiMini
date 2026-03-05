@@ -134,14 +134,12 @@ public class ExportUtils {
         job.setPrintable(new TablePrintable(model, tieuDe), pf);
         job.setJobName(tieuDe);
 
-        // Tìm máy in Microsoft Print to PDF để in thẳng ra file
-        boolean foundPdfPrinter = false;
+        // Tìm máy in ảo PDF để gán mặc định (nếu có)
         try {
             javax.print.PrintService[] services = java.awt.print.PrinterJob.lookupPrintServices();
             for (javax.print.PrintService ps : services) {
                 if (ps.getName().contains("Print to PDF")) {
                     job.setPrintService(ps);
-                    foundPdfPrinter = true;
                     break;
                 }
             }
@@ -149,22 +147,15 @@ public class ExportUtils {
         }
 
         try {
-            if (foundPdfPrinter) {
-                // In ngầm thẳng ra tệp
-                javax.print.attribute.HashPrintRequestAttributeSet attributes = new javax.print.attribute.HashPrintRequestAttributeSet();
-                attributes.add(new javax.print.attribute.standard.Destination(file.toURI()));
-                job.print(attributes);
+            // Không ngầm ghi đè Destination vì Windows 10/11 thường chặn quyền truy cập.
+            // Bắt buộc phải mở dialog in cho người dùng thấy.
+            // Cửa sổ SaveAs sẽ xuất hiện ngay sau khi chọn in PDF (thông qua
+            // PrinterDialog).
+            if (job.printDialog()) {
+                job.print();
                 JOptionPane.showMessageDialog(parent,
-                        "Xuất file thành công!\n" + file.getAbsolutePath(),
+                        "In/Xuất PDF thành công!\n(File được lưu tại đường dẫn bạn vừa chọn)",
                         "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                // Nếu không có driver PDF, bung dialog (ít xảy ra trên Win10)
-                if (job.printDialog()) {
-                    job.print();
-                    JOptionPane.showMessageDialog(parent,
-                            "In/Xuất PDF thành công!",
-                            "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
-                }
             }
         } catch (PrinterException ex) {
             JOptionPane.showMessageDialog(parent,
