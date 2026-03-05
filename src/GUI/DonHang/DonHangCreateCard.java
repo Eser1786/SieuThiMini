@@ -1,7 +1,9 @@
 package GUI.DonHang;
 
+import BUS.CustomerBUS;
 import BUS.EmployeeBUS;
 import BUS.ProductBUS;
+import DTO.CustomerDTO;
 import DTO.EmployeeDTO;
 import DTO.ProductDTO;
 import javax.swing.*;
@@ -17,6 +19,7 @@ class DonHangCreateCard extends JPanel {
 
     private final DonHangPanel parent;
     private List<ProductDTO> allProducts = new ArrayList<>();
+    private List<CustomerDTO> allCustomers = new ArrayList<>();
 
     // --- ordered items (backing list) ---
     private final List<OrderItem> items = new ArrayList<>();
@@ -38,6 +41,10 @@ class DonHangCreateCard extends JPanel {
             if (loaded != null && !loaded.isEmpty()) allProducts = loaded;
             else allProducts = getMockProducts();
         } catch (Exception ignored) { allProducts = getMockProducts(); }
+        try {
+            java.util.ArrayList<CustomerDTO> loadedC = new CustomerBUS().getAllCustomers();
+            if (loadedC != null) allCustomers = loadedC;
+        } catch (Exception ignored) {}
         buildUI();
     }
 
@@ -257,7 +264,7 @@ class DonHangCreateCard extends JPanel {
         listBox.add(listScroll, BorderLayout.CENTER);
 
         /* ── Search + Browse row ── */
-        final String HINT = "Nh\u1eadp t\u00ean s\u1ea3n ph\u1ea9m, Enter \u0111\u1ec3 th\u00eam...";
+        final String HINT = "Mã vạch / tên sản phẩm, Enter để thêm...";
         JTextField tfSearch = cf();
         tfSearch.setText(HINT);
         tfSearch.setForeground(Color.GRAY);
@@ -272,17 +279,26 @@ class DonHangCreateCard extends JPanel {
         tfSearch.addActionListener(e -> {
             String q = tfSearch.getText().trim();
             if (q.isEmpty() || q.equals(HINT)) return;
+            // Ưu tiên: tìm exact code match (barcode style)
+            for (ProductDTO p : allProducts) {
+                if (p.getCode() != null && p.getCode().equalsIgnoreCase(q)) {
+                    addProductToOrder(p.getName() != null ? p.getName() : "(Không tên)",
+                        p.getSellingPrice() != null ? p.getSellingPrice().longValue() : 0L);
+                    tfSearch.setText(""); tfSearch.setForeground(Color.BLACK); return;
+                }
+            }
+            // Fallback: tìm theo tên hoặc mã chứa từ khóa
             String ql = q.toLowerCase();
             for (ProductDTO p : allProducts) {
                 String hay = (p.getName() == null ? "" : p.getName().toLowerCase()) + p.getCode().toLowerCase();
                 if (hay.contains(ql)) {
-                    addProductToOrder(p.getName() != null ? p.getName() : "(Kh\u00f4ng t\u00ean)",
+                    addProductToOrder(p.getName() != null ? p.getName() : "(Không tên)",
                         p.getSellingPrice() != null ? p.getSellingPrice().longValue() : 0L);
-                    tfSearch.setText("");
-                    tfSearch.setForeground(Color.BLACK);
-                    return;
+                    tfSearch.setText(""); tfSearch.setForeground(Color.BLACK); return;
                 }
             }
+            // Không tìm thấy
+            tfSearch.setForeground(new Color(0xCC0000));
         });
 
         JButton btnBrowse = new JButton("Duy\u1ec7t s\u1ea3n ph\u1ea9m");
@@ -387,10 +403,36 @@ class DonHangCreateCard extends JPanel {
         JTextField tfTenND  = cf();
         JTextField tfSdt    = cf();
         JTextField tfDiaChi = cf();
-        JPanel custCard = makeRightCard("Kh\u00e1ch h\u00e0ng");
-        addFieldToCard(custCard, "T\u00ean ng\u01b0\u1eddi mua:", tfTenND);
-        addFieldToCard(custCard, "S\u1ed1 \u0111i\u1ec7n tho\u1ea1i:", tfSdt);
-        addFieldToCard(custCard, "\u0110\u1ecba ch\u1ec9 giao h\u00e0ng:", tfDiaChi);
+
+        // Customer selection dropdown
+        JComboBox<String> cbKhachHang = new JComboBox<>();
+        cbKhachHang.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cbKhachHang.addItem("-- Nhập khách mới --");
+        for (CustomerDTO c : allCustomers) {
+            String label = (c.getCode() != null ? c.getCode() : "") + " - "
+                         + (c.getFullName() != null ? c.getFullName() : "")
+                         + (c.getPhone() != null ? " (" + c.getPhone() + ")" : "");
+            cbKhachHang.addItem(label);
+        }
+        cbKhachHang.addActionListener(e -> {
+            int idx = cbKhachHang.getSelectedIndex();
+            if (idx <= 0 || idx - 1 >= allCustomers.size()) {
+                // manual entry mode
+                tfTenND.setEditable(true); tfSdt.setEditable(true); tfDiaChi.setEditable(true);
+                return;
+            }
+            CustomerDTO sel = allCustomers.get(idx - 1);
+            tfTenND.setText(sel.getFullName() != null ? sel.getFullName() : "");
+            tfSdt.setText(sel.getPhone() != null ? sel.getPhone() : "");
+            tfDiaChi.setText(sel.getAddress() != null ? sel.getAddress() : "");
+            tfTenND.setEditable(false); tfSdt.setEditable(false); tfDiaChi.setEditable(false);
+        });
+
+        JPanel custCard = makeRightCard("Khách hàng");
+        addFieldToCard(custCard, "Chọn khách:", cbKhachHang);
+        addFieldToCard(custCard, "Tên người mua:", tfTenND);
+        addFieldToCard(custCard, "Số điện thoại:", tfSdt);
+        addFieldToCard(custCard, "Địa chỉ giao hàng:", tfDiaChi);
 
         JComboBox<String> cbNhanVien = new JComboBox<>();
         cbNhanVien.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -405,10 +447,16 @@ class DonHangCreateCard extends JPanel {
         addFieldToCard(empCard, "Nh\u00e2n vi\u00ean:", cbNhanVien);
 
         JComboBox<String> cbHinhThuc = new JComboBox<>(new String[]{
-            "Thanh to\u00e1n khi nh\u1eadn h\u00e0ng", "Chuy\u1ec3n kho\u1ea3n", "Th\u1ebb t\u00edn d\u1ee5ng" });
+            "Thanh toán khi nhận hàng", "Chuyển khoản", "Thẻ tín dụng" });
         cbHinhThuc.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        JPanel payCard = makeRightCard("H\u00ecnh th\u1ee9c thanh to\u00e1n");
-        addFieldToCard(payCard, "Ph\u01b0\u01a1ng th\u1ee9c:", cbHinhThuc);
+
+        JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{
+            "Chờ xác nhận", "Đã xác nhận", "Chờ vận chuyển" });
+        cbTrangThai.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        JPanel payCard = makeRightCard("Thanh toán & Trạng thái");
+        addFieldToCard(payCard, "Phương thức:", cbHinhThuc);
+        addFieldToCard(payCard, "Trạng thái đơn:", cbTrangThai);
 
         JPanel rightCol = new JPanel(new GridBagLayout());
         rightCol.setBackground(pageBg);
@@ -502,15 +550,18 @@ class DonHangCreateCard extends JPanel {
             parent.tableModel.addRow(new Object[]{ maDon, ten, totalQty,
                 maKM.isEmpty() ? "-" : maKM,
                 String.format("%,.0f", (double) tongCong) + "\u0111",
-                "Ch\u1edd x\u00e1c nh\u1eadn", "" });
+                cbTrangThai.getSelectedItem().toString(), "" });
             parent.nhanVienMap.put(maDon, nhanVien);
             JOptionPane.showMessageDialog(this,
-                "\u0110\u00e3 t\u1ea1o \u0111\u01a1n h\u00e0ng " + maDon + " th\u00e0nh c\u00f4ng!",
-                "Th\u00e0nh c\u00f4ng", JOptionPane.INFORMATION_MESSAGE);
+                "Đã tạo đơn hàng " + maDon + " thành công!",
+                "Thành công", JOptionPane.INFORMATION_MESSAGE);
             // reset
+            cbKhachHang.setSelectedIndex(0);
+            tfTenND.setEditable(true); tfSdt.setEditable(true); tfDiaChi.setEditable(true);
             tfTenND.setText(""); tfSdt.setText(""); tfDiaChi.setText("");
             taNotes.setText(""); tfMaKM.setText("");
             cbNhanVien.setSelectedIndex(0);
+            cbTrangThai.setSelectedIndex(0);
             items.clear(); discAmt = 0; rebuildList(); updateTotals(); lbDiscStatus.setText("");
             parent.showCard(DonHangPanel.CARD_TABLE);
         });
