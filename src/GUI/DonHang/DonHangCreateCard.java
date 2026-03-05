@@ -482,6 +482,23 @@ class DonHangCreateCard extends JPanel {
             String maDon    = "HD" + String.format("%03d", parent.tableModel.getRowCount() + 1);
             String nhanVien = cbNhanVien.getSelectedItem().toString();
             String maKM     = tfMaKM.getText().trim();
+
+            // Build confirmation message
+            StringBuilder sb = new StringBuilder();
+            sb.append("\u2764 X\u00e1c nh\u1eadn t\u1ea1o \u0111\u01a1n h\u00e0ng?\n\n");
+            sb.append(String.format("M\u00e3 \u0111\u01a1n:       %s\n", maDon));
+            sb.append(String.format("Kh\u00e1ch h\u00e0ng:  %s\n", ten));
+            sb.append(String.format("SĐT:         %s\n", sdt));
+            sb.append(String.format("\u0110\u1ecba ch\u1ec9:     %s\n", diaChi));
+            sb.append(String.format("Nh\u00e2n vi\u00ean:   %s\n", nhanVien));
+            sb.append(String.format("S\u1ed1 SP:       %d s\u1ea3n ph\u1ea9m (%d m\u00f3n)\n", items.size(), totalQty));
+            if (!maKM.isEmpty()) sb.append(String.format("Khuy\u1ebfn m\u00e3i:  %s\n", maKM));
+            sb.append(String.format("\nT\u1ed5ng c\u1ed9ng:   %,.0f\u0111", (double) tongCong));
+
+            int confirm = JOptionPane.showConfirmDialog(this, sb.toString(),
+                "X\u00e1c nh\u1eadn \u0111\u01a1n h\u00e0ng", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (confirm != JOptionPane.YES_OPTION) return;
+
             parent.tableModel.addRow(new Object[]{ maDon, ten, totalQty,
                 maKM.isEmpty() ? "-" : maKM,
                 String.format("%,.0f", (double) tongCong) + "\u0111",
