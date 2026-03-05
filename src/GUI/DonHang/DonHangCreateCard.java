@@ -9,6 +9,7 @@ import DTO.ProductDTO;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
@@ -21,14 +22,15 @@ class DonHangCreateCard extends JPanel {
     private List<ProductDTO> allProducts = new ArrayList<>();
     private List<CustomerDTO> allCustomers = new ArrayList<>();
 
-    // --- ordered items (backing list) ---
+    // ordered items + filter
     private final List<OrderItem> items = new ArrayList<>();
+    private String itemFilter = "";
 
-    // --- live list UI ---
+    // live list UI
     private JPanel listPanel;
     private JScrollPane listScroll;
 
-    // --- totals ---
+    // totals
     private JLabel lbSubVal;
     private JLabel lbTotVal;
     private long discAmt = 0L;
@@ -48,7 +50,7 @@ class DonHangCreateCard extends JPanel {
         buildUI();
     }
 
-    // ── mock data ───────────────────────────────────────────────────────────
+    // ── mock data ────────────────────────────────────────────────────────────
     private List<ProductDTO> getMockProducts() {
         List<ProductDTO> list = new ArrayList<>();
         String[][] data = {
@@ -70,8 +72,7 @@ class DonHangCreateCard extends JPanel {
         return list;
     }
 
-    // ── helpers ─────────────────────────────────────────────────────────────
-    /** Compact styled JTextField */
+    // ── helpers ──────────────────────────────────────────────────────────────
     private static JTextField cf() {
         JTextField tf = new JTextField();
         tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -81,7 +82,6 @@ class DonHangCreateCard extends JPanel {
         return tf;
     }
 
-    /** Recalculate Tam tinh + Tong cong labels */
     private void updateTotals() {
         long sub = 0;
         for (OrderItem it : items) sub += it.unitPrice * it.qty;
@@ -90,78 +90,102 @@ class DonHangCreateCard extends JPanel {
         lbTotVal.setText(String.format("%,.0f\u0111", (double) tot));
     }
 
-    /** Rebuild the item list panel from scratch */
+    /** Rebuild list, honouring itemFilter */
     private void rebuildList() {
         listPanel.removeAll();
         GridBagConstraints g = new GridBagConstraints();
         g.gridx = 0; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
-        g.insets = new Insets(0, 0, 1, 0);   // 1-px separator gap
+        g.insets = new Insets(0, 0, 1, 0);
+        String fl = itemFilter.trim().toLowerCase();
+        int vis = 0;
         for (int i = 0; i < items.size(); i++) {
-            final int idx = i;
             OrderItem it = items.get(i);
-            listPanel.add(buildItemRow(it, idx), g);
-            g.gridy = i;
+            boolean match = fl.isEmpty()
+                || it.name.toLowerCase().contains(fl)
+                || it.code.toLowerCase().contains(fl);
+            if (!match) continue;
+            g.gridy = vis;
+            listPanel.add(buildItemRow(it, i, vis), g);
+            vis++;
         }
-        // filler to push rows to the top
         GridBagConstraints filler = new GridBagConstraints();
-        filler.gridx = 0; filler.gridy = items.size();
+        filler.gridx = 0; filler.gridy = vis;
         filler.weightx = 1.0; filler.weighty = 1.0;
         filler.fill = GridBagConstraints.BOTH;
         listPanel.add(new JLabel(), filler);
-
         listPanel.revalidate();
         listPanel.repaint();
     }
 
-    /** Build one-item row panel */
-    private JPanel buildItemRow(OrderItem it, int idx) {
+    /** Each item row: Ma SP | Ten | Don gia | Spinner | Thanh tien | X */
+    private JPanel buildItemRow(OrderItem it, int idx, int vis) {
         JPanel row = new JPanel(new GridBagLayout());
-        row.setBackground(idx % 2 == 0 ? Color.WHITE : new Color(0xF7F5FF));
+        row.setBackground(vis % 2 == 0 ? Color.WHITE : new Color(0xF7F5FF));
         row.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
-
         GridBagConstraints g = new GridBagConstraints();
         g.gridy = 0; g.anchor = GridBagConstraints.WEST; g.insets = new Insets(0, 0, 0, 8);
 
-        // name label (expand)
+        // col 0: Ma SP (fixed 70px)
+        JLabel lbCode = new JLabel(it.code);
+        lbCode.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lbCode.setForeground(new Color(0x666666));
+        lbCode.setPreferredSize(new Dimension(70, 24));
+        g.gridx = 0; g.weightx = 0; g.fill = GridBagConstraints.NONE;
+        row.add(lbCode, g);
+
+        // col 1: Ten (expand)
         JLabel lbName = new JLabel(it.name);
         lbName.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        g.gridx = 0; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
+        g.gridx = 1; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
         row.add(lbName, g);
 
-        // unit price
+        // col 2: Don gia (right 90px)
         JLabel lbPrice = new JLabel(String.format("%,.0f\u0111", (double) it.unitPrice));
         lbPrice.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lbPrice.setForeground(new Color(0x555555));
         lbPrice.setPreferredSize(new Dimension(90, 24));
         lbPrice.setHorizontalAlignment(SwingConstants.RIGHT);
-        g.gridx = 1; g.weightx = 0; g.fill = GridBagConstraints.NONE;
+        g.gridx = 2; g.weightx = 0; g.fill = GridBagConstraints.NONE;
         row.add(lbPrice, g);
 
-        // subtotal label (updates when spinner changes)
+        // col 4: Thanh tien -- declared before spinner so changeListener can reference
         JLabel lbSub = new JLabel(String.format("%,.0f\u0111", (double)(it.unitPrice * it.qty)));
         lbSub.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lbSub.setForeground(new Color(0x5B4FCC));
         lbSub.setPreferredSize(new Dimension(100, 24));
         lbSub.setHorizontalAlignment(SwingConstants.RIGHT);
 
-        // qty spinner (validation: min 1, max 9999, integer only)
+        // col 3: Spinner + DocumentFilter (digits only, min 1)
         SpinnerNumberModel mdl = new SpinnerNumberModel(it.qty, 1, 9999, 1);
         JSpinner spinner = new JSpinner(mdl);
         spinner.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         spinner.setPreferredSize(new Dimension(64, 30));
-        ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField().setHorizontalAlignment(JTextField.CENTER);
+        JFormattedTextField spinTF = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
+        spinTF.setHorizontalAlignment(JTextField.CENTER);
+        ((AbstractDocument) spinTF.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int off, String s, AttributeSet a)
+                    throws BadLocationException {
+                if (s != null && s.matches("\\d+")) super.insertString(fb, off, s, a);
+            }
+            @Override
+            public void replace(FilterBypass fb, int off, int len, String s, AttributeSet a)
+                    throws BadLocationException {
+                if (s != null && s.matches("\\d*")) super.replace(fb, off, len, s, a);
+            }
+        });
         spinner.addChangeListener(ev -> {
             it.qty = (Integer) spinner.getValue();
             lbSub.setText(String.format("%,.0f\u0111", (double)(it.unitPrice * it.qty)));
             updateTotals();
         });
-        g.gridx = 2; g.insets = new Insets(0, 0, 0, 8);
+        g.gridx = 3; g.insets = new Insets(0, 0, 0, 8);
         row.add(spinner, g);
 
-        g.gridx = 3; g.insets = new Insets(0, 0, 0, 8);
+        g.gridx = 4; g.insets = new Insets(0, 0, 0, 8);
         row.add(lbSub, g);
 
-        // X button
+        // col 5: X button with confirm popup
         JButton btnX = new JButton("X");
         btnX.setFont(new Font("Segoe UI", Font.BOLD, 11));
         btnX.setBackground(new Color(0xE53935)); btnX.setForeground(Color.WHITE);
@@ -169,32 +193,38 @@ class DonHangCreateCard extends JPanel {
         btnX.setPreferredSize(new Dimension(34, 30));
         btnX.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnX.addActionListener(e -> {
+            int cf = JOptionPane.showConfirmDialog(
+                DonHangCreateCard.this,
+                "B\u1ea1n c\u00f3 ch\u1eafc mu\u1ed1n x\u00f3a \u201c" + it.name + "\u201d kh\u1ecfi \u0111\u01a1n?",
+                "X\u00e1c nh\u1eadn x\u00f3a",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (cf != JOptionPane.YES_OPTION) return;
             items.remove(idx);
             rebuildList();
             updateTotals();
         });
-        g.gridx = 4; g.insets = new Insets(0, 0, 0, 0);
+        g.gridx = 5; g.insets = new Insets(0, 0, 0, 0);
         row.add(btnX, g);
 
         return row;
     }
 
-    /** Add or increment a product in the items list */
-    private void addProductToOrder(String name, long unitPrice) {
+    /** Add or increment a product by code */
+    private void addProductToOrder(String code, String name, long unitPrice) {
         for (OrderItem it : items) {
-            if (it.name.equals(name)) {
+            if (it.code.equals(code)) {
                 if (it.qty < 9999) it.qty++;
                 rebuildList();
                 updateTotals();
                 return;
             }
         }
-        items.add(new OrderItem(name, unitPrice, 1));
+        items.add(new OrderItem(code, name, unitPrice, 1));
         rebuildList();
         updateTotals();
     }
 
-    // ── main build ──────────────────────────────────────────────────────────
+    // ── main build ───────────────────────────────────────────────────────────
     private void buildUI() {
         Color pageBg = new Color(0xF0EFF8);
         setBackground(pageBg);
@@ -219,39 +249,39 @@ class DonHangCreateCard extends JPanel {
         header.add(btnBack, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
 
-        /* ── totals labels (created early so rebuildList can use) ── */
+        /* ── Totals labels (early so rebuildList can reference) ── */
         lbSubVal = new JLabel("0\u0111");
         lbTotVal = new JLabel("0\u0111");
         lbSubVal.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lbTotVal.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lbTotVal.setForeground(new Color(0x5B4FCC));
 
-        /* ── Item list panel + scroll ── */
+        /* ── List header: Ma SP | Ten SP | Don gia | So luong | Thanh tien | "" ── */
         listPanel = new JPanel(new GridBagLayout());
         listPanel.setBackground(Color.WHITE);
-        // header row
+
         JPanel listHeader = new JPanel(new GridBagLayout());
         listHeader.setBackground(new Color(0xD1C4E9));
         listHeader.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
         GridBagConstraints lhg = new GridBagConstraints();
         lhg.gridy = 0; lhg.anchor = GridBagConstraints.WEST; lhg.insets = new Insets(0, 0, 0, 8);
-        String[] hdrTxt = { "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1", "S\u1ed1 l\u01b0\u1ee3ng", "Th\u00e0nh ti\u1ec1n", "" };
-        int[]    hdrW   = { 0, 90, 64, 100, 34 };
-        double[] hdrWx  = { 1.0, 0, 0, 0, 0 };
+        String[] hdrTxt = { "M\u00e3 SP", "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1",
+                            "S\u1ed1 l\u01b0\u1ee3ng", "Th\u00e0nh ti\u1ec1n", "" };
+        int[]    hdrW   = { 70, 0, 90, 64, 100, 34 };
+        double[] hdrWx  = { 0, 1.0, 0, 0, 0, 0 };
         for (int i = 0; i < hdrTxt.length; i++) {
             JLabel h = new JLabel(hdrTxt[i]);
             h.setFont(new Font("Segoe UI", Font.BOLD, 13));
             h.setForeground(new Color(0x333333));
             if (hdrW[i] > 0) h.setPreferredSize(new Dimension(hdrW[i], 20));
-            if (i == 1 || i == 3) h.setHorizontalAlignment(SwingConstants.RIGHT);
-            if (i == 2) h.setHorizontalAlignment(SwingConstants.CENTER);
+            if (i == 2 || i == 4) h.setHorizontalAlignment(SwingConstants.RIGHT);
+            if (i == 3) h.setHorizontalAlignment(SwingConstants.CENTER);
             lhg.gridx = i; lhg.weightx = hdrWx[i];
-            lhg.fill = (i == 0 ? GridBagConstraints.HORIZONTAL : GridBagConstraints.NONE);
+            lhg.fill = (i == 1 ? GridBagConstraints.HORIZONTAL : GridBagConstraints.NONE);
             listHeader.add(h, lhg);
         }
 
-        // list scroll — min height = 4 rows (each ~52px) + header
-        rebuildList();   // start empty
+        rebuildList();
         listScroll = new JScrollPane(listPanel);
         listScroll.setBorder(BorderFactory.createLineBorder(new Color(0xDDDDDD)));
         listScroll.setPreferredSize(new Dimension(0, 4 * 52));
@@ -263,8 +293,8 @@ class DonHangCreateCard extends JPanel {
         listBox.add(listHeader, BorderLayout.NORTH);
         listBox.add(listScroll, BorderLayout.CENTER);
 
-        /* ── Search + Browse row ── */
-        final String HINT = "Mã vạch / tên sản phẩm, Enter để thêm...";
+        /* ── Search (filter existing items) + Browse button ── */
+        final String HINT = "T\u00ecm ki\u1ebfm s\u1ea3n ph\u1ea9m \u0111\u00e3 th\u00eam v\u00e0o \u0111\u01a1n...";
         JTextField tfSearch = cf();
         tfSearch.setText(HINT);
         tfSearch.setForeground(Color.GRAY);
@@ -276,29 +306,15 @@ class DonHangCreateCard extends JPanel {
                 if (tfSearch.getText().trim().isEmpty()) { tfSearch.setText(HINT); tfSearch.setForeground(Color.GRAY); }
             }
         });
-        tfSearch.addActionListener(e -> {
-            String q = tfSearch.getText().trim();
-            if (q.isEmpty() || q.equals(HINT)) return;
-            // Ưu tiên: tìm exact code match (barcode style)
-            for (ProductDTO p : allProducts) {
-                if (p.getCode() != null && p.getCode().equalsIgnoreCase(q)) {
-                    addProductToOrder(p.getName() != null ? p.getName() : "(Không tên)",
-                        p.getSellingPrice() != null ? p.getSellingPrice().longValue() : 0L);
-                    tfSearch.setText(""); tfSearch.setForeground(Color.BLACK); return;
-                }
+        tfSearch.getDocument().addDocumentListener(new DocumentListener() {
+            void upd() {
+                String t = tfSearch.getText();
+                itemFilter = t.equals(HINT) ? "" : t;
+                rebuildList();
             }
-            // Fallback: tìm theo tên hoặc mã chứa từ khóa
-            String ql = q.toLowerCase();
-            for (ProductDTO p : allProducts) {
-                String hay = (p.getName() == null ? "" : p.getName().toLowerCase()) + p.getCode().toLowerCase();
-                if (hay.contains(ql)) {
-                    addProductToOrder(p.getName() != null ? p.getName() : "(Không tên)",
-                        p.getSellingPrice() != null ? p.getSellingPrice().longValue() : 0L);
-                    tfSearch.setText(""); tfSearch.setForeground(Color.BLACK); return;
-                }
-            }
-            // Không tìm thấy
-            tfSearch.setForeground(new Color(0xCC0000));
+            @Override public void insertUpdate(DocumentEvent e) { upd(); }
+            @Override public void removeUpdate(DocumentEvent e) { upd(); }
+            @Override public void changedUpdate(DocumentEvent e) { upd(); }
         });
 
         JButton btnBrowse = new JButton("Duy\u1ec7t s\u1ea3n ph\u1ea9m");
@@ -350,7 +366,7 @@ class DonHangCreateCard extends JPanel {
         lbKMlbl.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         discRow.add(lbKMlbl); discRow.add(tfMaKM); discRow.add(btnApply); discRow.add(lbDiscStatus);
 
-        /* ── Summary ── */
+        /* ── Summary rows ── */
         JPanel subRow = new JPanel(new BorderLayout());
         subRow.setBackground(Color.WHITE);
         subRow.setBorder(BorderFactory.createEmptyBorder(4, 0, 2, 0));
@@ -379,20 +395,19 @@ class DonHangCreateCard extends JPanel {
         JLabel leftTitle = new JLabel("Chi ti\u1ebft \u0111\u01a1n h\u00e0ng");
         leftTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         leftTitle.setForeground(new Color(0x222222));
-        lc.gridy = 0; lc.insets = new Insets(0, 0, 10, 0); leftContent.add(leftTitle, lc);
-        lc.gridy = 1; lc.insets = new Insets(0, 0, 10, 0); leftContent.add(new JSeparator(), lc);
-        lc.gridy = 2; lc.insets = new Insets(0, 0, 8, 0);  leftContent.add(searchRow, lc);
-        lc.gridy = 3; lc.insets = new Insets(0, 0, 10, 0); leftContent.add(listBox, lc);
-
+        lc.gridy = 0; lc.insets = new Insets(0,0,10,0); leftContent.add(leftTitle, lc);
+        lc.gridy = 1; lc.insets = new Insets(0,0,10,0); leftContent.add(new JSeparator(), lc);
+        lc.gridy = 2; lc.insets = new Insets(0,0,8,0);  leftContent.add(searchRow, lc);
+        lc.gridy = 3; lc.insets = new Insets(0,0,10,0); leftContent.add(listBox, lc);
         JLabel lbNotesLbl = new JLabel("Ghi ch\u00fa \u0111\u01a1n h\u00e0ng:");
         lbNotesLbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lbNotesLbl.setForeground(new Color(0x444444));
-        lc.gridy = 4; lc.insets = new Insets(14, 0, 4, 0);  leftContent.add(lbNotesLbl, lc);
-        lc.gridy = 5; lc.insets = new Insets(0, 0, 10, 0);   leftContent.add(notesScroll, lc);
-        lc.gridy = 6; lc.insets = new Insets(0, 0, 10, 0);   leftContent.add(new JSeparator(), lc);
-        lc.gridy = 7; lc.insets = new Insets(0, 0, 6, 0);    leftContent.add(discRow, lc);
-        lc.gridy = 8; lc.insets = new Insets(4, 0, 4, 0);    leftContent.add(subRow, lc);
-        lc.gridy = 9; lc.insets = new Insets(0, 0, 0, 0);    leftContent.add(totRow, lc);
+        lc.gridy = 4; lc.insets = new Insets(14,0,4,0); leftContent.add(lbNotesLbl, lc);
+        lc.gridy = 5; lc.insets = new Insets(0,0,10,0); leftContent.add(notesScroll, lc);
+        lc.gridy = 6; lc.insets = new Insets(0,0,10,0); leftContent.add(new JSeparator(), lc);
+        lc.gridy = 7; lc.insets = new Insets(0,0,6,0);  leftContent.add(discRow, lc);
+        lc.gridy = 8; lc.insets = new Insets(4,0,4,0);  leftContent.add(subRow, lc);
+        lc.gridy = 9; lc.insets = new Insets(0,0,0,0);  leftContent.add(totRow, lc);
 
         JPanel leftCard = new JPanel(new BorderLayout());
         leftCard.setBackground(Color.WHITE);
@@ -404,10 +419,10 @@ class DonHangCreateCard extends JPanel {
         JTextField tfSdt    = cf();
         JTextField tfDiaChi = cf();
 
-        // Customer selection dropdown
+        // Customer dropdown (auto-fill)
         JComboBox<String> cbKhachHang = new JComboBox<>();
         cbKhachHang.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cbKhachHang.addItem("-- Nhập khách mới --");
+        cbKhachHang.addItem("-- Nh\u1eadp kh\u00e1ch m\u1edbi --");
         for (CustomerDTO c : allCustomers) {
             String label = (c.getCode() != null ? c.getCode() : "") + " - "
                          + (c.getFullName() != null ? c.getFullName() : "")
@@ -417,7 +432,6 @@ class DonHangCreateCard extends JPanel {
         cbKhachHang.addActionListener(e -> {
             int idx = cbKhachHang.getSelectedIndex();
             if (idx <= 0 || idx - 1 >= allCustomers.size()) {
-                // manual entry mode
                 tfTenND.setEditable(true); tfSdt.setEditable(true); tfDiaChi.setEditable(true);
                 return;
             }
@@ -428,11 +442,11 @@ class DonHangCreateCard extends JPanel {
             tfTenND.setEditable(false); tfSdt.setEditable(false); tfDiaChi.setEditable(false);
         });
 
-        JPanel custCard = makeRightCard("Khách hàng");
-        addFieldToCard(custCard, "Chọn khách:", cbKhachHang);
-        addFieldToCard(custCard, "Tên người mua:", tfTenND);
-        addFieldToCard(custCard, "Số điện thoại:", tfSdt);
-        addFieldToCard(custCard, "Địa chỉ giao hàng:", tfDiaChi);
+        JPanel custCard = makeRightCard("Kh\u00e1ch h\u00e0ng");
+        addFieldToCard(custCard, "Ch\u1ecdn kh\u00e1ch:", cbKhachHang);
+        addFieldToCard(custCard, "T\u00ean ng\u01b0\u1eddi mua:", tfTenND);
+        addFieldToCard(custCard, "S\u1ed1 \u0111i\u1ec7n tho\u1ea1i:", tfSdt);
+        addFieldToCard(custCard, "\u0110\u1ecba ch\u1ec9 giao h\u00e0ng:", tfDiaChi);
 
         JComboBox<String> cbNhanVien = new JComboBox<>();
         cbNhanVien.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -447,25 +461,23 @@ class DonHangCreateCard extends JPanel {
         addFieldToCard(empCard, "Nh\u00e2n vi\u00ean:", cbNhanVien);
 
         JComboBox<String> cbHinhThuc = new JComboBox<>(new String[]{
-            "Thanh toán khi nhận hàng", "Chuyển khoản", "Thẻ tín dụng" });
+            "Thanh to\u00e1n khi nh\u1eadn h\u00e0ng", "Chuy\u1ec3n kho\u1ea3n", "Th\u1ebb t\u00edn d\u1ee5ng" });
         cbHinhThuc.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
         JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{
-            "Chờ xác nhận", "Đã xác nhận", "Chờ vận chuyển" });
+            "Ch\u1edd x\u00e1c nh\u1eadn", "\u0110\u00e3 x\u00e1c nh\u1eadn", "Ch\u1edd v\u1eadn chuy\u1ec3n" });
         cbTrangThai.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        JPanel payCard = makeRightCard("Thanh toán & Trạng thái");
-        addFieldToCard(payCard, "Phương thức:", cbHinhThuc);
-        addFieldToCard(payCard, "Trạng thái đơn:", cbTrangThai);
+        JPanel payCard = makeRightCard("Thanh to\u00e1n & Tr\u1ea1ng th\u00e1i");
+        addFieldToCard(payCard, "Ph\u01b0\u01a1ng th\u1ee9c:", cbHinhThuc);
+        addFieldToCard(payCard, "Tr\u1ea1ng th\u00e1i \u0111\u01a1n:", cbTrangThai);
 
         JPanel rightCol = new JPanel(new GridBagLayout());
         rightCol.setBackground(pageBg);
         GridBagConstraints rc = new GridBagConstraints();
         rc.gridx = 0; rc.weightx = 1.0; rc.fill = GridBagConstraints.HORIZONTAL;
         rc.anchor = GridBagConstraints.NORTH;
-        rc.gridy = 0; rc.insets = new Insets(0, 0, 14, 0); rightCol.add(custCard, rc);
-        rc.gridy = 1; rc.insets = new Insets(0, 0, 14, 0); rightCol.add(empCard, rc);
-        rc.gridy = 2; rc.insets = new Insets(0, 0, 0, 0);  rightCol.add(payCard, rc);
+        rc.gridy = 0; rc.insets = new Insets(0,0,14,0); rightCol.add(custCard, rc);
+        rc.gridy = 1; rc.insets = new Insets(0,0,14,0); rightCol.add(empCard, rc);
+        rc.gridy = 2; rc.insets = new Insets(0,0,0,0);  rightCol.add(payCard, rc);
         rc.gridy = 3; rc.weighty = 1.0; rc.fill = GridBagConstraints.BOTH;
         rightCol.add(new JLabel(), rc);
 
@@ -476,10 +488,10 @@ class DonHangCreateCard extends JPanel {
         GridBagConstraints tc = new GridBagConstraints();
         tc.gridy = 0; tc.weighty = 1.0;
         tc.gridx = 0; tc.weightx = 0.62; tc.fill = GridBagConstraints.BOTH;
-        tc.insets = new Insets(0, 0, 0, 14); twoCol.add(leftCard, tc);
+        tc.insets = new Insets(0,0,0,14); twoCol.add(leftCard, tc);
         tc.gridx = 1; tc.weightx = 0.38; tc.fill = GridBagConstraints.HORIZONTAL;
         tc.anchor = GridBagConstraints.NORTH; tc.weighty = 0;
-        tc.insets = new Insets(0, 0, 0, 0); twoCol.add(rightCol, tc);
+        tc.insets = new Insets(0,0,0,0); twoCol.add(rightCol, tc);
 
         JScrollPane bodyScroll = new JScrollPane(twoCol);
         bodyScroll.setBorder(BorderFactory.createEmptyBorder());
@@ -492,7 +504,16 @@ class DonHangCreateCard extends JPanel {
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
         JButton btnLuu = DonHangPanel.makeFootBtn("L\u01b0u \u0111\u01a1n h\u00e0ng", new Color(0x5B4FCC));
         JButton btnHuy = DonHangPanel.makeFootBtn("H\u1ee7y b\u1ecf", new Color(0xB83434));
-        btnHuy.addActionListener(e -> parent.showCard(DonHangPanel.CARD_TABLE));
+
+        // Confirm before cancel
+        btnHuy.addActionListener(e -> {
+            int cf = JOptionPane.showConfirmDialog(this,
+                "B\u1ea1n c\u00f3 ch\u1eafc mu\u1ed1n h\u1ee7y? Th\u00f4ng tin \u0111\u00e3 nh\u1eadp s\u1ebd m\u1ea5t.",
+                "X\u00e1c nh\u1eadn h\u1ee7y",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (cf == JOptionPane.YES_OPTION) parent.showCard(DonHangPanel.CARD_TABLE);
+        });
+
         btnLuu.addActionListener(e -> {
             String ten    = tfTenND.getText().trim();
             String sdt    = tfSdt.getText().trim();
@@ -500,11 +521,9 @@ class DonHangCreateCard extends JPanel {
             java.util.List<String> errors = new java.util.ArrayList<>();
             JComponent firstBad = null;
             if (ten.isEmpty()) {
-                errors.add("\u2022 T\u00ean ng\u01b0\u1eddi mua kh\u00f4ng \u0111\u01b0\u1ee3c \u0111\u1ec3 tr\u1ed1ng.");
-                firstBad = tfTenND;
+                errors.add("\u2022 T\u00ean ng\u01b0\u1eddi mua kh\u00f4ng \u0111\u01b0\u1ee3c \u0111\u1ec3 tr\u1ed1ng."); firstBad = tfTenND;
             } else if (!ten.matches("[\\p{L} .'-]+")) {
-                errors.add("\u2022 T\u00ean ng\u01b0\u1eddi mua kh\u00f4ng h\u1ee3p l\u1ec7.");
-                firstBad = tfTenND;
+                errors.add("\u2022 T\u00ean ng\u01b0\u1eddi mua kh\u00f4ng h\u1ee3p l\u1ec7."); firstBad = tfTenND;
             }
             if (!sdt.matches("0[0-9]{9}")) {
                 errors.add("\u2022 S\u0110T ph\u1ea3i g\u1ed3m 10 ch\u1eef s\u1ed1, b\u1eaft \u0111\u1ea7u b\u1eb1ng 0.");
@@ -530,22 +549,12 @@ class DonHangCreateCard extends JPanel {
             String maDon    = "HD" + String.format("%03d", parent.tableModel.getRowCount() + 1);
             String nhanVien = cbNhanVien.getSelectedItem().toString();
             String maKM     = tfMaKM.getText().trim();
-
-            // Build confirmation message
-            StringBuilder sb = new StringBuilder();
-            sb.append("\u2764 X\u00e1c nh\u1eadn t\u1ea1o \u0111\u01a1n h\u00e0ng?\n\n");
-            sb.append(String.format("M\u00e3 \u0111\u01a1n:       %s\n", maDon));
-            sb.append(String.format("Kh\u00e1ch h\u00e0ng:  %s\n", ten));
-            sb.append(String.format("SĐT:         %s\n", sdt));
-            sb.append(String.format("\u0110\u1ecba ch\u1ec9:     %s\n", diaChi));
-            sb.append(String.format("Nh\u00e2n vi\u00ean:   %s\n", nhanVien));
-            sb.append(String.format("S\u1ed1 SP:       %d s\u1ea3n ph\u1ea9m (%d m\u00f3n)\n", items.size(), totalQty));
-            if (!maKM.isEmpty()) sb.append(String.format("Khuy\u1ebfn m\u00e3i:  %s\n", maKM));
-            sb.append(String.format("\nT\u1ed5ng c\u1ed9ng:   %,.0f\u0111", (double) tongCong));
-
-            int confirm = JOptionPane.showConfirmDialog(this, sb.toString(),
-                "X\u00e1c nh\u1eadn \u0111\u01a1n h\u00e0ng", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (confirm != JOptionPane.YES_OPTION) return;
+            // Confirm save
+            int cf = JOptionPane.showConfirmDialog(this,
+                "X\u00e1c nh\u1eadn t\u1ea1o \u0111\u01a1n h\u00e0ng cho kh\u00e1ch \u201c" + ten + "\u201d?\nT\u1ed5ng c\u1ed9ng: "
+                    + String.format("%,.0f\u0111", (double) tongCong),
+                "X\u00e1c nh\u1eadn l\u01b0u", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (cf != JOptionPane.YES_OPTION) return;
 
             parent.tableModel.addRow(new Object[]{ maDon, ten, totalQty,
                 maKM.isEmpty() ? "-" : maKM,
@@ -553,15 +562,14 @@ class DonHangCreateCard extends JPanel {
                 cbTrangThai.getSelectedItem().toString(), "" });
             parent.nhanVienMap.put(maDon, nhanVien);
             JOptionPane.showMessageDialog(this,
-                "Đã tạo đơn hàng " + maDon + " thành công!",
-                "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                "\u0110\u00e3 t\u1ea1o \u0111\u01a1n h\u00e0ng " + maDon + " th\u00e0nh c\u00f4ng!",
+                "Th\u00e0nh c\u00f4ng", JOptionPane.INFORMATION_MESSAGE);
             // reset
             cbKhachHang.setSelectedIndex(0);
             tfTenND.setEditable(true); tfSdt.setEditable(true); tfDiaChi.setEditable(true);
             tfTenND.setText(""); tfSdt.setText(""); tfDiaChi.setText("");
             taNotes.setText(""); tfMaKM.setText("");
-            cbNhanVien.setSelectedIndex(0);
-            cbTrangThai.setSelectedIndex(0);
+            cbNhanVien.setSelectedIndex(0); cbTrangThai.setSelectedIndex(0);
             items.clear(); discAmt = 0; rebuildList(); updateTotals(); lbDiscStatus.setText("");
             parent.showCard(DonHangPanel.CARD_TABLE);
         });
@@ -569,23 +577,20 @@ class DonHangCreateCard extends JPanel {
         add(footer, BorderLayout.SOUTH);
     }
 
-    // ── Browse dialog (3-column JTable) ─────────────────────────────────────
+    // ── Browse dialog (multi-select, stays open) ──────────────────────────────
     private void openBrowseDialog() {
         Frame owner = null;
         Window w = SwingUtilities.getWindowAncestor(this);
         if (w instanceof Frame f) owner = f;
         JDialog dlg = new JDialog(owner, "Ch\u1ecdn s\u1ea3n ph\u1ea9m", true);
-        dlg.setSize(560, 460); dlg.setLocationRelativeTo(this);
+        dlg.setSize(580, 500); dlg.setLocationRelativeTo(this);
 
-        // search
         JTextField dlgSearch = cf();
 
-        // table model: Tên | Đơn giá | Mã SP
         DefaultTableModel dlgModel = new DefaultTableModel(
                 new String[]{ "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1", "M\u00e3 SP" }, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        // populate
         for (ProductDTO p : allProducts) {
             long price = p.getSellingPrice() != null ? p.getSellingPrice().longValue() : 0L;
             dlgModel.addRow(new Object[]{
@@ -604,12 +609,11 @@ class DonHangCreateCard extends JPanel {
         dlgTable.setRowHeight(38);
         dlgTable.setShowVerticalLines(false);
         dlgTable.setGridColor(new Color(0xEEEEEE));
-        dlgTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        dlgTable.getColumnModel().getColumn(0).setPreferredWidth(230);
-        dlgTable.getColumnModel().getColumn(1).setPreferredWidth(100);
+        dlgTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        dlgTable.getColumnModel().getColumn(0).setPreferredWidth(240);
+        dlgTable.getColumnModel().getColumn(1).setPreferredWidth(110);
         dlgTable.getColumnModel().getColumn(2).setPreferredWidth(80);
 
-        // alternating + right-align price col
         DefaultTableCellRenderer priceR = new DefaultTableCellRenderer() {
             @Override public Component getTableCellRendererComponent(JTable t, Object v,
                     boolean sel, boolean foc, int row, int col) {
@@ -631,7 +635,6 @@ class DonHangCreateCard extends JPanel {
         dlgTable.getColumnModel().getColumn(1).setCellRenderer(priceR);
         dlgTable.getColumnModel().getColumn(2).setCellRenderer(altR);
 
-        // live filter
         dlgSearch.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { filter(); }
             @Override public void removeUpdate(DocumentEvent e) { filter(); }
@@ -654,10 +657,14 @@ class DonHangCreateCard extends JPanel {
             }
         });
 
-        // double-click to add
+        JLabel lbStatus = new JLabel(" ");
+        lbStatus.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        lbStatus.setForeground(new Color(0x2E7D32));
+
+        // Double-click adds, dialog stays open
         dlgTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (e.getClickCount() == 2) pickRow(dlgTable, dlg);
+                if (e.getClickCount() == 2) pickRows(dlgTable, lbStatus);
             }
         });
 
@@ -666,7 +673,7 @@ class DonHangCreateCard extends JPanel {
         btnAdd.setBackground(new Color(0x5B4FCC)); btnAdd.setForeground(Color.WHITE);
         btnAdd.setFocusPainted(false); btnAdd.setBorderPainted(false); btnAdd.setOpaque(true);
         btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnAdd.addActionListener(e -> pickRow(dlgTable, dlg));
+        btnAdd.addActionListener(e -> pickRows(dlgTable, lbStatus));
 
         JButton btnClose = new JButton("\u0110\u00f3ng");
         btnClose.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -676,38 +683,54 @@ class DonHangCreateCard extends JPanel {
         btnRow.setBackground(Color.WHITE);
         btnRow.add(btnClose); btnRow.add(btnAdd);
 
+        JLabel hint = new JLabel("Gi\u1eef Ctrl ho\u1eb7c Shift \u0111\u1ec3 ch\u1ecdn nhi\u1ec1u s\u1ea3n ph\u1ea9m");
+        hint.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        hint.setForeground(new Color(0x888888));
+
+        JPanel south = new JPanel(new BorderLayout(0, 4));
+        south.setBackground(Color.WHITE);
+        south.add(hint, BorderLayout.NORTH);
+        JPanel statusBtnRow = new JPanel(new BorderLayout());
+        statusBtnRow.setBackground(Color.WHITE);
+        statusBtnRow.add(lbStatus, BorderLayout.WEST);
+        statusBtnRow.add(btnRow, BorderLayout.EAST);
+        south.add(statusBtnRow, BorderLayout.SOUTH);
+
         JPanel dlgPanel = new JPanel(new BorderLayout(0, 10));
-        dlgPanel.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+        dlgPanel.setBorder(BorderFactory.createEmptyBorder(16, 16, 14, 16));
         dlgPanel.setBackground(Color.WHITE);
         dlgPanel.add(dlgSearch, BorderLayout.NORTH);
         dlgPanel.add(new JScrollPane(dlgTable), BorderLayout.CENTER);
-        dlgPanel.add(btnRow, BorderLayout.SOUTH);
+        dlgPanel.add(south, BorderLayout.SOUTH);
         dlg.setContentPane(dlgPanel);
         dlg.setVisible(true);
     }
 
-    /** Add the selected table row to the order and close (or show warning) */
-    private void pickRow(JTable dlgTable, JDialog dlg) {
-        int row = dlgTable.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(dlg, "Vui l\u00f2ng ch\u1ecdn m\u1ed9t s\u1ea3n ph\u1ea9m.",
+    /** Add all selected rows to order; dialog stays open */
+    private void pickRows(JTable dlgTable, JLabel lbStatus) {
+        int[] rows = dlgTable.getSelectedRows();
+        if (rows.length == 0) {
+            JOptionPane.showMessageDialog(null,
+                "Vui l\u00f2ng ch\u1ecdn \u00edt nh\u1ea5t m\u1ed9t s\u1ea3n ph\u1ea9m.",
                 "Th\u00f4ng b\u00e1o", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        String name = (String) dlgTable.getValueAt(row, 0);
-        String code = (String) dlgTable.getValueAt(row, 2);
-        long price = 0L;
-        for (ProductDTO p : allProducts) {
-            if (p.getCode().equals(code)) {
-                if (p.getSellingPrice() != null) price = p.getSellingPrice().longValue();
-                break;
+        for (int row : rows) {
+            String name = (String) dlgTable.getValueAt(row, 0);
+            String code = (String) dlgTable.getValueAt(row, 2);
+            long price  = 0L;
+            for (ProductDTO p : allProducts) {
+                if (p.getCode().equals(code)) {
+                    if (p.getSellingPrice() != null) price = p.getSellingPrice().longValue();
+                    break;
+                }
             }
+            addProductToOrder(code, name, price);
         }
-        addProductToOrder(name, price);
-        dlg.dispose();
+        lbStatus.setText(rows.length + " s\u1ea3n ph\u1ea9m \u0111\u00e3 \u0111\u01b0\u1ee3c th\u00eam v\u00e0o \u0111\u01a1n \u2714");
     }
 
-    // ── right-column card builders ───────────────────────────────────────────
+    // ── right-column card builders ────────────────────────────────────────────
     private JPanel makeRightCard(String title) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(Color.WHITE);
@@ -716,11 +739,11 @@ class DonHangCreateCard extends JPanel {
             BorderFactory.createEmptyBorder(14, 18, 16, 18)));
         GridBagConstraints g = new GridBagConstraints();
         g.gridx = 0; g.gridy = 0; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
-        g.insets = new Insets(0, 0, 8, 0);
+        g.insets = new Insets(0,0,8,0);
         JLabel lbl = new JLabel(title);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 14)); lbl.setForeground(new Color(0x222222));
         card.add(lbl, g);
-        g.gridy = 1; g.insets = new Insets(0, 0, 10, 0); card.add(new JSeparator(), g);
+        g.gridy = 1; g.insets = new Insets(0,0,10,0); card.add(new JSeparator(), g);
         card.putClientProperty("nr", 2);
         return card;
     }
@@ -729,11 +752,11 @@ class DonHangCreateCard extends JPanel {
         int nr = (Integer) card.getClientProperty("nr");
         GridBagConstraints g = new GridBagConstraints();
         g.gridx = 0; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
-        g.gridy = nr; g.insets = new Insets(0, 0, 3, 0);
+        g.gridy = nr; g.insets = new Insets(0,0,3,0);
         JLabel lbl = new JLabel(label);
         lbl.setFont(new Font("Segoe UI", Font.PLAIN, 12)); lbl.setForeground(new Color(0x555555));
         card.add(lbl, g);
-        g.gridy = nr + 1; g.insets = new Insets(0, 0, 10, 0);
+        g.gridy = nr + 1; g.insets = new Insets(0,0,10,0);
         field.setPreferredSize(new Dimension(0, 34)); card.add(field, g);
         card.putClientProperty("nr", nr + 2);
     }
@@ -744,11 +767,12 @@ class DonHangCreateCard extends JPanel {
         cb.addItem("NV003 - Le Van Cuong");
     }
 
-    // ── inner classes ────────────────────────────────────────────────────────
+    // ── inner class ───────────────────────────────────────────────────────────
     private static final class OrderItem {
-        String name; long unitPrice; int qty;
-        OrderItem(String name, long unitPrice, int qty) {
-            this.name = name; this.unitPrice = unitPrice; this.qty = qty;
+        String code; String name; long unitPrice; int qty;
+        OrderItem(String code, String name, long unitPrice, int qty) {
+            this.code = code; this.name = name;
+            this.unitPrice = unitPrice; this.qty = qty;
         }
     }
 }
