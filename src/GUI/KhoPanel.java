@@ -17,15 +17,16 @@ public class KhoPanel extends JPanel {
     private JTable table;
     private DefaultTableModel model;
     public KhoPanel() {
-    setLayout(new BorderLayout(15,15));
-    setBackground(new Color(0xF3F0FF));
-    setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        // use a single border layout; gaps are handled by inner components if needed
+        setLayout(new BorderLayout());
+        setBackground(new Color(0xF3F0FF));
+        // reduce left/right padding so table can align with panel edges
+        setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-    JLabel title = new JLabel("Quản Lý Kho", SwingConstants.CENTER);
-    title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-    title.setForeground(new Color(0x4B3F72));
-    add(title, BorderLayout.NORTH);
-            setLayout(new BorderLayout());
+        JLabel title = new JLabel("Quản Lý Kho", SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        title.setForeground(new Color(0x4B3F72));
+        add(title, BorderLayout.NORTH);
 
 JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 topPanel.setBackground(new Color(0xF8F7FF));
@@ -43,7 +44,7 @@ cbStatus = new JComboBox<>();
 topPanel.add(new JLabel("Trạng thái:"));
 topPanel.add(cbStatus);
 add(topPanel, BorderLayout.NORTH);
-    String[] headers = {"Hình ảnh","STT","Mã SP","Tên SP","SL","Nhà cung cấp","Trạng thái"};
+    String[] headers = {"Hình ảnh","Mã SP","Tên SP","SL","Nhà cung cấp","Trạng thái"};
 
     model = new DefaultTableModel(headers, 0) {
         @Override
@@ -76,7 +77,7 @@ add(topPanel, BorderLayout.NORTH);
         }
 });
 
-    table.getColumnModel().getColumn(6).setCellRenderer(
+    table.getColumnModel().getColumn(5).setCellRenderer(
     new DefaultTableCellRenderer() {
         @Override
         public Component getTableCellRendererComponent(
@@ -195,7 +196,7 @@ if (cbStatus.getSelectedItem() != null) {
     selectedStatus = cbStatus.getSelectedItem().toString();
 }
     model.setRowCount(0);
-    int stt = 1;
+  
 
     for (ProductDTO p : list) {
 
@@ -224,7 +225,6 @@ if (!selectedStatus.equals("Tất cả")
 
         model.addRow(new Object[]{
                 loadProductIcon(p.getImagePath()),
-                stt++,
                 p.getCode(),
                 p.getName(),
                 quantity,

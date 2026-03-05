@@ -204,12 +204,5 @@ public class TrangChuPanel extends JPanel {
         add(topCards,    BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
     }
-    public static void main(String[] args) {
-        JFrame f = new JFrame("Trang chủ");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setSize(900, 600);
-        f.setLocationRelativeTo(null);
-        f.setContentPane(new TrangChuPanel());
-        f.setVisible(true);
-    }
+   
 }
