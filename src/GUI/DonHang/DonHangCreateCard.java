@@ -15,6 +15,9 @@ import java.awt.event.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import GUI.MainPanel;
 
 class DonHangCreateCard extends JPanel {
 
@@ -133,10 +136,11 @@ class DonHangCreateCard extends JPanel {
         g.gridx = 0; g.weightx = 0; g.fill = GridBagConstraints.NONE;
         row.add(lbCode, g);
 
-        // col 1: Ten (expand)
+        // col 1: Ten (fixed 160px so price/qty/total columns get space too)
         JLabel lbName = new JLabel(it.name);
         lbName.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        g.gridx = 1; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
+        lbName.setPreferredSize(new Dimension(160, 24));
+        g.gridx = 1; g.weightx = 0; g.fill = GridBagConstraints.NONE;
         row.add(lbName, g);
 
         // col 2: Don gia (right 90px)
@@ -191,6 +195,7 @@ class DonHangCreateCard extends JPanel {
         btnX.setBackground(new Color(0xE53935)); btnX.setForeground(Color.WHITE);
         btnX.setFocusPainted(false); btnX.setBorderPainted(false); btnX.setOpaque(true);
         btnX.setPreferredSize(new Dimension(34, 30));
+        btnX.setMargin(new Insets(0, 0, 0, 0));
         btnX.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnX.addActionListener(e -> {
             int cf = JOptionPane.showConfirmDialog(
@@ -205,6 +210,10 @@ class DonHangCreateCard extends JPanel {
         });
         g.gridx = 5; g.insets = new Insets(0, 0, 0, 0);
         row.add(btnX, g);
+
+        // col 6: invisible spacer – expands to fill remaining row width
+        g.gridx = 6; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
+        row.add(new JLabel(), g);
 
         return row;
     }
@@ -266,9 +275,9 @@ class DonHangCreateCard extends JPanel {
         GridBagConstraints lhg = new GridBagConstraints();
         lhg.gridy = 0; lhg.anchor = GridBagConstraints.WEST; lhg.insets = new Insets(0, 0, 0, 8);
         String[] hdrTxt = { "M\u00e3 SP", "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1",
-                            "S\u1ed1 l\u01b0\u1ee3ng", "Th\u00e0nh ti\u1ec1n", "" };
-        int[]    hdrW   = { 70, 0, 90, 64, 100, 34 };
-        double[] hdrWx  = { 0, 1.0, 0, 0, 0, 0 };
+                            "S\u1ed1 l\u01b0\u1ee3ng", "Th\u00e0nh ti\u1ec1n", "", "" };
+        int[]    hdrW   = { 70, 160, 90, 64, 100, 34, 0 };
+        double[] hdrWx  = { 0, 0, 0, 0, 0, 0, 1.0 };
         for (int i = 0; i < hdrTxt.length; i++) {
             JLabel h = new JLabel(hdrTxt[i]);
             h.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -277,7 +286,7 @@ class DonHangCreateCard extends JPanel {
             if (i == 2 || i == 4) h.setHorizontalAlignment(SwingConstants.RIGHT);
             if (i == 3) h.setHorizontalAlignment(SwingConstants.CENTER);
             lhg.gridx = i; lhg.weightx = hdrWx[i];
-            lhg.fill = (i == 1 ? GridBagConstraints.HORIZONTAL : GridBagConstraints.NONE);
+            lhg.fill = (i == 6 ? GridBagConstraints.HORIZONTAL : GridBagConstraints.NONE);
             listHeader.add(h, lhg);
         }
 
@@ -442,8 +451,26 @@ class DonHangCreateCard extends JPanel {
             tfTenND.setEditable(false); tfSdt.setEditable(false); tfDiaChi.setEditable(false);
         });
 
+        JButton btnTaoKH = new JButton("+ T\u1ea1o kh\u00e1ch m\u1edbi");
+        btnTaoKH.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnTaoKH.setBackground(new Color(0x2E7D32)); btnTaoKH.setForeground(Color.WHITE);
+        btnTaoKH.setFocusPainted(false); btnTaoKH.setBorderPainted(false); btnTaoKH.setOpaque(true);
+        btnTaoKH.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnTaoKH.addActionListener(e -> {
+            java.awt.Container mp = SwingUtilities.getAncestorOfClass(MainPanel.class, DonHangCreateCard.this);
+            if (mp instanceof MainPanel mainPanel) mainPanel.showKhachHangCreate();
+        });
         JPanel custCard = makeRightCard("Kh\u00e1ch h\u00e0ng");
         addFieldToCard(custCard, "Ch\u1ecdn kh\u00e1ch:", cbKhachHang);
+        {
+            int nr = (Integer) custCard.getClientProperty("nr");
+            GridBagConstraints gk = new GridBagConstraints();
+            gk.gridx = 0; gk.gridy = nr; gk.weightx = 1.0;
+            gk.fill = GridBagConstraints.NONE; gk.anchor = GridBagConstraints.EAST;
+            gk.insets = new Insets(0, 0, 10, 0);
+            custCard.add(btnTaoKH, gk);
+            custCard.putClientProperty("nr", nr + 1);
+        }
         addFieldToCard(custCard, "T\u00ean ng\u01b0\u1eddi mua:", tfTenND);
         addFieldToCard(custCard, "S\u1ed1 \u0111i\u1ec7n tho\u1ea1i:", tfSdt);
         addFieldToCard(custCard, "\u0110\u1ecba ch\u1ec9 giao h\u00e0ng:", tfDiaChi);
@@ -463,12 +490,13 @@ class DonHangCreateCard extends JPanel {
         JComboBox<String> cbHinhThuc = new JComboBox<>(new String[]{
             "Thanh to\u00e1n khi nh\u1eadn h\u00e0ng", "Chuy\u1ec3n kho\u1ea3n", "Th\u1ebb t\u00edn d\u1ee5ng" });
         cbHinhThuc.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{
-            "Ch\u1edd x\u00e1c nh\u1eadn", "\u0110\u00e3 x\u00e1c nh\u1eadn", "Ch\u1edd v\u1eadn chuy\u1ec3n" });
-        cbTrangThai.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        JLabel lbTime = new JLabel(LocalDateTime.now()
+            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+        lbTime.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lbTime.setForeground(new Color(0x444444));
         JPanel payCard = makeRightCard("Thanh to\u00e1n & Tr\u1ea1ng th\u00e1i");
         addFieldToCard(payCard, "Ph\u01b0\u01a1ng th\u1ee9c:", cbHinhThuc);
-        addFieldToCard(payCard, "Tr\u1ea1ng th\u00e1i \u0111\u01a1n:", cbTrangThai);
+        addFieldToCard(payCard, "Th\u1eddi gian t\u1ea1o:", lbTime);
 
         JPanel rightCol = new JPanel(new GridBagLayout());
         rightCol.setBackground(pageBg);
@@ -559,8 +587,9 @@ class DonHangCreateCard extends JPanel {
             parent.tableModel.addRow(new Object[]{ maDon, ten, totalQty,
                 maKM.isEmpty() ? "-" : maKM,
                 String.format("%,.0f", (double) tongCong) + "\u0111",
-                cbTrangThai.getSelectedItem().toString(), "" });
+                "Ch\u1edd x\u00e1c nh\u1eadn", "" });
             parent.nhanVienMap.put(maDon, nhanVien);
+            parent.timeMap.put(maDon, lbTime.getText());
             JOptionPane.showMessageDialog(this,
                 "\u0110\u00e3 t\u1ea1o \u0111\u01a1n h\u00e0ng " + maDon + " th\u00e0nh c\u00f4ng!",
                 "Th\u00e0nh c\u00f4ng", JOptionPane.INFORMATION_MESSAGE);
@@ -569,7 +598,7 @@ class DonHangCreateCard extends JPanel {
             tfTenND.setEditable(true); tfSdt.setEditable(true); tfDiaChi.setEditable(true);
             tfTenND.setText(""); tfSdt.setText(""); tfDiaChi.setText("");
             taNotes.setText(""); tfMaKM.setText("");
-            cbNhanVien.setSelectedIndex(0); cbTrangThai.setSelectedIndex(0);
+            cbNhanVien.setSelectedIndex(0);
             items.clear(); discAmt = 0; rebuildList(); updateTotals(); lbDiscStatus.setText("");
             parent.showCard(DonHangPanel.CARD_TABLE);
         });
@@ -588,15 +617,15 @@ class DonHangCreateCard extends JPanel {
         JTextField dlgSearch = cf();
 
         DefaultTableModel dlgModel = new DefaultTableModel(
-                new String[]{ "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1", "M\u00e3 SP" }, 0) {
+                new String[]{ "M\u00e3 SP", "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1" }, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         for (ProductDTO p : allProducts) {
             long price = p.getSellingPrice() != null ? p.getSellingPrice().longValue() : 0L;
             dlgModel.addRow(new Object[]{
+                p.getCode(),
                 p.getName() != null ? p.getName() : "(Kh\u00f4ng t\u00ean)",
-                String.format("%,.0f\u0111", (double) price),
-                p.getCode()
+                String.format("%,.0f\u0111", (double) price)
             });
         }
 
@@ -610,9 +639,9 @@ class DonHangCreateCard extends JPanel {
         dlgTable.setShowVerticalLines(false);
         dlgTable.setGridColor(new Color(0xEEEEEE));
         dlgTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        dlgTable.getColumnModel().getColumn(0).setPreferredWidth(240);
-        dlgTable.getColumnModel().getColumn(1).setPreferredWidth(110);
-        dlgTable.getColumnModel().getColumn(2).setPreferredWidth(80);
+        dlgTable.getColumnModel().getColumn(0).setPreferredWidth(80);
+        dlgTable.getColumnModel().getColumn(1).setPreferredWidth(240);
+        dlgTable.getColumnModel().getColumn(2).setPreferredWidth(120);
 
         DefaultTableCellRenderer priceR = new DefaultTableCellRenderer() {
             @Override public Component getTableCellRendererComponent(JTable t, Object v,
@@ -632,8 +661,8 @@ class DonHangCreateCard extends JPanel {
             }
         };
         dlgTable.getColumnModel().getColumn(0).setCellRenderer(altR);
-        dlgTable.getColumnModel().getColumn(1).setCellRenderer(priceR);
-        dlgTable.getColumnModel().getColumn(2).setCellRenderer(altR);
+        dlgTable.getColumnModel().getColumn(1).setCellRenderer(altR);
+        dlgTable.getColumnModel().getColumn(2).setCellRenderer(priceR);
 
         dlgSearch.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { filter(); }
@@ -648,9 +677,9 @@ class DonHangCreateCard extends JPanel {
                     if (q.isEmpty() || hay.contains(q)) {
                         long price = p.getSellingPrice() != null ? p.getSellingPrice().longValue() : 0L;
                         dlgModel.addRow(new Object[]{
+                            p.getCode(),
                             p.getName() != null ? p.getName() : "(Kh\u00f4ng t\u00ean)",
-                            String.format("%,.0f\u0111", (double) price),
-                            p.getCode()
+                            String.format("%,.0f\u0111", (double) price)
                         });
                     }
                 }
@@ -716,8 +745,8 @@ class DonHangCreateCard extends JPanel {
             return;
         }
         for (int row : rows) {
-            String name = (String) dlgTable.getValueAt(row, 0);
-            String code = (String) dlgTable.getValueAt(row, 2);
+            String code = (String) dlgTable.getValueAt(row, 0);
+            String name = (String) dlgTable.getValueAt(row, 1);
             long price  = 0L;
             for (ProductDTO p : allProducts) {
                 if (p.getCode().equals(code)) {

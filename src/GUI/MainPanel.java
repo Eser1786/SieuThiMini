@@ -34,6 +34,7 @@ public class MainPanel extends JPanel {
 
     // Theo dõi nút đang active để bỏ highlight khi chuyển tab
     private JButton activeBtn = null;
+    private JButton btnKhachHang;
 
     public MainPanel() {
         setLayout(new BorderLayout());
@@ -70,7 +71,7 @@ public class MainPanel extends JPanel {
 
         JButton btnTrangChu = createNavButton("Trang chủ");
         JButton btnSanPham = createNavButton("Sản phẩm");
-        JButton btnKhachHang = createNavButton("Khách hàng");
+        btnKhachHang = createNavButton("Khách hàng");
         JButton btnNhanVien = createNavButton("Nhân viên");
         JButton btnDonHang = createNavButton("Đơn hàng");
         JButton btnKho = createNavButton("Kho");
@@ -183,5 +184,17 @@ public class MainPanel extends JPanel {
             }
         });
         return btn;
+    }
+
+    /** Navigate to KhachHang tab and open the "Thêm" (create-new) card */
+    public void showKhachHangCreate() {
+        cardLayout.show(mainCards, KHACH_HANG);
+        setActive(btnKhachHang);
+        for (java.awt.Component c : mainCards.getComponents()) {
+            if (c instanceof KhachHangPanel kh) {
+                kh.showCard(KhachHangPanel.CARD_THEM);
+                break;
+            }
+        }
     }
 }

@@ -689,5 +689,10 @@ public class KhachHangPanel extends JPanel {
             innerCard.show(this, CARD_TABLE);
         }
     }
+
+    /** Public navigation – used by DonHangCreateCard to jump straight to the add form */
+    public void showCard(String card) {
+        innerCard.show(this, card);
+    }
 }
 

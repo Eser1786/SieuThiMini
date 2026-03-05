@@ -206,4 +206,15 @@ public class CustomerDAO {
         }
         return customer;
     }
+
+    /** Fix UTF-8 data that was stored/returned as ISO-8859-1 (mojibake). */
+    private static String fixEncoding(String s) {
+        if (s == null) return null;
+        try {
+            return new String(s.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1),
+                              java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return s;
+        }
+    }
 }
