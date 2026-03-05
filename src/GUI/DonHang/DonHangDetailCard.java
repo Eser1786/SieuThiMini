@@ -240,29 +240,55 @@ class DonHangDetailCard extends JPanel {
         String nguoiMua  = parent.tableModel.getValueAt(modelRow, 1).toString();
         String tongTien  = parent.tableModel.getValueAt(modelRow, 4).toString();
         String trangThai = parent.tableModel.getValueAt(modelRow, 5).toString();
+        String maKMTbl   = parent.tableModel.getValueAt(modelRow, 3).toString();
 
         lbMaDon.setText(maDon);
-        lbNgayDat.setText("05/03/2026 (22:28)");
-        lbNgayGiao.setText("06/03/2026 (08:00)");
+        cbTrangThai.setSelectedItem(trangThai);
         if (lbNhanVien != null)
             lbNhanVien.setText(parent.nhanVienMap.getOrDefault(maDon, "Nguyễn Thị Thẹo"));
-        cbTrangThai.setSelectedItem(trangThai);
-        tfTenND.setText(nguoiMua);
-        lbIdTK.setText("TK" + (100000 + modelRow));
-        tfSdt.setText("0102282828");
-        tfDiaChi.setText("1/22, Đường số 1, Phường 2, Quận 3, TP.HCM");
 
-        chitietModel.setRowCount(0);
-        chitietModel.addRow(new Object[]{ "1", "Cơm nắm cá hồi mayo", 1, "16.000", "16.000" });
-        chitietModel.addRow(new Object[]{ "2", "Mì ý sốt kem",        1, "36.000", "36.000" });
-        chitietModel.addRow(new Object[]{ "3", "Pepsi không calo",     1, "10.000", "10.000" });
-        chitietModel.addRow(new Object[]{ "4", "Kem si cu la",         2, "18.000", "38.000" });
-
-        lbTongCong.setText("100.000đ");
-        lbPhiVC.setText("Miễn phí");
-        lbMaGiam.setText("10.000đ");
-        tfTongTT.setText(tongTien);
-        lbHinhThuc.setText("Thanh toán khi nhận hàng");
+        DonHangPanel.OrderDetailData od = parent.orderDataMap.get(maDon);
+        if (od != null) {
+            // Real order created from the create form
+            lbNgayDat.setText(od.time);
+            lbNgayGiao.setText("Dự kiến giao sau 1-3 ngày");
+            tfTenND.setText(od.ten);
+            tfSdt.setText(od.phone);
+            tfDiaChi.setText(od.diaChi);
+            lbHinhThuc.setText(od.payMethod);
+            lbMaGiam.setText(od.maKM.isEmpty() ? "-" : od.maKM);
+            lbIdTK.setText("-");
+            chitietModel.setRowCount(0);
+            long sub = 0; int stt = 1;
+            for (DonHangPanel.OrderDetailData.Item it : od.items) {
+                long line = it.unitPrice * it.qty; sub += line;
+                chitietModel.addRow(new Object[]{ String.valueOf(stt++),
+                    it.code + " - " + it.name, it.qty,
+                    String.format("%,.0fđ", (double) it.unitPrice),
+                    String.format("%,.0fđ", (double) line) });
+            }
+            long tot = Math.max(0, sub - od.discAmt);
+            lbTongCong.setText(String.format("%,.0fđ", (double) sub));
+            lbPhiVC.setText("Miễn phí");
+            tfTongTT.setText(String.format("%,.0fđ", (double) tot));
+        } else {
+            // Fallback for pre-existing sample orders
+            lbNgayDat.setText("05/03/2026 (22:28)");
+            lbNgayGiao.setText("06/03/2026 (08:00)");
+            tfTenND.setText(nguoiMua);
+            lbIdTK.setText("TK" + (100000 + modelRow));
+            tfSdt.setText("0902345678");
+            tfDiaChi.setText("123 Nguyễn Trãi, P.2, Q.5, TP.HCM");
+            lbHinhThuc.setText("Thanh toán khi nhận hàng");
+            lbMaGiam.setText(maKMTbl.equals("-") ? "-" : maKMTbl);
+            chitietModel.setRowCount(0);
+            chitietModel.addRow(new Object[]{ "1", "SP001 - Nước F trái K",   2, "25.000đ", "50.000đ" });
+            chitietModel.addRow(new Object[]{ "2", "SP004 - Mì ý sốt kem",    1, "36.000đ", "36.000đ" });
+            chitietModel.addRow(new Object[]{ "3", "SP005 - Pepsi không calo", 1, "10.000đ", "10.000đ" });
+            lbTongCong.setText("96.000đ");
+            lbPhiVC.setText("Miễn phí");
+            tfTongTT.setText(tongTien);
+        }
         btnHuyDon.setVisible(trangThai.equals("Chờ xác nhận") || trangThai.equals("Đã xác nhận"));
         btnThanhToan.setVisible(!trangThai.equals("Đã hủy"));
         btnXacNhan.setVisible(trangThai.equals("Chờ xác nhận"));

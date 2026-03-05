@@ -431,7 +431,7 @@ class DonHangCreateCard extends JPanel {
         // Customer dropdown (auto-fill)
         JComboBox<String> cbKhachHang = new JComboBox<>();
         cbKhachHang.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cbKhachHang.addItem("-- Nh\u1eadp kh\u00e1ch m\u1edbi --");
+        cbKhachHang.addItem("-- Ch\u1ecdn kh\u00e1ch h\u00e0ng --");
         for (CustomerDTO c : allCustomers) {
             String label = (c.getCode() != null ? c.getCode() : "") + " - "
                          + (c.getFullName() != null ? c.getFullName() : "")
@@ -440,15 +440,11 @@ class DonHangCreateCard extends JPanel {
         }
         cbKhachHang.addActionListener(e -> {
             int idx = cbKhachHang.getSelectedIndex();
-            if (idx <= 0 || idx - 1 >= allCustomers.size()) {
-                tfTenND.setEditable(true); tfSdt.setEditable(true); tfDiaChi.setEditable(true);
-                return;
-            }
+            if (idx <= 0 || idx - 1 >= allCustomers.size()) return;
             CustomerDTO sel = allCustomers.get(idx - 1);
             tfTenND.setText(sel.getFullName() != null ? sel.getFullName() : "");
             tfSdt.setText(sel.getPhone() != null ? sel.getPhone() : "");
             tfDiaChi.setText(sel.getAddress() != null ? sel.getAddress() : "");
-            tfTenND.setEditable(false); tfSdt.setEditable(false); tfDiaChi.setEditable(false);
         });
 
         JButton btnTaoKH = new JButton("+ T\u1ea1o kh\u00e1ch m\u1edbi");
@@ -590,12 +586,22 @@ class DonHangCreateCard extends JPanel {
                 "Ch\u1edd x\u00e1c nh\u1eadn", "" });
             parent.nhanVienMap.put(maDon, nhanVien);
             parent.timeMap.put(maDon, lbTime.getText());
+            DonHangPanel.OrderDetailData od = new DonHangPanel.OrderDetailData();
+            od.ten = ten; od.phone = sdt; od.diaChi = diaChi;
+            od.payMethod = cbHinhThuc.getSelectedItem().toString();
+            od.notes = taNotes.getText().trim();
+            od.maKM = maKM; od.discAmt = discAmt; od.time = lbTime.getText();
+            for (OrderItem it : items) {
+                DonHangPanel.OrderDetailData.Item di = new DonHangPanel.OrderDetailData.Item();
+                di.code = it.code; di.name = it.name; di.unitPrice = it.unitPrice; di.qty = it.qty;
+                od.items.add(di);
+            }
+            parent.orderDataMap.put(maDon, od);
             JOptionPane.showMessageDialog(this,
                 "\u0110\u00e3 t\u1ea1o \u0111\u01a1n h\u00e0ng " + maDon + " th\u00e0nh c\u00f4ng!",
                 "Th\u00e0nh c\u00f4ng", JOptionPane.INFORMATION_MESSAGE);
             // reset
             cbKhachHang.setSelectedIndex(0);
-            tfTenND.setEditable(true); tfSdt.setEditable(true); tfDiaChi.setEditable(true);
             tfTenND.setText(""); tfSdt.setText(""); tfDiaChi.setText("");
             taNotes.setText(""); tfMaKM.setText("");
             cbNhanVien.setSelectedIndex(0);

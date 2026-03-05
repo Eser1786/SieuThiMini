@@ -9,12 +9,12 @@ import java.awt.*;
 class DonHangTableCard extends JPanel {
 
     private static final Object[][] SAMPLE_ORDERS = {
-            { "HD001", "Beheocon",    5, "-10.000đ", "90.000đ",  "Chờ xác nhận"   },
-            { "HD002", "Nguyễn Anh", 3, "-0đ",      "150.000đ", "Đã xác nhận"    },
-            { "HD003", "Lê Hoàng",   7, "-20.000đ", "280.000đ", "Chờ vận chuyển" },
-            { "HD004", "Trần Bảo",   2, "-5.000đ",  "45.000đ",  "Đang giao"      },
-            { "HD005", "Phạm Thu",   4, "-0đ",      "200.000đ", "Đã giao"        },
-            { "HD006", "Võ Minh",    1, "-0đ",      "36.000đ",  "Đã hủy"         },
+            { "HD001", "Beheocon",    5, "KM001",  "90.000đ",  "Chờ xác nhận"   },
+            { "HD002", "Nguyễn Anh", 3, "-",      "150.000đ", "Đã xác nhận"    },
+            { "HD003", "Lê Hoàng",   7, "KM2025", "280.000đ", "Chờ vận chuyển" },
+            { "HD004", "Trần Bảo",   2, "KM005",  "45.000đ",  "Đang giao"      },
+            { "HD005", "Phạm Thu",   4, "-",      "200.000đ", "Đã giao"        },
+            { "HD006", "Võ Minh",    1, "-",      "36.000đ",  "Đã hủy"         },
     };
 
     private final DonHangPanel parent;

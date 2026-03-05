@@ -25,6 +25,14 @@ public class DonHangPanel extends JPanel {
     int currentRow = -1;
     final java.util.HashMap<String, String> nhanVienMap = new java.util.HashMap<>();
     final java.util.HashMap<String, String> timeMap    = new java.util.HashMap<>();
+    final java.util.HashMap<String, OrderDetailData> orderDataMap = new java.util.HashMap<>();
+
+    static class OrderDetailData {
+        String ten = "", phone = "", diaChi = "", payMethod = "", notes = "", maKM = "", time = "";
+        long discAmt = 0;
+        final java.util.List<Item> items = new java.util.ArrayList<>();
+        static class Item { String code = "", name = ""; long unitPrice; int qty; }
+    }
 
     private final DonHangDetailCard  detailCard;
     private final DonHangInvoiceCard invoiceCard;

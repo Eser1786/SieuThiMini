@@ -18,7 +18,7 @@ public class CustomerDAO {
                                       "&allowPublicKeyRetrieval=true" +
                                       "&serverTimezone=UTC" +
                                       "&useUnicode=true" +
-                                      "&characterEncoding=UTF-8";
+                                      "&characterEncoding=utf8mb4";
             String USER = "sieuthimini_user";
             String PASSWORD = "sieuthimini_pass123";
             
@@ -50,11 +50,11 @@ public class CustomerDAO {
                 while(rs.next()){
                     CustomerDTO customer = new CustomerDTO();
                     customer.setId(rs.getInt("customer_id"));
-                    customer.setCode(rs.getString("customer_code"));
-                    customer.setFullName(rs.getString("full_name"));
-                    customer.setPhone(rs.getString("phone"));
-                    customer.setEmail(rs.getString("email"));
-                    customer.setAddress(rs.getString("address"));
+                    customer.setCode(fixEncoding(rs.getString("customer_code")));
+                    customer.setFullName(fixEncoding(rs.getString("full_name")));
+                    customer.setPhone(fixEncoding(rs.getString("phone")));
+                    customer.setEmail(fixEncoding(rs.getString("email")));
+                    customer.setAddress(fixEncoding(rs.getString("address")));
                     customer.setLoyaltyPoints(rs.getInt("loyalty_points"));
 
                     Timestamp tsCreated = rs.getTimestamp("created_at");
@@ -207,14 +207,20 @@ public class CustomerDAO {
         return customer;
     }
 
-    /** Fix UTF-8 data that was stored/returned as ISO-8859-1 (mojibake). */
+    /** Fix UTF-8 data that was stored/returned as ISO-8859-1 (mojibake).
+     *  Skip if string already contains proper Unicode chars (> U+00FF). */
     private static String fixEncoding(String s) {
         if (s == null) return null;
-        try {
-            return new String(s.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1),
-                              java.nio.charset.StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            return s;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) > 0xFF) return s; // Already proper Unicode, no fix needed
         }
+        try {
+            String d = new String(s.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1),
+                                  java.nio.charset.StandardCharsets.UTF_8);
+            for (int i = 0; i < d.length(); i++) {
+                if (d.charAt(i) > 0xFF) return d; // Successfully decoded mojibake
+            }
+        } catch (Exception ignored) {}
+        return s;
     }
 }
