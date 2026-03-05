@@ -1,4 +1,11 @@
 @echo off
+cd /d "%~dp0"
+
+if not exist "lib\openpdf-1.3.39.jar" (
+    echo Thieu thu vien openpdf-1.3.39.jar trong thu muc lib.
+    echo Vui long kiem tra lai de chuc nang xuat PDF hoat dong.
+)
+
 echo Đang biên dịch mã nguồn Java...
 dir /s /b src\*.java > sources.txt
 javac -encoding UTF-8 -cp "lib/*" -sourcepath src -d bin @sources.txt
