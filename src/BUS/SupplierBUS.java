@@ -1,6 +1,13 @@
 package BUS;
 import DTO.SupplierDTO;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
+
+import DAO.DBConnection;
 import DAO.SupplierDAO;
 public class SupplierBUS {
     private SupplierDAO supplierDAO;
@@ -27,5 +34,25 @@ public class SupplierBUS {
         supplier.setCreatedAt(LocalDateTime.now());
         return supplierDAO.addSupplier(supplier);
     } 
+
+    private String generateSupplierCode() {
+        // Logic tạo code: 'NV' + số tăng dần (tìm max code từ DB + 1)
+        String sql = "SELECT MAX(supplier_code) FROM suppliers WHERE supplier_code LIKE 'NCC%'";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                String maxCode = rs.getString(1);
+                if (maxCode == null) {
+                    return "NCC001";
+                }
+                int num = Integer.parseInt(maxCode.substring(2)) + 1;
+                return "NCC" + String.format("%03d", num);  
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "default";  // Default nếu lỗi
+    }
     
 }

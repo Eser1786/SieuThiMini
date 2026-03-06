@@ -1,9 +1,11 @@
 package BUS;
 import DTO.CustomerDTO;
 
+import java.sql.*;
 import java.util.ArrayList;
 
 import DAO.CustomerDAO;
+import DAO.DBConnection;
 public class CustomerBUS {
     private CustomerDAO customerDAO;
 
@@ -32,6 +34,26 @@ public class CustomerBUS {
             return false;
         }
         return customerDAO.addCustomer(customer);
+    }
+
+    private String generateCustomerCode() {
+        // Logic tạo code: 'NV' + số tăng dần (tìm max code từ DB + 1)
+        String sql = "SELECT MAX(customer_code) FROM customers WHERE customer_code LIKE 'KH%'";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                String maxCode = rs.getString(1);
+                if (maxCode == null) {
+                    return "KH001";
+                }
+                int num = Integer.parseInt(maxCode.substring(2)) + 1;
+                return "KH" + String.format("%03d", num);  
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "default";  // Default nếu lỗi
     }
     
 }
