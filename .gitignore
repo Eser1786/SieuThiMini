@@ -2,6 +2,7 @@
 bin/
 out/
 *.class
+sources.txt
 
 # ── Build tools ──────────────────────────────────
 *.jar
@@ -22,3 +23,7 @@ out/
 # ── OS ────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# ── Local backups ─────────────────────────────────
+.backup/
+backup/

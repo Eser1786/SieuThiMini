@@ -1,5 +1,6 @@
-package GUI;
+package GUI.TrangChu;
 
+import GUI.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -19,10 +20,10 @@ public class TrangChuPanel extends JPanel {
         topCards.setBorder(BorderFactory.createEmptyBorder(18, 18, 12, 18));
 
         Object[][] cardData = {
-            { "💳", "Doanh thu:",    "15.000.000 VND", new Color(0xD4F4E2), new Color(0x5CB85C) },
-            { "🛒", "Đơn hàng mới:", "25 đơn",         new Color(0xCDE8FF), new Color(0x4A90D9) },
-            { "⚠",  "Sản phẩm sắp hết:", "5 mặt hàng", new Color(0xFFF3CD), new Color(0xF0AD4E) },
-            { "👤", "Khách hàng mới:", "+10 khách",    new Color(0xF5D0F5), new Color(0xAB47BC) },
+                { "💳", "Doanh thu:", "15.000.000 VND", new Color(0xD4F4E2), new Color(0x5CB85C) },
+                { "🛒", "Đơn hàng mới:", "25 đơn", new Color(0xCDE8FF), new Color(0x4A90D9) },
+                { "⚠", "Sản phẩm sắp hết:", "5 mặt hàng", new Color(0xFFF3CD), new Color(0xF0AD4E) },
+                { "👤", "Khách hàng mới:", "+10 khách", new Color(0xF5D0F5), new Color(0xAB47BC) },
         };
 
         for (Object[] d : cardData) {
@@ -62,7 +63,7 @@ public class TrangChuPanel extends JPanel {
             txtPanel.add(lbTitle);
             txtPanel.add(lbVal);
 
-            card.add(icon,     BorderLayout.WEST);
+            card.add(icon, BorderLayout.WEST);
             card.add(txtPanel, BorderLayout.CENTER);
             topCards.add(card);
         }
@@ -95,7 +96,8 @@ public class TrangChuPanel extends JPanel {
                 int n = chartValues.length;
 
                 g2.setColor(new Color(0xDDDDDD));
-                g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{4}, 0));
+                g2.setStroke(
+                        new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 4 }, 0));
                 for (int i = 0; i <= 4; i++) {
                     int y = padT + chartH * i / 4;
                     g2.drawLine(padL, y, padL + chartW, y);
@@ -111,8 +113,10 @@ public class TrangChuPanel extends JPanel {
                     xs[i] = padL + i * chartW / (n - 1);
                     ys[i] = padT + chartH - chartValues[i] * chartH / 100;
                 }
-                xs[n] = padL + chartW; ys[n] = padT + chartH;
-                xs[n + 1] = padL;       ys[n + 1] = padT + chartH;
+                xs[n] = padL + chartW;
+                ys[n] = padT + chartH;
+                xs[n + 1] = padL;
+                ys[n + 1] = padT + chartH;
 
                 g2.setColor(new Color(0xB8A9D9));
                 g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
@@ -142,7 +146,7 @@ public class TrangChuPanel extends JPanel {
         chart.setPreferredSize(new Dimension(0, 260));
 
         chartCard.add(chartTitle, BorderLayout.NORTH);
-        chartCard.add(chart,      BorderLayout.CENTER);
+        chartCard.add(chart, BorderLayout.CENTER);
 
         // recent orders table
         JPanel orderCard = UIUtils.createCard();
@@ -152,13 +156,16 @@ public class TrangChuPanel extends JPanel {
 
         String[] orderCols = { "Mã đơn", "Khách hàng", "Trạng thái" };
         Object[][] orderRows = {
-            { "HD001", "Nguyễn Văn A", "Đang giao" },
-            { "HD002", "Nguyễn Văn N", "Đã giao"   },
-            { "HD003", "Nguyễn Văn D", "Bị boom"   },
+                { "HD001", "Nguyễn Văn A", "Đang giao" },
+                { "HD002", "Nguyễn Văn N", "Đã giao" },
+                { "HD003", "Nguyễn Văn D", "Bị boom" },
         };
 
         DefaultTableModel orderModel = new DefaultTableModel(orderRows, orderCols) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         JTable orderTable = new JTable(orderModel);
         orderTable.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -182,9 +189,9 @@ public class TrangChuPanel extends JPanel {
                     String val = v == null ? "" : v.toString();
                     switch (val) {
                         case "Đang giao" -> setForeground(new Color(0x1976D2));
-                        case "Đã giao"   -> setForeground(new Color(0x388E3C));
-                        case "Bị boom"   -> setForeground(new Color(0xC62828));
-                        default          -> setForeground(Color.BLACK);
+                        case "Đã giao" -> setForeground(new Color(0x388E3C));
+                        case "Bị boom" -> setForeground(new Color(0xC62828));
+                        default -> setForeground(Color.BLACK);
                     }
                 } else {
                     setForeground(Color.BLACK);
@@ -195,15 +202,16 @@ public class TrangChuPanel extends JPanel {
         for (int i = 0; i < 3; i++)
             orderTable.getColumnModel().getColumn(i).setCellRenderer(statusRenderer);
 
-        orderCard.add(orderTitle,              BorderLayout.NORTH);
+        orderCard.add(orderTitle, BorderLayout.NORTH);
         orderCard.add(new JScrollPane(orderTable), BorderLayout.CENTER);
 
         centerPanel.add(chartCard);
         centerPanel.add(orderCard);
 
-        add(topCards,    BorderLayout.NORTH);
+        add(topCards, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
     }
+
     public static void main(String[] args) {
         JFrame f = new JFrame("Trang chủ");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -213,3 +221,5 @@ public class TrangChuPanel extends JPanel {
         f.setVisible(true);
     }
 }
+
+

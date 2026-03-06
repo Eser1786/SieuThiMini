@@ -1,5 +1,14 @@
 package GUI;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -9,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Tiện ích xuất dữ liệu bảng ra file CSV (mở được bằng Excel)
- * và xuất PDF bằng Java Print API thuần (không cần thư viện ngoài).
+ * và xuất PDF trực tiếp ra file.
  */
 public class ExportUtils {
 
@@ -104,7 +113,7 @@ public class ExportUtils {
 
     /*
      * ─────────────────────────────────────────────
-     * XUẤT PDF (dùng Java Print API + Graphics2D)
+     * XUẤT PDF (ghi trực tiếp ra file, không mở Print dialog)
      * ─────────────────────────────────────────────
      */
     public static void xuatPDF(Component parent, DefaultTableModel model, String tieuDe) {
@@ -118,57 +127,68 @@ public class ExportUtils {
         if (!file.getName().toLowerCase().endsWith(".pdf"))
             file = new File(file.getAbsolutePath() + ".pdf");
 
-        PrinterJob job = PrinterJob.getPrinterJob();
-
-        // Thiết lập trang nằm ngang (landscape) nếu nhiều cột
-        PageFormat pf = job.defaultPage();
-        Paper paper = pf.getPaper();
-        if (model.getColumnCount() > 6) {
-            pf.setOrientation(PageFormat.LANDSCAPE);
-        } else {
-            pf.setOrientation(PageFormat.PORTRAIT);
-        }
-        paper.setImageableArea(20, 20, paper.getWidth() - 40, paper.getHeight() - 40);
-        pf.setPaper(paper);
-
-        job.setPrintable(new TablePrintable(model, tieuDe), pf);
-        job.setJobName(tieuDe);
-
-        // Tìm máy in Microsoft Print to PDF để in thẳng ra file
-        boolean foundPdfPrinter = false;
         try {
-            javax.print.PrintService[] services = java.awt.print.PrinterJob.lookupPrintServices();
-            for (javax.print.PrintService ps : services) {
-                if (ps.getName().contains("Print to PDF")) {
-                    job.setPrintService(ps);
-                    foundPdfPrinter = true;
-                    break;
+            Rectangle pageSize = model.getColumnCount() > 6 ? PageSize.A4.rotate() : PageSize.A4;
+            Document document = new Document(pageSize, 20, 20, 24, 20);
+            PdfWriter.getInstance(document, new FileOutputStream(file));
+            document.open();
+
+            BaseFont baseFont;
+            try {
+                baseFont = BaseFont.createFont("C:/Windows/Fonts/arial.ttf", BaseFont.IDENTITY_H,
+                        BaseFont.EMBEDDED);
+            } catch (Exception e) {
+                baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+            }
+
+            com.lowagie.text.Font titleFont = new com.lowagie.text.Font(baseFont, 16, com.lowagie.text.Font.BOLD);
+            com.lowagie.text.Font headerFont = new com.lowagie.text.Font(baseFont, 10, com.lowagie.text.Font.BOLD);
+            com.lowagie.text.Font cellFont = new com.lowagie.text.Font(baseFont, 9);
+
+            Paragraph title = new Paragraph(tieuDe, titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(10f);
+            document.add(title);
+
+            java.util.List<Integer> visibleCols = new java.util.ArrayList<>();
+            for (int c = 0; c < model.getColumnCount(); c++) {
+                if (!model.getColumnName(c).equalsIgnoreCase("Thao tác")) {
+                    visibleCols.add(c);
                 }
             }
-        } catch (Exception ignored) {
-        }
 
-        try {
-            if (foundPdfPrinter) {
-                // In ngầm thẳng ra tệp
-                javax.print.attribute.HashPrintRequestAttributeSet attributes = new javax.print.attribute.HashPrintRequestAttributeSet();
-                attributes.add(new javax.print.attribute.standard.Destination(file.toURI()));
-                job.print(attributes);
-                JOptionPane.showMessageDialog(parent,
-                        "Xuất file thành công!\n" + file.getAbsolutePath(),
-                        "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                // Nếu không có driver PDF, bung dialog (ít xảy ra trên Win10)
-                if (job.printDialog()) {
-                    job.print();
-                    JOptionPane.showMessageDialog(parent,
-                            "In/Xuất PDF thành công!",
-                            "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
+            PdfPTable table = new PdfPTable(visibleCols.size());
+            table.setWidthPercentage(100f);
+            table.setHeaderRows(1);
+
+            for (int ci : visibleCols) {
+                PdfPCell headerCell = new PdfPCell(new com.lowagie.text.Phrase(model.getColumnName(ci), headerFont));
+                headerCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                headerCell.setBackgroundColor(new Color(175, 159, 203));
+                headerCell.setPadding(5f);
+                table.addCell(headerCell);
+            }
+
+            for (int r = 0; r < model.getRowCount(); r++) {
+                for (int ci : visibleCols) {
+                    Object val = model.getValueAt(r, ci);
+                    String txt = val == null ? "" : val.toString();
+                    PdfPCell cell = new PdfPCell(new com.lowagie.text.Phrase(txt, cellFont));
+                    cell.setPadding(4f);
+                    table.addCell(cell);
                 }
             }
-        } catch (PrinterException ex) {
+
+            document.add(table);
+            document.close();
+
             JOptionPane.showMessageDialog(parent,
-                    "Lỗi khi in/xuất PDF: " + ex.getMessage(),
+                    "Xuất PDF thành công!\n" + file.getAbsolutePath(),
+                    "Xuất PDF", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Throwable ex) {
+            JOptionPane.showMessageDialog(parent,
+                "Lỗi khi xuất PDF: " + ex.getMessage()
+                    + "\n\nNếu bạn chạy bằng 'Run Java', hãy đảm bảo classpath có lib/openpdf-1.3.39.jar hoặc chạy bằng run_local.bat.",
                     "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }

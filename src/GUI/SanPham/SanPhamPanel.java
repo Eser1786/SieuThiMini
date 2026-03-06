@@ -5,6 +5,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
+
+import GUI.UIUtils;
+
 import java.awt.*;
 
 /**
@@ -370,7 +373,6 @@ public class SanPhamPanel extends JPanel {
         popup.add(footer, BorderLayout.SOUTH);
         popup.setVisible(true);
     }
-<<<<<<< HEAD
 
     /**
      * Popup xem chi tiết — hiển thị đầy đủ tất cả trường kể cả cột ẩn.
@@ -525,14 +527,3 @@ public class SanPhamPanel extends JPanel {
         popup.setVisible(true);
     }
 }
-=======
-    public static void main(String[] args) {
-        JFrame f = new JFrame("Quản lý Sản phẩm");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setSize(900, 600);
-        f.setLocationRelativeTo(null);
-        f.setContentPane(new SanPhamPanel());
-        f.setVisible(true);
-    }
-}
->>>>>>> db185573843897e570a50f70a275750f6518ba8a

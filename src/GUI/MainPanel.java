@@ -1,5 +1,13 @@
 package GUI;
 
+import GUI.DonHang.DonHangPanel;
+import GUI.KhachHang.KhachHangPanel;
+import GUI.Kho.KhoPanel;
+import GUI.KhuyenMai.KhuyenMaiPanel;
+import GUI.NhanVien.NhanVienPanel;
+import GUI.SanPham.SanPhamPanel;
+import GUI.TrangChu.TrangChuPanel;
+import GUI.User.UserPanel;
 import javax.swing.*;
 import java.awt.*;
 
@@ -26,6 +34,7 @@ public class MainPanel extends JPanel {
 
     // Theo dõi nút đang active để bỏ highlight khi chuyển tab
     private JButton activeBtn = null;
+    private JButton btnKhachHang;
 
     public MainPanel() {
         setLayout(new BorderLayout());
@@ -33,7 +42,7 @@ public class MainPanel extends JPanel {
         // ── Header ──────────────────────────────────
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(new Color(0x2F2C35));
-        header.setPreferredSize(new Dimension(1440, 60));
+        header.setPreferredSize(new Dimension(0, 60));
 
         JPanel headerLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
         headerLeft.setBackground(new Color(0x2F2C35));
@@ -54,7 +63,7 @@ public class MainPanel extends JPanel {
         // ── Sidebar nav ─────────────────────────────
         JPanel nav = new JPanel();
         nav.setLayout(new BoxLayout(nav, BoxLayout.Y_AXIS));
-        nav.setPreferredSize(new Dimension(180, 700));
+        nav.setPreferredSize(new Dimension(180, 0));
         nav.setBackground(new Color(0xD1C4E9));
         nav.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.BLACK, 1),
@@ -62,7 +71,7 @@ public class MainPanel extends JPanel {
 
         JButton btnTrangChu = createNavButton("Trang chủ");
         JButton btnSanPham = createNavButton("Sản phẩm");
-        JButton btnKhachHang = createNavButton("Khách hàng");
+        btnKhachHang = createNavButton("Khách hàng");
         JButton btnNhanVien = createNavButton("Nhân viên");
         JButton btnDonHang = createNavButton("Đơn hàng");
         JButton btnKho = createNavButton("Kho");
@@ -175,5 +184,17 @@ public class MainPanel extends JPanel {
             }
         });
         return btn;
+    }
+
+    /** Navigate to KhachHang tab and open the "Thêm" (create-new) card */
+    public void showKhachHangCreate() {
+        cardLayout.show(mainCards, KHACH_HANG);
+        setActive(btnKhachHang);
+        for (java.awt.Component c : mainCards.getComponents()) {
+            if (c instanceof KhachHangPanel kh) {
+                kh.showCard(KhachHangPanel.CARD_THEM);
+                break;
+            }
+        }
     }
 }
