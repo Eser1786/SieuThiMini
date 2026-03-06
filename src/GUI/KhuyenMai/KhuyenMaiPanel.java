@@ -132,6 +132,7 @@ public class KhuyenMaiPanel extends JPanel {
         JSeparator sep = new JSeparator();
         sep.setForeground(new Color(0x9575CD));
         sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        sep.setAlignmentX(Component.CENTER_ALIGNMENT);
         left.add(sep);
         left.add(Box.createVerticalStrut(12));
 
@@ -139,7 +140,7 @@ public class KhuyenMaiPanel extends JPanel {
             JLabel lbDL = new JLabel(descLabel);
             lbDL.setFont(new Font("Arial", Font.PLAIN, 11));
             lbDL.setForeground(new Color(0x5C4A7F));
-            lbDL.setAlignmentX(Component.LEFT_ALIGNMENT);
+            lbDL.setAlignmentX(Component.CENTER_ALIGNMENT);
             left.add(lbDL);
             left.add(Box.createVerticalStrut(4));
             JTextArea ta = new JTextArea();
@@ -149,20 +150,39 @@ public class KhuyenMaiPanel extends JPanel {
             ta.setForeground(new Color(0x2F2C35));
             JScrollPane tas = new JScrollPane(ta);
             tas.setBorder(BorderFactory.createLineBorder(new Color(0x9575CD)));
-            tas.setAlignmentX(Component.LEFT_ALIGNMENT);
+            tas.setAlignmentX(Component.CENTER_ALIGNMENT);
             tas.setPreferredSize(new Dimension(0, 85));
             tas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 85));
             left.add(tas);
         } else {
-            JPanel imgBox = new JPanel(new BorderLayout());
+            JPanel imgBox = new JPanel() {
+                private final Color IC = new Color(92, 74, 127);
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    int pw = getWidth(), ph = getHeight();
+                    double scale = Math.min((pw - 8) / 24.0, (ph - 8) / 24.0);
+                    double ox = (pw - 24 * scale) / 2.0, oy = (ph - 24 * scale) / 2.0;
+                    g2.translate(ox, oy);
+                    g2.scale(scale, scale);
+                    g2.setColor(IC);
+                    g2.setStroke(new BasicStroke(2.0f));
+                    g2.draw(new java.awt.geom.RoundRectangle2D.Double(3, 4, 18, 16, 4, 4));
+                    g2.fill(new java.awt.geom.Ellipse2D.Double(7.2, 7.2, 3.6, 3.6));
+                    java.awt.geom.Path2D.Float mountain = new java.awt.geom.Path2D.Float();
+                    mountain.moveTo(5, 18); mountain.lineTo(10.5f, 12); mountain.lineTo(14, 15);
+                    mountain.lineTo(16.5f, 13); mountain.lineTo(19, 18); mountain.closePath();
+                    g2.fill(mountain);
+                    g2.dispose();
+                }
+            };
             imgBox.setBackground(Color.WHITE);
             imgBox.setBorder(BorderFactory.createLineBorder(new Color(0x9575CD)));
             imgBox.setPreferredSize(new Dimension(110, 100));
             imgBox.setMaximumSize(new Dimension(120, 100));
             imgBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-            JLabel imgLbl = new JLabel("\uD83D\uDCF7", SwingConstants.CENTER);
-            imgLbl.setFont(new Font("Arial", Font.PLAIN, 36));
-            imgBox.add(imgLbl, BorderLayout.CENTER);
             left.add(imgBox);
         }
         left.add(Box.createVerticalGlue());
@@ -332,12 +352,25 @@ public class KhuyenMaiPanel extends JPanel {
         btns.add(btnHuy); btns.add(btnLuu);
         dlg.add(btns, BorderLayout.SOUTH);
         btnLuu.addActionListener(e -> {
-            String ma = tfs[0].getText().trim();
-            if (ma.isEmpty()) {
-                JOptionPane.showMessageDialog(dlg, "Vui l\u00f2ng nh\u1eadp m\u00e3 voucher.",
+            java.util.List<String> errs = new java.util.ArrayList<>();
+            if (tfs[0].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp m\u00e3 voucher.");
+            if (tfs[2].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp ng\u00e0y b\u1eaft \u0111\u1ea7u.");
+            if (tfs[3].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp gi\u00e1 tr\u1ecb t\u1ed1i thi\u1ec3u.");
+            if (tfs[4].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp % gi\u1ea3m.");
+            if (tfs[5].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp s\u1ed1 l\u01b0\u1ee3t s\u1eed d\u1ee5ng.");
+            if (tfs[6].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp ng\u00e0y k\u1ebft th\u00fac.");
+            if (!errs.isEmpty()) {
+                JOptionPane.showMessageDialog(dlg, String.join("\n", errs),
                         "Thi\u1ebfu th\u00f4ng tin", JOptionPane.WARNING_MESSAGE);
                 return;
             }
+            String ma = tfs[0].getText().trim();
             voucherModel.addRow(new Object[]{
                 voucherModel.getRowCount() + 1, ma,
                 tfs[4].getText().trim(), tfs[5].getText().trim()
@@ -385,45 +418,43 @@ public class KhuyenMaiPanel extends JPanel {
         btns.add(btnHuy); btns.add(btnLuu);
         dlg.add(btns, BorderLayout.SOUTH);
         btnLuu.addActionListener(e -> {
-            String maGiam = tfs[0].getText().trim();
-            String maSP   = tfs[1].getText().trim();
+            java.util.List<String> errs = new java.util.ArrayList<>();
+            String maGiam   = tfs[0].getText().trim();
+            String maSP     = tfs[1].getText().trim();
             String phanTram = tfs[2].getText().trim();
-            String ngayBD  = tfs[3].getText().trim();
-            String ngayKT  = tfs[4].getText().trim();
+            String ngayBD   = tfs[3].getText().trim();
+            String ngayKT   = tfs[4].getText().trim();
 
-            if (maGiam.isEmpty() || maSP.isEmpty() || phanTram.isEmpty()
-                    || ngayBD.isEmpty() || ngayKT.isEmpty()) {
-                JOptionPane.showMessageDialog(dlg,
-                        "Vui l\u00f2ng nh\u1eadp \u0111\u1ea7y \u0111\u1ee7 t\u1ea5t c\u1ea3 c\u00e1c tr\u01b0\u1eddng.",
-                        "Thi\u1ebfu th\u00f4ng tin", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            double pct;
-            try {
-                pct = Double.parseDouble(phanTram.replace("%", "").trim());
-                if (pct <= 0 || pct > 100) throw new NumberFormatException();
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dlg,
-                        "% Gi\u1ea3m ph\u1ea3i l\u00e0 s\u1ed1 trong kho\u1ea3ng (0, 100].",
-                        "Gi\u00e1 tr\u1ecb kh\u00f4ng h\u1ee3p l\u1ec7", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            // kiểm tra ngày: ngayBD < ngayKT
-            try {
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
-                sdf.setLenient(false);
-                java.util.Date bd = sdf.parse(ngayBD);
-                java.util.Date kt = sdf.parse(ngayKT);
-                if (!bd.before(kt)) {
-                    JOptionPane.showMessageDialog(dlg,
-                            "Ng\u00e0y k\u1ebft th\u00fac ph\u1ea3i sau ng\u00e0y b\u1eaft \u0111\u1ea7u.",
-                            "Ng\u00e0y kh\u00f4ng h\u1ee3p l\u1ec7", JOptionPane.WARNING_MESSAGE);
-                    return;
+            if (maGiam.isEmpty())   errs.add("- Vui l\u00f2ng nh\u1eadp m\u00e3 gi\u1ea3m.");
+            if (maSP.isEmpty())     errs.add("- Vui l\u00f2ng nh\u1eadp m\u00e3 s\u1ea3n ph\u1ea9m.");
+            if (phanTram.isEmpty()) {
+                errs.add("- Vui l\u00f2ng nh\u1eadp % gi\u1ea3m.");
+            } else {
+                try {
+                    double pct = Double.parseDouble(phanTram.replace("%", "").trim());
+                    if (pct <= 0 || pct > 100)
+                        errs.add("- % Gi\u1ea3m ph\u1ea3i l\u00e0 s\u1ed1 trong kho\u1ea3ng (0, 100].");
+                } catch (NumberFormatException ex2) {
+                    errs.add("- % Gi\u1ea3m ph\u1ea3i l\u00e0 s\u1ed1 h\u1ee3p l\u1ec7.");
                 }
-            } catch (java.text.ParseException ex) {
-                JOptionPane.showMessageDialog(dlg,
-                        "Ng\u00e0y ph\u1ea3i \u0111\u00fang \u0111\u1ecbnh d\u1ea1ng dd/MM/yyyy.",
-                        "Ng\u00e0y kh\u00f4ng h\u1ee3p l\u1ec7", JOptionPane.WARNING_MESSAGE);
+            }
+            if (ngayBD.isEmpty()) errs.add("- Vui l\u00f2ng nh\u1eadp ng\u00e0y b\u1eaft \u0111\u1ea7u.");
+            if (ngayKT.isEmpty()) errs.add("- Vui l\u00f2ng nh\u1eadp ng\u00e0y k\u1ebft th\u00fac.");
+            if (!ngayBD.isEmpty() && !ngayKT.isEmpty()) {
+                try {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                    sdf.setLenient(false);
+                    java.util.Date bd = sdf.parse(ngayBD);
+                    java.util.Date kt = sdf.parse(ngayKT);
+                    if (!bd.before(kt))
+                        errs.add("- Ng\u00e0y k\u1ebft th\u00fac ph\u1ea3i sau ng\u00e0y b\u1eaft \u0111\u1ea7u.");
+                } catch (java.text.ParseException ex2) {
+                    errs.add("- Ng\u00e0y ph\u1ea3i \u0111\u00fang \u0111\u1ecbnh d\u1ea1ng dd/MM/yyyy.");
+                }
+            }
+            if (!errs.isEmpty()) {
+                JOptionPane.showMessageDialog(dlg, String.join("\n", errs),
+                        "Thi\u1ebfu th\u00f4ng tin", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             discountModel.addRow(new Object[]{ maGiam, maSP, phanTram });

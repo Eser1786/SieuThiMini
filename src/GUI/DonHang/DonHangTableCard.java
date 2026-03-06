@@ -90,7 +90,7 @@ class DonHangTableCard extends JPanel {
             public void mouseEntered(java.awt.event.MouseEvent e) { btnTao.setBackground(new Color(0xC5B3E6)); }
             public void mouseExited(java.awt.event.MouseEvent e)  { btnTao.setBackground(new Color(0xD9D9D9)); }
         });
-        btnTao.addActionListener(e -> parent.showCard(DonHangPanel.CARD_CREATE));
+        btnTao.addActionListener(e -> parent.openCreatePopup(SwingUtilities.getWindowAncestor(this)));
         top.add(btnTao);
 
         JButton btnPDF = ExportUtils.makeExportButton("Xuất PDF", new Color(0x7B52AB));
