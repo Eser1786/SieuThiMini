@@ -14,7 +14,7 @@ public class EmployeeDAO {
                                       "&allowPublicKeyRetrieval=true" +
                                       "&serverTimezone=UTC" +
                                       "&useUnicode=true" +
-                                      "&characterEncoding=UTF-8";
+                                      "&characterEncoding=utf8mb4";
             String USER = "sieuthimini_user";
             String PASSWORD = "sieuthimini_pass123";
             
