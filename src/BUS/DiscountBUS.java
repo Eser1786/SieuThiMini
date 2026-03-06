@@ -46,6 +46,7 @@ public class DiscountBUS {
     }catch(NumberFormatException e){
         return "Giá trị giảm phải là số";
     }
+<<<<<<< Updated upstream
 
     if(val.compareTo(BigDecimal.ZERO) <= 0)
         return "Giá trị giảm phải > 0";
@@ -125,4 +126,18 @@ public class DiscountBUS {
 
         return null;
     }
+=======
+    public DiscountDTO getDiscountById(int id){
+
+    ArrayList<DiscountDTO> list = getAllDiscounts();
+
+    for(DiscountDTO d : list){
+        if(d.getId() == id){
+            return d;
+        }
+    }
+
+    return null;
+}
+>>>>>>> Stashed changes
 }

@@ -11,7 +11,9 @@ import DTO.DiscountDTO;
 
 
 public class KhuyenMaiPanel extends JPanel {
+    
     private DiscountBUS discountBUS = new DiscountBUS();
+<<<<<<< Updated upstream
     // ===== Detail fields =====
     private JLabel lbName;
     private JTextArea taDesc;
@@ -22,12 +24,39 @@ public class KhuyenMaiPanel extends JPanel {
     private JLabel lbValue;
     private JLabel lbType;
     private JLabel lbMinOrder;
+=======
+
+>>>>>>> Stashed changes
     private static final Color PAGE_BG   = new Color(0xF8F7FF);
     private static final Color RIGHT_BG  = new Color(0x5C4A7F);
     private static final Color CARD_LEFT = new Color(0xD1C4E9);
     private static final Color TBL_HDR   = new Color(0x3D2F5C);
     private static final Color BTN_ADD   = new Color(0x3D2F5C);
-    
+    // ===== CARD VOUCHER =====
+private JLabel lbVoucherId = new JLabel();
+private JLabel lbVoucherName = new JLabel();
+private JLabel lbVoucherStart = new JLabel();
+private JLabel lbVoucherMin = new JLabel();
+private JLabel lbVoucherPercent = new JLabel();
+
+private JLabel lbVoucherEnd = new JLabel();
+
+
+
+// voucher detail
+private JLabel vStart = new JLabel();
+private JLabel vMin = new JLabel();
+private JLabel vPercent = new JLabel();
+
+private JLabel vEnd = new JLabel();
+
+
+// product discount detail
+private JLabel pOrigin = new JLabel();
+private JLabel pPromo = new JLabel();
+private JLabel pPercent = new JLabel();
+private JLabel pStart = new JLabel();
+private JLabel pEnd = new JLabel();
     private DefaultTableModel voucherModel;
     private DefaultTableModel discountModel;
 
@@ -77,6 +106,53 @@ public class KhuyenMaiPanel extends JPanel {
 
     // ── Left column (2 detail cards stacked) ─────────────────────────────────
     private JPanel buildLeftColumn() {
+<<<<<<< Updated upstream
+=======
+
+    JPanel col = new JPanel();
+    col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
+    col.setBackground(PAGE_BG);
+
+    // ===== PRODUCT DISCOUNT (PERCENT) =====
+    JLabel[] productValues = {
+        pOrigin, pPromo, pPercent, pStart, pEnd
+    };
+
+    col.add(buildDetailCard(
+            "Số khuyến mãi", "TÊN SẢN PHẨM", null,
+            new String[]{
+                "Giá gốc :",
+                "Giá khuyến mãi:",
+                "% Giảm :",
+                "Ngày bắt đầu :",
+                "Ngày kết thúc :"
+            },
+            productValues
+    ));
+
+    col.add(Box.createVerticalStrut(20));
+
+    // ===== VOUCHER (FIXED) =====
+    JLabel[] voucherValues = {
+        vStart, vMin, vPercent, vEnd
+    };
+
+    col.add(buildDetailCard(
+            "Số voucher", "MÃ VOUCHER", "Mô tả",
+            new String[]{
+                "Ngày bắt đầu :",
+                "Giá trị tối thiểu :",
+                "% Giảm :",
+                "Ngày kết thúc :"
+            },
+            voucherValues
+    ));
+
+    col.add(Box.createVerticalStrut(20));
+
+    return col;
+}
+>>>>>>> Stashed changes
 
     JPanel col = new JPanel();
     col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
@@ -107,7 +183,18 @@ public class KhuyenMaiPanel extends JPanel {
      * descLabel != null  → show textarea (voucher)
      * descLabel == null  → show image placeholder (product discount)
      */
+<<<<<<< Updated upstream
     private JPanel buildDetailCard(String title, String nameLabel, String descLabel, String[] fields) {
+=======
+    private JPanel buildDetailCard(String idLabel, String nameLabel,
+                               String descLabel,
+                               String[] fields,
+                               JLabel[] valueLabels) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(PAGE_BG);
+        card.setBorder(BorderFactory.createLineBorder(new Color(0xBBBBBB)));
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
+>>>>>>> Stashed changes
 
     JPanel card = new JPanel(new BorderLayout());
     card.setBackground(Color.WHITE);
@@ -141,8 +228,29 @@ taDesc.setBorder(BorderFactory.createLineBorder(new Color(130,110,200)));
 
     JSeparator line = new JSeparator();
 
+<<<<<<< Updated upstream
     JLabel descTitle = new JLabel(descLabel);
     descTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+=======
+        // Right panel
+        JPanel right = new JPanel(new GridBagLayout());
+        right.setBackground(Color.WHITE);
+        right.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
+        GridBagConstraints g = new GridBagConstraints();
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.insets = new Insets(5, 4, 5, 4);
+        Font lf = new Font("Arial", Font.BOLD, 13);
+        for (int i = 0; i < fields.length; i++) {
+            g.gridx = 0; g.gridy = i; g.weightx = 0.45;
+            JLabel l = new JLabel(fields[i]); l.setFont(lf);
+            right.add(l, g);
+            g.gridx = 1; g.weightx = 0.55;
+            right.add(valueLabels[i], g);
+        }
+        g.gridx = 0; g.gridy = fields.length;
+        g.gridwidth = 2; g.weighty = 1.0; g.fill = GridBagConstraints.BOTH;
+        right.add(new JLabel(), g);
+>>>>>>> Stashed changes
 
     JTextArea desc = new JTextArea(6,18);
     desc.setLineWrap(true);
@@ -204,11 +312,16 @@ right.add(lbMinOrder);
 }
 
     // ── Right column ─────────────────────────────────────────────────────────
+<<<<<<< Updated upstream
     private JPanel buildRightColumn() {
+=======
+   private JPanel buildRightColumn() {
+>>>>>>> Stashed changes
 
     JPanel col = new JPanel();
     col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
     col.setBackground(RIGHT_BG);
+<<<<<<< Updated upstream
     col.setBorder(BorderFactory.createEmptyBorder(16,16,16,16));
 
     discountModel = new DefaultTableModel(
@@ -219,6 +332,40 @@ right.add(lbMinOrder);
             return false;
         }
     };
+=======
+    col.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+
+    // ===== PERCENT (DISCOUNT PRODUCT) =====
+    discountModel = new DefaultTableModel(
+            new String[]{"Mã Giảm", "Mã SP", "% Giảm"}, 0) {
+        @Override public boolean isCellEditable(int r, int c) { return false; }
+    };
+
+    col.add(buildListSection(
+            "Danh sách giảm giá sản phẩm",
+            "+ THÊM KHUYẾN MÃI",
+            discountModel,
+            this::showAddDiscountDialog
+    ));
+
+    col.add(Box.createVerticalStrut(24));
+
+    // ===== FIXED (VOUCHER) =====
+    voucherModel = new DefaultTableModel(
+            new String[]{"Mã voucher","Tên Voucher","% Giảm"}, 0) {
+        @Override public boolean isCellEditable(int r, int c) { return false; }
+    };
+
+    col.add(buildListSection(
+            "Danh sách voucher",
+            "+ THÊM VOUCHER",
+            voucherModel,
+            this::showAddVoucherDialog
+    ));
+
+    return col;
+}
+>>>>>>> Stashed changes
 
     col.add(buildListSection(
         "Danh sách khuyến mãi",
@@ -272,6 +419,24 @@ right.add(lbMinOrder);
 
         // Table
         JTable table = new JTable(model);
+
+table.getSelectionModel().addListSelectionListener(e -> {
+
+    if (!e.getValueIsAdjusting()) {
+
+        int row = table.getSelectedRow();
+
+        if (row >= 0) {
+
+            String id = table.getValueAt(row, 0).toString();
+
+            showDiscountDetail(id);
+
+        }
+
+    }
+
+});
         table.setFont(new Font("Arial", Font.PLAIN, 13));
         table.setRowHeight(30);
         table.setShowVerticalLines(false);
@@ -487,6 +652,50 @@ right.add(lbMinOrder);
             d.getValue(),
             d.getDiscountType().name()
         });
+
+    }
+}
+private void loadVoucherDetail(int row){
+
+    ArrayList<DiscountDTO> list = discountBUS.getAllDiscounts();
+
+    for(DiscountDTO d : list){
+
+        if(d.getDiscountType().name().equals("FIXED") 
+           && d.getId() == (int)voucherModel.getValueAt(row,0)){
+
+            lbVoucherId.setText(String.valueOf(d.getId()));
+            lbVoucherName.setText(d.getName());
+            lbVoucherStart.setText(d.getStartDate().toString());
+            lbVoucherMin.setText(String.valueOf(d.getMinOrderAmount()));
+            lbVoucherPercent.setText(String.valueOf(d.getValue()));
+            lbVoucherEnd.setText(d.getEndDate().toString());
+
+        }
+
+    }
+
+}
+private void showDiscountDetail(String id){
+
+    DiscountDTO d = discountBUS.getDiscountById(Integer.parseInt(id));
+
+    if(d == null) return;
+
+    if(d.getDiscountType().name().equals("FIXED")){
+
+        vStart.setText(d.getStartDate().toString());
+        vMin.setText(String.valueOf(d.getMinOrderAmount()));
+        vPercent.setText(String.valueOf(d.getValue()));
+        vEnd.setText(d.getEndDate().toString());
+
+    }
+
+    if(d.getDiscountType().name().equals("PERCENT")){
+
+        pPercent.setText(String.valueOf(d.getValue()));
+        pStart.setText(d.getStartDate().toString());
+        pEnd.setText(d.getEndDate().toString());
 
     }
 }
