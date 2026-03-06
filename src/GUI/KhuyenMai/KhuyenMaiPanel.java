@@ -3,9 +3,13 @@ package GUI.KhuyenMai;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.util.ArrayList;
 
+import BUS.SalesBUS;
+import DTO.SaleDTO;
+import DAO.SaleDAO;
 public class KhuyenMaiPanel extends JPanel {
-
+    private SalesBUS saleBUS = new SalesBUS();
     private static final Color PAGE_BG   = new Color(0xF8F7FF);
     private static final Color RIGHT_BG  = new Color(0x5C4A7F);
     private static final Color CARD_DARK = new Color(0x2F2C35);
@@ -18,7 +22,7 @@ public class KhuyenMaiPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(PAGE_BG);
         add(buildPageHeader(), BorderLayout.NORTH);
-
+        
         JPanel body = new JPanel(new GridBagLayout());
         body.setBackground(PAGE_BG);
         body.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
@@ -37,6 +41,7 @@ public class KhuyenMaiPanel extends JPanel {
         body.add(rightCol, gc);
 
         add(body, BorderLayout.CENTER);
+         loadVoucherTable(); // load database
     }
 
     // ── Page header ──────────────────────────────────────────────────────────
@@ -394,6 +399,23 @@ public class KhuyenMaiPanel extends JPanel {
         dlg.setLocationRelativeTo(this);
         dlg.setVisible(true);
     }
+    private void loadVoucherTable(){
+
+    ArrayList<SaleDTO> list = saleBUS.getAllSales();
+
+    voucherModel.setRowCount(0);
+
+    for(SaleDTO s : list){
+
+        voucherModel.addRow(new Object[]{
+            s.getSaleID(),
+            s.getSaleCode(),
+            s.getDiscountAmount(),
+            s.getSaleStatus().getValue()
+        });
+
+    }
+}
 }
 
 
