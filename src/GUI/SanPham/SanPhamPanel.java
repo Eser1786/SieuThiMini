@@ -6,9 +6,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
+import GUI.ExportUtils;
 import GUI.UIUtils;
 
 import java.awt.*;
+import java.util.List;
 
 /**
  * Panel for product management. Contains a card layout switching between
@@ -71,25 +73,31 @@ public class SanPhamPanel extends JPanel {
             bang.getColumnModel().getColumn(i).setPreferredWidth(0);
         }
 
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 10));
-        top.setPreferredSize(new Dimension(1174, 94));
+        // ── TOP PANEL: Row 1 (filter/search) + Row 2 (action buttons) ──────
+        JPanel top = new JPanel();
+        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Color.BLACK, 1),
-            BorderFactory.createEmptyBorder(20, 10, 20, 10)
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
         ));
+
+        // Row 1: filter combo + search
+        JPanel topRow1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
+        topRow1.setBackground(new Color(0xF8F7FF));
 
         String[] boloc = { "Tất cả", "Còn hàng", "Hết hàng", "Có khuyến mãi", "Cận date" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
-        cbLoc.setPreferredSize(new Dimension(254, 42));
-        cbLoc.setFont(new Font("Arial", Font.PLAIN, 24));
+        cbLoc.setPreferredSize(new Dimension(180, 38));
+        cbLoc.setFont(new Font("Arial", Font.PLAIN, 14));
         cbLoc.setBackground(new Color(0xD9D9D9));
+        UIUtils.styleComboBox(cbLoc);
 
         JPanel timkiem = new JPanel(new BorderLayout());
-        timkiem.setPreferredSize(new Dimension(229, 42));
+        timkiem.setPreferredSize(new Dimension(220, 38));
         timkiem.setBackground(new Color(0xD9D9D9));
         JTextField tim = new JTextField();
-        tim.setFont(new Font("Arial", Font.PLAIN, 24));
+        tim.setFont(new Font("Arial", Font.PLAIN, 14));
         timkiem.add(tim, BorderLayout.CENTER);
 
         JButton nuttim = new JButton("🔍");
@@ -110,11 +118,18 @@ public class SanPhamPanel extends JPanel {
         });
         timkiem.add(nuttim, BorderLayout.EAST);
 
+        topRow1.add(cbLoc);
+        topRow1.add(timkiem);
+
+        // Row 2: Thêm + export/import buttons
+        JPanel topRow2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        topRow2.setBackground(new Color(0xF8F7FF));
+
         JButton them = new JButton("+ Thêm sản phẩm");
         them.setFocusPainted(false);
         them.setBackground(new Color(0xD9D9D9));
-        them.setPreferredSize(new Dimension(254, 42));
-        them.setFont(new Font("Arial", Font.BOLD, 24));
+        them.setPreferredSize(new Dimension(200, 36));
+        them.setFont(new Font("Arial", Font.BOLD, 14));
         them.setCursor(new Cursor(Cursor.HAND_CURSOR));
         them.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) { them.setBackground(new Color(0xC5B3E6)); }
@@ -163,9 +178,29 @@ public class SanPhamPanel extends JPanel {
             public void changedUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
         });
 
-        top.add(cbLoc);
-        top.add(timkiem);
-        top.add(them);
+        JButton btnPDF    = ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
+        JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
+        JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
+        for (JButton b : new JButton[]{btnPDF, btnExcel, btnImport})
+            b.setFont(new Font("Arial", Font.BOLD, 13));
+        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, model, "Danh sách sản phẩm"));
+        btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, model, "san_pham"));
+        btnImport.addActionListener(e -> {
+            List<String[]> rows = ExportUtils.importCSV(this);
+            if (rows == null) return;
+            for (String[] r : rows) {
+                if (r.length < 9) continue;
+                model.addRow(new Object[]{r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8]});
+            }
+        });
+
+        topRow2.add(them);
+        topRow2.add(btnPDF);
+        topRow2.add(btnExcel);
+        topRow2.add(btnImport);
+
+        top.add(topRow1);
+        top.add(topRow2);
 
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(new Color(0xF8F7FF));
@@ -250,7 +285,9 @@ public class SanPhamPanel extends JPanel {
             @Override public Object getCellEditorValue() { return ""; }
         });
 
-        content.add(new JScrollPane(bang), BorderLayout.CENTER);
+        JScrollPane bangScroll = new JScrollPane(bang);
+        UIUtils.styleScrollPane(bangScroll);
+        content.add(bangScroll, BorderLayout.CENTER);
         tableCard.add(top,     BorderLayout.NORTH);
         tableCard.add(content, BorderLayout.CENTER);
 
@@ -506,11 +543,16 @@ public class SanPhamPanel extends JPanel {
 
         JButton btnHuy = new JButton("Hủy");
         styleBtn(btnHuy, new Color(0x9B8EA8), 100, 40);
-        btnHuy.addActionListener(e -> {
-            int cf = JOptionPane.showConfirmDialog(popup,
-                    "Bạn có chắc muốn hủy? Thay đổi chưa lưu sẽ bị mất.",
-                    "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (cf == JOptionPane.YES_OPTION) popup.dispose();
+        btnHuy.addActionListener(e -> {
+
+            int cf = JOptionPane.showConfirmDialog(popup,
+
+                    "Bạn có chắc muốn hủy? Thay đổi chưa lưu sẽ bị mất.",
+
+                    "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            if (cf == JOptionPane.YES_OPTION) popup.dispose();
+
         });
 
         JButton btnLuu = new JButton("Lưu");

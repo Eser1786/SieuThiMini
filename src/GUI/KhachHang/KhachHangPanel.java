@@ -8,6 +8,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.util.List;
 
 /**
  * Panel for customer management. Contains a card layout switching between
@@ -76,30 +77,33 @@ public class KhachHangPanel extends JPanel {
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
         bang.setRowSorter(sorter); // Cho phép sắp xếp khi click vào header
 
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
-        top.setPreferredSize(new Dimension(0, 94));
+        // ── TOP TOOLBAR (2 rows, auto-height) ────────────────────────────────
+        JPanel top = new JPanel();
+        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.BLACK, 1),
-                BorderFactory.createEmptyBorder(0, 10, 0, 10)));
+                BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
+                BorderFactory.createEmptyBorder(8, 10, 8, 10)));
 
-        // ĐÃ SỬA: Cập nhật bộ lọc theo hạng và trạng thái (cột index đã thay đổi)
-        String[] boloc = { "Tất cả", "Đồng", "Bạc", "Vàng", "Kim cương", "Hoạt động", "Không hoạt động" };
+        // Row 1: filter combo + search field
+        JPanel khRow1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        khRow1.setBackground(new Color(0xF8F7FF));
+
+        String[] boloc = { "T\u1ea5t c\u1ea3", "\u0110\u1ed3ng", "B\u1ea1c", "V\u00e0ng", "Kim c\u01b0\u01a1ng", "Ho\u1ea1t \u0111\u1ed9ng", "Kh\u00f4ng ho\u1ea1t \u0111\u1ed9ng" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
-        cbLoc.setPreferredSize(new Dimension(220, 42));
-        cbLoc.setFont(new Font("Arial", Font.PLAIN, 22));
-        cbLoc.setBackground(new Color(0xD9D9D9));
+        cbLoc.setPreferredSize(new Dimension(200, 36));
+        UIUtils.styleComboBox(cbLoc);
 
         JPanel timkiem = new JPanel(new BorderLayout());
-        timkiem.setPreferredSize(new Dimension(229, 42));
-        timkiem.setBackground(new Color(0xD9D9D9));
+        timkiem.setPreferredSize(new Dimension(220, 36));
+        timkiem.setBackground(Color.WHITE);
+        timkiem.setBorder(BorderFactory.createLineBorder(new Color(0xBBBBBB), 1));
         JTextField tim = new JTextField();
-        tim.setFont(new Font("Arial", Font.PLAIN, 22));
-        tim.setBackground(new Color(0xD9D9D9));
+        tim.setFont(new Font("Arial", Font.PLAIN, 13));
         tim.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
         timkiem.add(tim, BorderLayout.CENTER);
 
-        JButton nuttim = new JButton("🔍");
+        JButton nuttim = new JButton("\uD83D\uDD0D");
         nuttim.setBorderPainted(false);
         nuttim.setContentAreaFilled(false);
         nuttim.setFocusPainted(false);
@@ -110,7 +114,6 @@ public class KhachHangPanel extends JPanel {
                 nuttim.setBackground(new Color(0xC5B3E6));
                 nuttim.setOpaque(true);
             }
-
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 nuttim.setContentAreaFilled(false);
                 nuttim.setOpaque(false);
@@ -118,31 +121,36 @@ public class KhachHangPanel extends JPanel {
         });
         timkiem.add(nuttim, BorderLayout.EAST);
 
-        JButton them = new JButton("+ Thêm khách hàng");
+        khRow1.add(cbLoc);
+        khRow1.add(timkiem);
+
+        // Row 2: Thêm button + export buttons
+        JPanel khRow2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        khRow2.setBackground(new Color(0xF8F7FF));
+
+        JButton them = new JButton("+ Th\u00eam kh\u00e1ch h\u00e0ng");
         them.setFocusPainted(false);
         them.setBackground(new Color(0xD9D9D9));
-        them.setPreferredSize(new Dimension(220, 42));
-        them.setFont(new Font("Arial", Font.BOLD, 18));
+        them.setFont(new Font("Arial", Font.BOLD, 13));
+        them.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        them.setOpaque(true);
+        them.setBorderPainted(false);
         them.setCursor(new Cursor(Cursor.HAND_CURSOR));
         them.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                them.setBackground(new Color(0xC5B3E6));
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                them.setBackground(new Color(0xD9D9D9));
-            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) { them.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent evt)  { them.setBackground(new Color(0xD9D9D9)); }
         });
         them.addActionListener(e -> {
             editingRow = -1;
             clearForm();
             enableFormFields(true);
-            btnLuu.setVisible(true);     
-            btnSua.setVisible(false);    
-            btnXoa.setVisible(false);    
+            btnLuu.setVisible(true);
+            btnSua.setVisible(false);
+            btnXoa.setVisible(false);
             btnHoanTac.setVisible(false);
             innerCard.show(this, CARD_THEM);
         });
+
         Runnable applyFilter = () -> {
             String tuKhoa = tim.getText().trim();
             int idxLoc = cbLoc.getSelectedIndex();
@@ -152,22 +160,22 @@ public class KhachHangPanel extends JPanel {
 
             switch (idxLoc) {
                 case 1: // Đồng
-                    filterLoc = RowFilter.regexFilter("(?i)^Đồng$", 5); // Cột Hạng (index 5)
+                    filterLoc = RowFilter.regexFilter("(?i)^\u0110\u1ed3ng$", 5); // Cột Hạng (index 5)
                     break;
                 case 2: // Bạc
-                    filterLoc = RowFilter.regexFilter("(?i)^Bạc$", 5);
+                    filterLoc = RowFilter.regexFilter("(?i)^B\u1ea1c$", 5);
                     break;
                 case 3: // Vàng
-                    filterLoc = RowFilter.regexFilter("(?i)^Vàng$", 5);
+                    filterLoc = RowFilter.regexFilter("(?i)^V\u00e0ng$", 5);
                     break;
                 case 4: // Kim cương
-                    filterLoc = RowFilter.regexFilter("(?i)^Kim cương$", 5);
+                    filterLoc = RowFilter.regexFilter("(?i)^Kim c\u01b0\u01a1ng$", 5);
                     break;
                 case 5: // Hoạt động
-                    filterLoc = RowFilter.regexFilter("(?i)^Hoạt động$", 6); // Cột Trạng thái (index 6)
+                    filterLoc = RowFilter.regexFilter("(?i)^Ho\u1ea1t \u0111\u1ed9ng$", 6); // Cột Trạng thái (index 6)
                     break;
                 case 6: // Không hoạt động
-                    filterLoc = RowFilter.regexFilter("(?i)^Không hoạt động$", 6);
+                    filterLoc = RowFilter.regexFilter("(?i)^Kh\u00f4ng ho\u1ea1t \u0111\u1ed9ng$", 6);
                     break;
                 default: // Tất cả
                     filterLoc = null;
@@ -178,9 +186,9 @@ public class KhachHangPanel extends JPanel {
             if (!tuKhoa.isEmpty()) {
                 filterTim = RowFilter.orFilter(
                         java.util.List.of(
-                                RowFilter.regexFilter("(?i)" + tuKhoa, 0), // Tìm theo mã KH
-                                RowFilter.regexFilter("(?i)" + tuKhoa, 1), // Tìm theo tên
-                                RowFilter.regexFilter("(?i)" + tuKhoa, 2) // Tìm theo SĐT
+                                RowFilter.regexFilter("(?i)" + tuKhoa, 0),
+                                RowFilter.regexFilter("(?i)" + tuKhoa, 1),
+                                RowFilter.regexFilter("(?i)" + tuKhoa, 2)
                 ));
             }
 
@@ -197,32 +205,32 @@ public class KhachHangPanel extends JPanel {
         cbLoc.addActionListener(e -> applyFilter.run());
         nuttim.addActionListener(e -> applyFilter.run());
         tim.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                applyFilter.run();
-            }
-
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                applyFilter.run();
-            }
-
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                applyFilter.run();
-            }
+            public void insertUpdate(javax.swing.event.DocumentEvent e)  { applyFilter.run(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e)  { applyFilter.run(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
         });
 
-        top.add(cbLoc);
-        top.add(timkiem);
-        top.add(them);
+        // Export buttons
+        JButton btnPDF = ExportUtils.makeExportButton("Xu\u1ea5t PDF", new Color(0x7B52AB));
+        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(KhachHangPanel.this, model, "Danh s\u00e1ch kh\u00e1ch h\u00e0ng"));
 
-        // Nút xuất PDF
-        JButton btnPDF = ExportUtils.makeExportButton("📄 Xuất PDF", new Color(0x7B52AB));
-        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(KhachHangPanel.this, model, "Danh sách khách hàng"));
-        top.add(btnPDF);
-
-        // Nút xuất Excel (CSV)
-        JButton btnExcel = ExportUtils.makeExportButton("📊 Xuất Excel", new Color(0x2E7D32));
+        JButton btnExcel = ExportUtils.makeExportButton("Xu\u1ea5t Excel", new Color(0x2E7D32));
         btnExcel.addActionListener(e -> ExportUtils.xuatCSV(KhachHangPanel.this, model, "khach_hang"));
-        top.add(btnExcel);
+
+        JButton btnImport = ExportUtils.makeImportButton("Nh\u1eadp CSV");
+        btnImport.addActionListener(e -> {
+            List<String[]> rows = ExportUtils.importCSV(KhachHangPanel.this);
+            if (rows == null) return;
+            for (String[] r : rows) { if (r.length < 8) continue; model.addRow((Object[])r); }
+        });
+
+        khRow2.add(them);
+        khRow2.add(btnPDF);
+        khRow2.add(btnExcel);
+        khRow2.add(btnImport);
+
+        top.add(khRow1);
+        top.add(khRow2);
 
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(new Color(0xF8F7FF));
@@ -333,7 +341,9 @@ public class KhachHangPanel extends JPanel {
             }
         });
 
-        content.add(new JScrollPane(bang), BorderLayout.CENTER);
+        JScrollPane bangScroll = new JScrollPane(bang);
+        UIUtils.styleScrollPane(bangScroll);
+        content.add(bangScroll, BorderLayout.CENTER);
         tableCard.add(top, BorderLayout.NORTH);
         tableCard.add(content, BorderLayout.CENTER);
 
