@@ -1,23 +1,18 @@
-
 package GUI.DonHang;
 
+import BUS.SalesBUS;
+import DTO.SaleDTO;
+import DTO.enums.SaleEnum.SaleStatus;
 import GUI.ExportUtils;
 import GUI.UIUtils;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.util.List;
 
 class DonHangTableCard extends JPanel {
 
-    private static final Object[][] SAMPLE_ORDERS = {
-            { "HD001", "Beheocon",    5, "-10.000đ",  "90.000đ",  "Chờ xác nhận"   },
-            { "HD002", "Nguyễn Anh", 3, "-",           "150.000đ", "Đã xác nhận"    },
-            { "HD003", "Lê Hoàng",   7, "-25.000đ",  "280.000đ", "Chờ vận chuyển" },
-            { "HD004", "Trần Bảo",   2, "-5.000đ",   "45.000đ",  "Đang giao"      },
-            { "HD005", "Phạm Thu",   4, "-",           "200.000đ", "Đã giao"        },
-            { "HD006", "Võ Minh",    1, "-",           "36.000đ",  "Đã hủy"         },
-    };
-
+    private final SalesBUS salesBUS = new SalesBUS();
     private final DonHangPanel parent;
 
     DonHangTableCard(DonHangPanel parent) {
@@ -35,8 +30,7 @@ class DonHangTableCard extends JPanel {
             @Override
             public boolean isCellEditable(int r, int c) { return c == 6; }
         };
-        for (Object[] row : SAMPLE_ORDERS)
-            parent.tableModel.addRow(new Object[]{ row[0], row[1], row[2], row[3], row[4], row[5], "" });
+        loadSalesFromDatabase();
 
         /* Toolbar */
         String[] trangThais = {
@@ -201,6 +195,64 @@ class DonHangTableCard extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
+    private void loadSalesFromDatabase() {
+    parent.tableModel.setRowCount(0);
+
+    try {
+
+        List<SaleDTO> sales = salesBUS.getAllSales();
+
+        if (sales == null || sales.isEmpty()) {
+            return;
+        }
+
+        for (SaleDTO s : sales) {
+
+            String maDon = s.getSaleCode();
+
+            String nguoiMua = s.getCustomerName() != null
+                    ? s.getCustomerName()
+                    : "";
+
+            int soLuong = s.getTotalQuantity();
+
+            String giamGia = "-";
+            if (s.getDiscountAmount() != null &&
+                s.getDiscountAmount().signum() != 0) {
+
+                giamGia = "-" + String.format("%,.0fđ", s.getDiscountAmount());
+            }
+
+            String tongTien = "-";
+            if (s.getTotalAmount() != null) {
+                tongTien = String.format("%,.0fđ", s.getTotalAmount());
+            }
+
+            String trangThai = mapStatus(s.getSaleStatus());
+
+            parent.tableModel.addRow(new Object[]{
+                    maDon,
+                    nguoiMua,
+                    soLuong,
+                    giamGia,
+                    tongTien,
+                    trangThai,
+                    ""
+            });
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+    private String mapStatus(SaleStatus status) {
+        if (status == null) return "";
+        return switch (status) {
+            case COMPLETED -> "Đã giao";
+            case CANCELLED -> "Đã hủy";
+        };
+    }
+
     private JPanel buildActionPanel(JTable table, int viewRow, boolean withAction) {
         int    modelRow  = table.convertRowIndexToModel(viewRow);
         String trangThai = parent.tableModel.getValueAt(modelRow, 5).toString();
@@ -257,13 +309,17 @@ class DonHangTableCard extends JPanel {
         if (t.isEditing()) t.getCellEditor().stopCellEditing();
     }
 
-    private void xacNhanDon(JTable t, int row) {
+   private void xacNhanDon(JTable t, int row) {
+
+    String saleCode = parent.tableModel.getValueAt(row, 0).toString();
+
+    boolean ok = salesBUS.confirmSale(saleCode);
+
+    if(ok){
         parent.tableModel.setValueAt("Đã xác nhận", row, 5);
         t.repaint();
-        JOptionPane.showMessageDialog(this,
-                "Đã xác nhận đơn " + parent.tableModel.getValueAt(row, 0),
-                "Thông báo", JOptionPane.INFORMATION_MESSAGE);
     }
+}
 
     private void huyDon(JTable t, int row) {
         int c = JOptionPane.showConfirmDialog(this,
