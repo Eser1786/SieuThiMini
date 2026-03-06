@@ -8,9 +8,9 @@ public class KhuyenMaiPanel extends JPanel {
 
     private static final Color PAGE_BG   = new Color(0xF8F7FF);
     private static final Color RIGHT_BG  = new Color(0x5C4A7F);
-    private static final Color CARD_LEFT = new Color(0xD1C4E9); // light lavender
+    private static final Color CARD_LEFT = new Color(0xD1C4E9);
     private static final Color TBL_HDR   = new Color(0x3D2F5C);
-    private static final Color BTN_ADD   = new Color(0x5C4A7F);
+    private static final Color BTN_ADD   = new Color(0x3D2F5C);
 
     private DefaultTableModel voucherModel;
     private DefaultTableModel discountModel;
@@ -102,7 +102,7 @@ public class KhuyenMaiPanel extends JPanel {
 
         JPanel body = new JPanel(new GridLayout(1, 2));
 
-        // Left panel (light lavender)
+        // Left panel
         JPanel left = new JPanel();
         left.setBackground(CARD_LEFT);
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
@@ -129,18 +129,12 @@ public class KhuyenMaiPanel extends JPanel {
         left.add(Box.createVerticalStrut(12));
 
         if (descLabel != null) {
-            // Mô tả: label + textarea cùng left, full width
-            JPanel descWrap = new JPanel();
-            descWrap.setLayout(new BoxLayout(descWrap, BoxLayout.Y_AXIS));
-            descWrap.setBackground(CARD_LEFT);
-            descWrap.setAlignmentX(Component.LEFT_ALIGNMENT);
-            descWrap.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
             JLabel lbDL = new JLabel(descLabel);
             lbDL.setFont(new Font("Arial", Font.PLAIN, 11));
             lbDL.setForeground(new Color(0x5C4A7F));
             lbDL.setAlignmentX(Component.LEFT_ALIGNMENT);
-            descWrap.add(lbDL);
-            descWrap.add(Box.createVerticalStrut(4));
+            left.add(lbDL);
+            left.add(Box.createVerticalStrut(4));
             JTextArea ta = new JTextArea();
             ta.setFont(new Font("Arial", Font.PLAIN, 12));
             ta.setLineWrap(true); ta.setWrapStyleWord(true);
@@ -149,10 +143,9 @@ public class KhuyenMaiPanel extends JPanel {
             JScrollPane tas = new JScrollPane(ta);
             tas.setBorder(BorderFactory.createLineBorder(new Color(0x9575CD)));
             tas.setAlignmentX(Component.LEFT_ALIGNMENT);
+            tas.setPreferredSize(new Dimension(0, 85));
             tas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 85));
-            tas.setPreferredSize(new Dimension(Short.MAX_VALUE, 85));
-            descWrap.add(tas);
-            left.add(descWrap);
+            left.add(tas);
         } else {
             JPanel imgBox = new JPanel(new BorderLayout());
             imgBox.setBackground(Color.WHITE);
@@ -210,7 +203,7 @@ public class KhuyenMaiPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         col.add(buildListSection("Danh s\u00e1ch gi\u1ea3m gi\u00e1 s\u1ea3n ph\u1ea9m",
-                "+ TH\u00caM KHUY\u1EECN M\u00C3I", discountModel, this::showAddDiscountDialog));
+                "+ TH\u00caM KHUY\u1EBEN M\u00C3I", discountModel, this::showAddDiscountDialog));
         return col;
     }
 
