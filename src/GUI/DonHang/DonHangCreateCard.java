@@ -156,7 +156,7 @@ class DonHangCreateCard extends JPanel {
         JLabel lbSub = new JLabel(String.format("%,.0f\u0111", (double)(it.unitPrice * it.qty)));
         lbSub.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lbSub.setForeground(new Color(0x5B4FCC));
-        lbSub.setPreferredSize(new Dimension(100, 24));
+        lbSub.setPreferredSize(new Dimension(75, 24));
         lbSub.setHorizontalAlignment(SwingConstants.RIGHT);
 
         // col 3: Spinner + DocumentFilter (digits only, min 1)
@@ -276,7 +276,7 @@ class DonHangCreateCard extends JPanel {
         lhg.gridy = 0; lhg.anchor = GridBagConstraints.WEST; lhg.insets = new Insets(0, 0, 0, 8);
         String[] hdrTxt = { "M\u00e3 SP", "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1",
                             "S\u1ed1 l\u01b0\u1ee3ng", "Th\u00e0nh ti\u1ec1n", "", "" };
-        int[]    hdrW   = { 70, 160, 90, 64, 100, 34, 0 };
+        int[]    hdrW   = { 70, 160, 90, 64, 75, 34, 0 };
         double[] hdrWx  = { 0, 0, 0, 0, 0, 0, 1.0 };
         for (int i = 0; i < hdrTxt.length; i++) {
             JLabel h = new JLabel(hdrTxt[i]);
