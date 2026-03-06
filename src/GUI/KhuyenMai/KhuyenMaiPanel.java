@@ -219,7 +219,7 @@ public class KhuyenMaiPanel extends JPanel {
         col.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
 
         voucherModel = new DefaultTableModel(
-                new String[]{ "M\u00e3 voucher","Tên Voucher", "% Gi\u1ea3m", "S\u1ed1 l\u01b0\u1ee3ng"}, 0) {
+                new String[]{ "M\u00e3 voucher","Tên Voucher", "% Gi\u1ea3m"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         col.add(buildListSection("Danh s\u00e1ch voucher", "+ TH\u00caM VOUCHER", voucherModel, this::showAddVoucherDialog));
@@ -480,8 +480,7 @@ public class KhuyenMaiPanel extends JPanel {
             voucherModel.addRow(new Object[]{
                 d.getId(),
                 d.getName(),
-                d.getValue(),
-                d.getMinOrderAmount()
+                d.getValue()
             });
 
         }
