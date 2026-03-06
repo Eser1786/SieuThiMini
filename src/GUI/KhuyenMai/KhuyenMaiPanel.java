@@ -8,8 +8,9 @@ public class KhuyenMaiPanel extends JPanel {
 
     private static final Color PAGE_BG   = new Color(0xF8F7FF);
     private static final Color RIGHT_BG  = new Color(0x5C4A7F);
-    private static final Color CARD_DARK = new Color(0x2F2C35);
+    private static final Color CARD_LEFT = new Color(0xD1C4E9); // light lavender
     private static final Color TBL_HDR   = new Color(0x3D2F5C);
+    private static final Color BTN_ADD   = new Color(0x5C4A7F);
 
     private DefaultTableModel voucherModel;
     private DefaultTableModel discountModel;
@@ -101,54 +102,61 @@ public class KhuyenMaiPanel extends JPanel {
 
         JPanel body = new JPanel(new GridLayout(1, 2));
 
-        // Dark left panel
+        // Left panel (light lavender)
         JPanel left = new JPanel();
-        left.setBackground(CARD_DARK);
+        left.setBackground(CARD_LEFT);
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
         left.setBorder(BorderFactory.createEmptyBorder(20, 16, 20, 16));
 
         JLabel lbId = new JLabel(idLabel);
         lbId.setFont(new Font("Arial", Font.PLAIN, 11));
-        lbId.setForeground(new Color(0xD1C4E9));
+        lbId.setForeground(new Color(0x5C4A7F));
         lbId.setAlignmentX(Component.CENTER_ALIGNMENT);
         left.add(lbId);
         left.add(Box.createVerticalStrut(8));
 
         JLabel lbName = new JLabel(nameLabel);
         lbName.setFont(new Font("Arial", Font.BOLD, 15));
-        lbName.setForeground(Color.WHITE);
+        lbName.setForeground(new Color(0x2F2C35));
         lbName.setAlignmentX(Component.CENTER_ALIGNMENT);
         left.add(lbName);
         left.add(Box.createVerticalStrut(6));
 
         JSeparator sep = new JSeparator();
-        sep.setForeground(new Color(0x88729B));
+        sep.setForeground(new Color(0x9575CD));
         sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
         left.add(sep);
         left.add(Box.createVerticalStrut(12));
 
         if (descLabel != null) {
+            // Mô tả: label + textarea cùng left, full width
+            JPanel descWrap = new JPanel();
+            descWrap.setLayout(new BoxLayout(descWrap, BoxLayout.Y_AXIS));
+            descWrap.setBackground(CARD_LEFT);
+            descWrap.setAlignmentX(Component.LEFT_ALIGNMENT);
+            descWrap.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
             JLabel lbDL = new JLabel(descLabel);
             lbDL.setFont(new Font("Arial", Font.PLAIN, 11));
-            lbDL.setForeground(new Color(0xD1C4E9));
+            lbDL.setForeground(new Color(0x5C4A7F));
             lbDL.setAlignmentX(Component.LEFT_ALIGNMENT);
-            left.add(lbDL);
-            left.add(Box.createVerticalStrut(4));
+            descWrap.add(lbDL);
+            descWrap.add(Box.createVerticalStrut(4));
             JTextArea ta = new JTextArea();
             ta.setFont(new Font("Arial", Font.PLAIN, 12));
             ta.setLineWrap(true); ta.setWrapStyleWord(true);
-            ta.setBackground(new Color(0x3D2F5C));
-            ta.setForeground(Color.WHITE);
+            ta.setBackground(Color.WHITE);
+            ta.setForeground(new Color(0x2F2C35));
             JScrollPane tas = new JScrollPane(ta);
-            tas.setBorder(BorderFactory.createLineBorder(new Color(0x88729B)));
+            tas.setBorder(BorderFactory.createLineBorder(new Color(0x9575CD)));
             tas.setAlignmentX(Component.LEFT_ALIGNMENT);
-            tas.setPreferredSize(new Dimension(0, 85));
             tas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 85));
-            left.add(tas);
+            tas.setPreferredSize(new Dimension(Short.MAX_VALUE, 85));
+            descWrap.add(tas);
+            left.add(descWrap);
         } else {
             JPanel imgBox = new JPanel(new BorderLayout());
-            imgBox.setBackground(new Color(0x3D2F5C));
-            imgBox.setBorder(BorderFactory.createLineBorder(new Color(0x88729B)));
+            imgBox.setBackground(Color.WHITE);
+            imgBox.setBorder(BorderFactory.createLineBorder(new Color(0x9575CD)));
             imgBox.setPreferredSize(new Dimension(110, 100));
             imgBox.setMaximumSize(new Dimension(120, 100));
             imgBox.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -159,7 +167,7 @@ public class KhuyenMaiPanel extends JPanel {
         }
         left.add(Box.createVerticalGlue());
 
-        // White right panel
+        // Right panel
         JPanel right = new JPanel(new GridBagLayout());
         right.setBackground(Color.WHITE);
         right.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
@@ -194,7 +202,7 @@ public class KhuyenMaiPanel extends JPanel {
                 new String[]{"S\u1ed1 voucher", "M\u00e3 voucher", "% Gi\u1ea3m", "S\u1ed1 l\u01b0\u1ee3ng"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        col.add(buildListSection("Danh s\u00e1ch voucher", "+TH\u00caM VOUCHER", voucherModel, this::showAddVoucherDialog));
+        col.add(buildListSection("Danh s\u00e1ch voucher", "+ TH\u00caM VOUCHER", voucherModel, this::showAddVoucherDialog));
         col.add(Box.createVerticalStrut(24));
 
         discountModel = new DefaultTableModel(
@@ -202,7 +210,7 @@ public class KhuyenMaiPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         col.add(buildListSection("Danh s\u00e1ch gi\u1ea3m gi\u00e1 s\u1ea3n ph\u1ea9m",
-                "+TH\u00caM KHUY\u1EECN M\u00C3I", discountModel, this::showAddDiscountDialog));
+                "+ TH\u00caM KHUY\u1EECN M\u00C3I", discountModel, this::showAddDiscountDialog));
         return col;
     }
 
@@ -226,8 +234,8 @@ public class KhuyenMaiPanel extends JPanel {
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         btnRow.setBackground(RIGHT_BG);
         btnRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnRow.add(listBtn("Refresh", new Color(0x2E7D32)));
-        JButton btnAdd = listBtn(addLabel, CARD_DARK);
+        btnRow.add(listBtn("Refresh", new Color(0x388E3C)));
+        JButton btnAdd = listBtn(addLabel, BTN_ADD);
         btnAdd.addActionListener(e -> onAdd.run());
         btnRow.add(btnAdd);
         top.add(btnRow);
@@ -377,15 +385,48 @@ public class KhuyenMaiPanel extends JPanel {
         btns.add(btnHuy); btns.add(btnLuu);
         dlg.add(btns, BorderLayout.SOUTH);
         btnLuu.addActionListener(e -> {
-            String maSP = tfs[1].getText().trim();
-            if (maSP.isEmpty()) {
-                JOptionPane.showMessageDialog(dlg, "Vui l\u00f2ng nh\u1eadp m\u00e3 s\u1ea3n ph\u1ea9m.",
+            String maGiam = tfs[0].getText().trim();
+            String maSP   = tfs[1].getText().trim();
+            String phanTram = tfs[2].getText().trim();
+            String ngayBD  = tfs[3].getText().trim();
+            String ngayKT  = tfs[4].getText().trim();
+
+            if (maGiam.isEmpty() || maSP.isEmpty() || phanTram.isEmpty()
+                    || ngayBD.isEmpty() || ngayKT.isEmpty()) {
+                JOptionPane.showMessageDialog(dlg,
+                        "Vui l\u00f2ng nh\u1eadp \u0111\u1ea7y \u0111\u1ee7 t\u1ea5t c\u1ea3 c\u00e1c tr\u01b0\u1eddng.",
                         "Thi\u1ebfu th\u00f4ng tin", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            discountModel.addRow(new Object[]{
-                tfs[0].getText().trim(), maSP, tfs[2].getText().trim()
-            });
+            double pct;
+            try {
+                pct = Double.parseDouble(phanTram.replace("%", "").trim());
+                if (pct <= 0 || pct > 100) throw new NumberFormatException();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dlg,
+                        "% Gi\u1ea3m ph\u1ea3i l\u00e0 s\u1ed1 trong kho\u1ea3ng (0, 100].",
+                        "Gi\u00e1 tr\u1ecb kh\u00f4ng h\u1ee3p l\u1ec7", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            // kiểm tra ngày: ngayBD < ngayKT
+            try {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                sdf.setLenient(false);
+                java.util.Date bd = sdf.parse(ngayBD);
+                java.util.Date kt = sdf.parse(ngayKT);
+                if (!bd.before(kt)) {
+                    JOptionPane.showMessageDialog(dlg,
+                            "Ng\u00e0y k\u1ebft th\u00fac ph\u1ea3i sau ng\u00e0y b\u1eaft \u0111\u1ea7u.",
+                            "Ng\u00e0y kh\u00f4ng h\u1ee3p l\u1ec7", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+            } catch (java.text.ParseException ex) {
+                JOptionPane.showMessageDialog(dlg,
+                        "Ng\u00e0y ph\u1ea3i \u0111\u00fang \u0111\u1ecbnh d\u1ea1ng dd/MM/yyyy.",
+                        "Ng\u00e0y kh\u00f4ng h\u1ee3p l\u1ec7", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            discountModel.addRow(new Object[]{ maGiam, maSP, phanTram });
             dlg.dispose();
         });
         btnHuy.addActionListener(e -> dlg.dispose());
