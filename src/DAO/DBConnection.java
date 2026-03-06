@@ -1,21 +1,29 @@
 package DAO;
 
-
-
-import java.sql.*;
-
-
+import java.sql.Connection;
+import java.sql.DriverManager;
 
 public class DBConnection {
+
     private static final String URL = "jdbc:mysql://localhost:3307/sieuthiminiv2" +
                                       "?useSSL=false" +
                                       "&allowPublicKeyRetrieval=true" +
                                       "&serverTimezone=UTC" +
                                       "&useUnicode=true" +
-                                      "&characterEncoding=utf8mb4";
+                                      "&characterEncoding=UTF-8";
 
     private static final String USER = "sieuthimini_user";
     private static final String PASSWORD = "sieuthimini_pass123";
+
+    public static Connection getConnection() {
+        try {
+            return DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     private static Connection con;
 

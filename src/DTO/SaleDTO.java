@@ -28,6 +28,7 @@ public class SaleDTO {
     private SaleStatus status;
     private SalePaymentMethod paymentMethod;
     private BigDecimal totalAmount;
+    private int totalQuantity;
     private String note;
 
 
@@ -49,6 +50,7 @@ public class SaleDTO {
     public SaleStatus getSaleStatus(){return status;}
     public SalePaymentMethod getSalePaymentMethod(){return paymentMethod;}
     public BigDecimal getTotalAmount(){return totalAmount;}
+    public int getTotalQuantity(){return totalQuantity;}
     public String getNote(){return note;}
 
     
@@ -70,6 +72,7 @@ public class SaleDTO {
     public void setSaleStatus(SaleStatus status){this.status = status;}
     public void setPaymentMethod(SalePaymentMethod paymentMethod){this.paymentMethod = paymentMethod;}
     public void setTotalAmount(BigDecimal totalAmount){this.totalAmount = totalAmount;}
+    public void setTotalQuantity(int totalQuantity){this.totalQuantity = totalQuantity;}
     public void setNote(String note){this.note = note;}
 
     public String toString(){
@@ -88,6 +91,7 @@ public class SaleDTO {
                 ", sale status:'" + status + '\'' +
                 ", payment method:'" + paymentMethod + '\'' +
                 ", total amount:'" + totalAmount + '\'' +
+                ", total quantity:'" + totalQuantity + '\'' +
                 ", note:'" + note + '\'' + "}";
     }
 }
