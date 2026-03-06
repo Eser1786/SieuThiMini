@@ -3,13 +3,20 @@ package GUI.KhuyenMai;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-
+import java.util.ArrayList;
+import BUS.DiscountBUS;
+import DTO.DiscountDTO;
+import BUS.SalesBUS;
+import DTO.SaleDTO;
+import DAO.SaleDAO;
 public class KhuyenMaiPanel extends JPanel {
-
+    private DiscountBUS discountBUS = new DiscountBUS();
+    private SalesBUS saleBUS = new SalesBUS();
     private static final Color PAGE_BG   = new Color(0xF8F7FF);
     private static final Color RIGHT_BG  = new Color(0x5C4A7F);
-    private static final Color CARD_DARK = new Color(0x2F2C35);
+    private static final Color CARD_LEFT = new Color(0xD1C4E9);
     private static final Color TBL_HDR   = new Color(0x3D2F5C);
+    private static final Color BTN_ADD   = new Color(0x3D2F5C);
 
     private DefaultTableModel voucherModel;
     private DefaultTableModel discountModel;
@@ -18,7 +25,7 @@ public class KhuyenMaiPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(PAGE_BG);
         add(buildPageHeader(), BorderLayout.NORTH);
-
+        
         JPanel body = new JPanel(new GridBagLayout());
         body.setBackground(PAGE_BG);
         body.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
@@ -37,6 +44,7 @@ public class KhuyenMaiPanel extends JPanel {
         body.add(rightCol, gc);
 
         add(body, BorderLayout.CENTER);
+         loadDiscountTables(); // load database
     }
 
     // ── Page header ──────────────────────────────────────────────────────────
@@ -101,65 +109,85 @@ public class KhuyenMaiPanel extends JPanel {
 
         JPanel body = new JPanel(new GridLayout(1, 2));
 
-        // Dark left panel
+        // Left panel
         JPanel left = new JPanel();
-        left.setBackground(CARD_DARK);
+        left.setBackground(CARD_LEFT);
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
         left.setBorder(BorderFactory.createEmptyBorder(20, 16, 20, 16));
 
         JLabel lbId = new JLabel(idLabel);
         lbId.setFont(new Font("Arial", Font.PLAIN, 11));
-        lbId.setForeground(new Color(0xD1C4E9));
+        lbId.setForeground(new Color(0x5C4A7F));
         lbId.setAlignmentX(Component.CENTER_ALIGNMENT);
         left.add(lbId);
         left.add(Box.createVerticalStrut(8));
 
         JLabel lbName = new JLabel(nameLabel);
         lbName.setFont(new Font("Arial", Font.BOLD, 15));
-        lbName.setForeground(Color.WHITE);
+        lbName.setForeground(new Color(0x2F2C35));
         lbName.setAlignmentX(Component.CENTER_ALIGNMENT);
         left.add(lbName);
         left.add(Box.createVerticalStrut(6));
 
         JSeparator sep = new JSeparator();
-        sep.setForeground(new Color(0x88729B));
+        sep.setForeground(new Color(0x9575CD));
         sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        sep.setAlignmentX(Component.CENTER_ALIGNMENT);
         left.add(sep);
         left.add(Box.createVerticalStrut(12));
 
         if (descLabel != null) {
             JLabel lbDL = new JLabel(descLabel);
             lbDL.setFont(new Font("Arial", Font.PLAIN, 11));
-            lbDL.setForeground(new Color(0xD1C4E9));
-            lbDL.setAlignmentX(Component.LEFT_ALIGNMENT);
+            lbDL.setForeground(new Color(0x5C4A7F));
+            lbDL.setAlignmentX(Component.CENTER_ALIGNMENT);
             left.add(lbDL);
             left.add(Box.createVerticalStrut(4));
             JTextArea ta = new JTextArea();
             ta.setFont(new Font("Arial", Font.PLAIN, 12));
             ta.setLineWrap(true); ta.setWrapStyleWord(true);
-            ta.setBackground(new Color(0x3D2F5C));
-            ta.setForeground(Color.WHITE);
+            ta.setBackground(Color.WHITE);
+            ta.setForeground(new Color(0x2F2C35));
             JScrollPane tas = new JScrollPane(ta);
-            tas.setBorder(BorderFactory.createLineBorder(new Color(0x88729B)));
-            tas.setAlignmentX(Component.LEFT_ALIGNMENT);
+            tas.setBorder(BorderFactory.createLineBorder(new Color(0x9575CD)));
+            tas.setAlignmentX(Component.CENTER_ALIGNMENT);
             tas.setPreferredSize(new Dimension(0, 85));
             tas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 85));
             left.add(tas);
         } else {
-            JPanel imgBox = new JPanel(new BorderLayout());
-            imgBox.setBackground(new Color(0x3D2F5C));
-            imgBox.setBorder(BorderFactory.createLineBorder(new Color(0x88729B)));
+            JPanel imgBox = new JPanel() {
+                private final Color IC = new Color(92, 74, 127);
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    int pw = getWidth(), ph = getHeight();
+                    double scale = Math.min((pw - 8) / 24.0, (ph - 8) / 24.0);
+                    double ox = (pw - 24 * scale) / 2.0, oy = (ph - 24 * scale) / 2.0;
+                    g2.translate(ox, oy);
+                    g2.scale(scale, scale);
+                    g2.setColor(IC);
+                    g2.setStroke(new BasicStroke(2.0f));
+                    g2.draw(new java.awt.geom.RoundRectangle2D.Double(3, 4, 18, 16, 4, 4));
+                    g2.fill(new java.awt.geom.Ellipse2D.Double(7.2, 7.2, 3.6, 3.6));
+                    java.awt.geom.Path2D.Float mountain = new java.awt.geom.Path2D.Float();
+                    mountain.moveTo(5, 18); mountain.lineTo(10.5f, 12); mountain.lineTo(14, 15);
+                    mountain.lineTo(16.5f, 13); mountain.lineTo(19, 18); mountain.closePath();
+                    g2.fill(mountain);
+                    g2.dispose();
+                }
+            };
+            imgBox.setBackground(Color.WHITE);
+            imgBox.setBorder(BorderFactory.createLineBorder(new Color(0x9575CD)));
             imgBox.setPreferredSize(new Dimension(110, 100));
             imgBox.setMaximumSize(new Dimension(120, 100));
             imgBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-            JLabel imgLbl = new JLabel("\uD83D\uDCF7", SwingConstants.CENTER);
-            imgLbl.setFont(new Font("Arial", Font.PLAIN, 36));
-            imgBox.add(imgLbl, BorderLayout.CENTER);
             left.add(imgBox);
         }
         left.add(Box.createVerticalGlue());
 
-        // White right panel
+        // Right panel
         JPanel right = new JPanel(new GridBagLayout());
         right.setBackground(Color.WHITE);
         right.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
@@ -191,10 +219,10 @@ public class KhuyenMaiPanel extends JPanel {
         col.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
 
         voucherModel = new DefaultTableModel(
-                new String[]{"S\u1ed1 voucher", "M\u00e3 voucher", "% Gi\u1ea3m", "S\u1ed1 l\u01b0\u1ee3ng"}, 0) {
+                new String[]{ "M\u00e3 voucher","Tên Voucher", "% Gi\u1ea3m"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        col.add(buildListSection("Danh s\u00e1ch voucher", "+TH\u00caM VOUCHER", voucherModel, this::showAddVoucherDialog));
+        col.add(buildListSection("Danh s\u00e1ch voucher", "+ TH\u00caM VOUCHER", voucherModel, this::showAddVoucherDialog));
         col.add(Box.createVerticalStrut(24));
 
         discountModel = new DefaultTableModel(
@@ -202,7 +230,7 @@ public class KhuyenMaiPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         col.add(buildListSection("Danh s\u00e1ch gi\u1ea3m gi\u00e1 s\u1ea3n ph\u1ea9m",
-                "+TH\u00caM KHUY\u1EECN M\u00C3I", discountModel, this::showAddDiscountDialog));
+                "+ TH\u00caM KHUY\u1EBEN M\u00C3I", discountModel, this::showAddDiscountDialog));
         return col;
     }
 
@@ -226,8 +254,8 @@ public class KhuyenMaiPanel extends JPanel {
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         btnRow.setBackground(RIGHT_BG);
         btnRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnRow.add(listBtn("Refresh", new Color(0x2E7D32)));
-        JButton btnAdd = listBtn(addLabel, CARD_DARK);
+        btnRow.add(listBtn("Refresh", new Color(0x388E3C)));
+        JButton btnAdd = listBtn(addLabel, BTN_ADD);
         btnAdd.addActionListener(e -> onAdd.run());
         btnRow.add(btnAdd);
         top.add(btnRow);
@@ -324,12 +352,25 @@ public class KhuyenMaiPanel extends JPanel {
         btns.add(btnHuy); btns.add(btnLuu);
         dlg.add(btns, BorderLayout.SOUTH);
         btnLuu.addActionListener(e -> {
-            String ma = tfs[0].getText().trim();
-            if (ma.isEmpty()) {
-                JOptionPane.showMessageDialog(dlg, "Vui l\u00f2ng nh\u1eadp m\u00e3 voucher.",
+            java.util.List<String> errs = new java.util.ArrayList<>();
+            if (tfs[0].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp m\u00e3 voucher.");
+            if (tfs[2].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp ng\u00e0y b\u1eaft \u0111\u1ea7u.");
+            if (tfs[3].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp gi\u00e1 tr\u1ecb t\u1ed1i thi\u1ec3u.");
+            if (tfs[4].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp % gi\u1ea3m.");
+            if (tfs[5].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp s\u1ed1 l\u01b0\u1ee3t s\u1eed d\u1ee5ng.");
+            if (tfs[6].getText().trim().isEmpty())
+                errs.add("- Vui l\u00f2ng nh\u1eadp ng\u00e0y k\u1ebft th\u00fac.");
+            if (!errs.isEmpty()) {
+                JOptionPane.showMessageDialog(dlg, String.join("\n", errs),
                         "Thi\u1ebfu th\u00f4ng tin", JOptionPane.WARNING_MESSAGE);
                 return;
             }
+            String ma = tfs[0].getText().trim();
             voucherModel.addRow(new Object[]{
                 voucherModel.getRowCount() + 1, ma,
                 tfs[4].getText().trim(), tfs[5].getText().trim()
@@ -377,15 +418,46 @@ public class KhuyenMaiPanel extends JPanel {
         btns.add(btnHuy); btns.add(btnLuu);
         dlg.add(btns, BorderLayout.SOUTH);
         btnLuu.addActionListener(e -> {
-            String maSP = tfs[1].getText().trim();
-            if (maSP.isEmpty()) {
-                JOptionPane.showMessageDialog(dlg, "Vui l\u00f2ng nh\u1eadp m\u00e3 s\u1ea3n ph\u1ea9m.",
+            java.util.List<String> errs = new java.util.ArrayList<>();
+            String maGiam   = tfs[0].getText().trim();
+            String maSP     = tfs[1].getText().trim();
+            String phanTram = tfs[2].getText().trim();
+            String ngayBD   = tfs[3].getText().trim();
+            String ngayKT   = tfs[4].getText().trim();
+
+            if (maGiam.isEmpty())   errs.add("- Vui l\u00f2ng nh\u1eadp m\u00e3 gi\u1ea3m.");
+            if (maSP.isEmpty())     errs.add("- Vui l\u00f2ng nh\u1eadp m\u00e3 s\u1ea3n ph\u1ea9m.");
+            if (phanTram.isEmpty()) {
+                errs.add("- Vui l\u00f2ng nh\u1eadp % gi\u1ea3m.");
+            } else {
+                try {
+                    double pct = Double.parseDouble(phanTram.replace("%", "").trim());
+                    if (pct <= 0 || pct > 100)
+                        errs.add("- % Gi\u1ea3m ph\u1ea3i l\u00e0 s\u1ed1 trong kho\u1ea3ng (0, 100].");
+                } catch (NumberFormatException ex2) {
+                    errs.add("- % Gi\u1ea3m ph\u1ea3i l\u00e0 s\u1ed1 h\u1ee3p l\u1ec7.");
+                }
+            }
+            if (ngayBD.isEmpty()) errs.add("- Vui l\u00f2ng nh\u1eadp ng\u00e0y b\u1eaft \u0111\u1ea7u.");
+            if (ngayKT.isEmpty()) errs.add("- Vui l\u00f2ng nh\u1eadp ng\u00e0y k\u1ebft th\u00fac.");
+            if (!ngayBD.isEmpty() && !ngayKT.isEmpty()) {
+                try {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                    sdf.setLenient(false);
+                    java.util.Date bd = sdf.parse(ngayBD);
+                    java.util.Date kt = sdf.parse(ngayKT);
+                    if (!bd.before(kt))
+                        errs.add("- Ng\u00e0y k\u1ebft th\u00fac ph\u1ea3i sau ng\u00e0y b\u1eaft \u0111\u1ea7u.");
+                } catch (java.text.ParseException ex2) {
+                    errs.add("- Ng\u00e0y ph\u1ea3i \u0111\u00fang \u0111\u1ecbnh d\u1ea1ng dd/MM/yyyy.");
+                }
+            }
+            if (!errs.isEmpty()) {
+                JOptionPane.showMessageDialog(dlg, String.join("\n", errs),
                         "Thi\u1ebfu th\u00f4ng tin", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            discountModel.addRow(new Object[]{
-                tfs[0].getText().trim(), maSP, tfs[2].getText().trim()
-            });
+            discountModel.addRow(new Object[]{ maGiam, maSP, phanTram });
             dlg.dispose();
         });
         btnHuy.addActionListener(e -> dlg.dispose());
@@ -394,6 +466,37 @@ public class KhuyenMaiPanel extends JPanel {
         dlg.setLocationRelativeTo(this);
         dlg.setVisible(true);
     }
+   private void loadDiscountTables(){
+
+    ArrayList<DiscountDTO> list = discountBUS.getAllDiscounts();
+
+    voucherModel.setRowCount(0);
+    discountModel.setRowCount(0);
+
+    for(DiscountDTO d : list){
+
+        if(d.getDiscountType().name().equals("FIXED")){
+
+            voucherModel.addRow(new Object[]{
+                d.getId(),
+                d.getName(),
+                d.getValue()
+            });
+
+        }
+
+        if(d.getDiscountType().name().equals("PERCENT")){
+
+            discountModel.addRow(new Object[]{
+                d.getId(),
+                d.getName(),
+                d.getValue()
+            });
+
+        }
+
+    }
+}
 }
 
 

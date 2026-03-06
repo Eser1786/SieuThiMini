@@ -156,7 +156,7 @@ class DonHangCreateCard extends JPanel {
         JLabel lbSub = new JLabel(String.format("%,.0f\u0111", (double)(it.unitPrice * it.qty)));
         lbSub.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lbSub.setForeground(new Color(0x5B4FCC));
-        lbSub.setPreferredSize(new Dimension(100, 24));
+        lbSub.setPreferredSize(new Dimension(75, 24));
         lbSub.setHorizontalAlignment(SwingConstants.RIGHT);
 
         // col 3: Spinner + DocumentFilter (digits only, min 1)
@@ -276,7 +276,7 @@ class DonHangCreateCard extends JPanel {
         lhg.gridy = 0; lhg.anchor = GridBagConstraints.WEST; lhg.insets = new Insets(0, 0, 0, 8);
         String[] hdrTxt = { "M\u00e3 SP", "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1",
                             "S\u1ed1 l\u01b0\u1ee3ng", "Th\u00e0nh ti\u1ec1n", "", "" };
-        int[]    hdrW   = { 70, 160, 90, 64, 100, 34, 0 };
+        int[]    hdrW   = { 70, 160, 90, 64, 75, 34, 0 };
         double[] hdrWx  = { 0, 0, 0, 0, 0, 0, 1.0 };
         for (int i = 0; i < hdrTxt.length; i++) {
             JLabel h = new JLabel(hdrTxt[i]);
@@ -529,13 +529,20 @@ class DonHangCreateCard extends JPanel {
         JButton btnLuu = DonHangPanel.makeFootBtn("L\u01b0u \u0111\u01a1n h\u00e0ng", new Color(0x5B4FCC));
         JButton btnHuy = DonHangPanel.makeFootBtn("H\u1ee7y b\u1ecf", new Color(0xB83434));
 
-        // Confirm before cancel
+        // Confirm before cancel only when form has data
         btnHuy.addActionListener(e -> {
-            int cf = JOptionPane.showConfirmDialog(this,
-                "B\u1ea1n c\u00f3 ch\u1eafc mu\u1ed1n h\u1ee7y? Th\u00f4ng tin \u0111\u00e3 nh\u1eadp s\u1ebd m\u1ea5t.",
-                "X\u00e1c nh\u1eadn h\u1ee7y",
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (cf == JOptionPane.YES_OPTION) parent.showCard(DonHangPanel.CARD_TABLE);
+            boolean dirty = !items.isEmpty()
+                || !tfTenND.getText().trim().isEmpty()
+                || !tfSdt.getText().trim().isEmpty()
+                || !tfDiaChi.getText().trim().isEmpty();
+            if (dirty) {
+                int cf = JOptionPane.showConfirmDialog(this,
+                    "B\u1ea1n c\u00f3 ch\u1eafc mu\u1ed1n h\u1ee7y? Th\u00f4ng tin \u0111\u00e3 nh\u1eadp s\u1ebd m\u1ea5t.",
+                    "X\u00e1c nh\u1eadn h\u1ee7y",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (cf != JOptionPane.YES_OPTION) return;
+            }
+            parent.showCard(DonHangPanel.CARD_TABLE);
         });
 
         btnLuu.addActionListener(e -> {
