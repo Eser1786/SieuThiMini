@@ -529,13 +529,20 @@ class DonHangCreateCard extends JPanel {
         JButton btnLuu = DonHangPanel.makeFootBtn("L\u01b0u \u0111\u01a1n h\u00e0ng", new Color(0x5B4FCC));
         JButton btnHuy = DonHangPanel.makeFootBtn("H\u1ee7y b\u1ecf", new Color(0xB83434));
 
-        // Confirm before cancel
+        // Confirm before cancel only when form has data
         btnHuy.addActionListener(e -> {
-            int cf = JOptionPane.showConfirmDialog(this,
-                "B\u1ea1n c\u00f3 ch\u1eafc mu\u1ed1n h\u1ee7y? Th\u00f4ng tin \u0111\u00e3 nh\u1eadp s\u1ebd m\u1ea5t.",
-                "X\u00e1c nh\u1eadn h\u1ee7y",
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (cf == JOptionPane.YES_OPTION) parent.showCard(DonHangPanel.CARD_TABLE);
+            boolean dirty = !items.isEmpty()
+                || !tfTenND.getText().trim().isEmpty()
+                || !tfSdt.getText().trim().isEmpty()
+                || !tfDiaChi.getText().trim().isEmpty();
+            if (dirty) {
+                int cf = JOptionPane.showConfirmDialog(this,
+                    "B\u1ea1n c\u00f3 ch\u1eafc mu\u1ed1n h\u1ee7y? Th\u00f4ng tin \u0111\u00e3 nh\u1eadp s\u1ebd m\u1ea5t.",
+                    "X\u00e1c nh\u1eadn h\u1ee7y",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (cf != JOptionPane.YES_OPTION) return;
+            }
+            parent.showCard(DonHangPanel.CARD_TABLE);
         });
 
         btnLuu.addActionListener(e -> {
