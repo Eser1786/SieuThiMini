@@ -1,4 +1,4 @@
-package GUI;
+package GUI.SanPham;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;

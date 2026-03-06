@@ -42,5 +42,10 @@ public class SalesBUS {
         }
         return saleDAO.addSale(sale);
     }
-
+ public boolean confirmSale(String saleCode){
+        return saleDAO.updateStatus(saleCode, SaleStatus.COMPLETED);
+    }
+    public boolean cancelSale(String saleCode){
+        return saleDAO.updateStatus(saleCode, SaleStatus.CANCELLED);
+}
 }

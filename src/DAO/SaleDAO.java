@@ -184,5 +184,21 @@ public class SaleDAO {
 
     return null;
 }
+    public boolean updateStatus(String saleCode, SaleStatus newStatus) {
+        String sql = "UPDATE sales SET status = ? WHERE sale_code = ?";
 
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, newStatus.getValue());
+            ps.setString(2, saleCode);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }
