@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgb(92,74,127)">
+  
+  <!-- lid -->
+  <path d="M9 3h6l1 2h5v2H3V5h5l1-2z"></path>
+
+  <!-- bin -->
+  <path d="M6 9h12l-1 11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9z"></path>
+
+  <!-- lines -->
+  <rect x="10" y="11" width="1.5" height="8"></rect>
+  <rect x="12.75" y="11" width="1.5" height="8"></rect>
+
+</svg>

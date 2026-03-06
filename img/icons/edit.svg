@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  
+  <!-- pencil -->
+  <path d="M3 17.25V21h3.75L19.81 7.94l-3.75-3.75L3 17.25z" fill="rgb(92,74,127)"></path>
+
+  <!-- pencil tip detail -->
+  <path d="M20.71 6.04a1 1 0 0 0 0-1.41L19.37 3.29a1 1 0 0 0-1.41 0l-1.13 1.13 3.75 3.75 1.13-1.13z" fill="rgb(92,74,127)"></path>
+
+</svg>

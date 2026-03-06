@@ -101,6 +101,14 @@ class DonHangTableCard extends JPanel {
         btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, parent.tableModel, "don_hang"));
         top.add(btnExcel);
 
+        JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
+        btnImport.addActionListener(e -> {
+            List<String[]> rows = ExportUtils.importCSV(this);
+            if (rows == null) return;
+            for (String[] r : rows) { if (r.length < 6) continue; parent.tableModel.addRow((Object[])r); }
+        });
+        top.add(btnImport);
+
         /* Bảng */
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(parent.tableModel);
         JTable bang = new JTable(parent.tableModel);

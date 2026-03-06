@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="rgb(92,74,127)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+
+  <!-- circle -->
+  <circle cx="12" cy="12" r="10"></circle>
+
+  <!-- dot (same thickness as line) -->
+  <circle cx="12" cy="7" r="1.4" fill="rgb(92,74,127)" stroke="none"></circle>
+
+  <!-- i body -->
+  <line x1="12" y1="11" x2="12" y2="17"></line>
+
+</svg>

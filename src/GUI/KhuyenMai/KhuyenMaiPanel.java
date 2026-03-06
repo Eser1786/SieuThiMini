@@ -9,6 +9,8 @@ import DTO.DiscountDTO;
 import BUS.SalesBUS;
 import DTO.SaleDTO;
 import DAO.SaleDAO;
+import GUI.ExportUtils;
+import java.util.List;
 public class KhuyenMaiPanel extends JPanel {
     private DiscountBUS discountBUS = new DiscountBUS();
     private SalesBUS saleBUS = new SalesBUS();
@@ -258,6 +260,21 @@ public class KhuyenMaiPanel extends JPanel {
         JButton btnAdd = listBtn(addLabel, BTN_ADD);
         btnAdd.addActionListener(e -> onAdd.run());
         btnRow.add(btnAdd);
+
+        JButton btnPDF    = ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
+        JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
+        JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
+        btnPDF.setFont(new Font("Arial", Font.BOLD, 12));
+        btnExcel.setFont(new Font("Arial", Font.BOLD, 12));
+        btnImport.setFont(new Font("Arial", Font.BOLD, 12));
+        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, model, title));
+        btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, model, title.replaceAll("\\W+", "_")));
+        btnImport.addActionListener(e -> {
+            List<String[]> rows = ExportUtils.importCSV(this);
+            if (rows == null) return;
+            for (String[] r : rows) model.addRow((Object[])r);
+        });
+        btnRow.add(btnPDF); btnRow.add(btnExcel); btnRow.add(btnImport);
         top.add(btnRow);
         top.add(Box.createVerticalStrut(8));
 
@@ -377,18 +394,30 @@ public class KhuyenMaiPanel extends JPanel {
             });
             dlg.dispose();
         });
-        btnHuy.addActionListener(e -> {
-            boolean dirty = false;
-            for (JTextField f : tfs) {
-                if (!f.getText().trim().isEmpty()) { dirty = true; break; }
-            }
-            if (dirty) {
-                int cf = JOptionPane.showConfirmDialog(dlg,
-                        "Bạn có chắc muốn hủy? Thông tin đã nhập sẽ mất.",
-                        "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (cf != JOptionPane.YES_OPTION) return;
-            }
-            dlg.dispose();
+        btnHuy.addActionListener(e -> {
+
+            boolean dirty = false;
+
+            for (JTextField f : tfs) {
+
+                if (!f.getText().trim().isEmpty()) { dirty = true; break; }
+
+            }
+
+            if (dirty) {
+
+                int cf = JOptionPane.showConfirmDialog(dlg,
+
+                        "Bạn có chắc muốn hủy? Thông tin đã nhập sẽ mất.",
+
+                        "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+                if (cf != JOptionPane.YES_OPTION) return;
+
+            }
+
+            dlg.dispose();
+
         });
         dlg.pack();
         dlg.setMinimumSize(new Dimension(440, dlg.getPreferredSize().height));
@@ -472,18 +501,30 @@ public class KhuyenMaiPanel extends JPanel {
             discountModel.addRow(new Object[]{ maGiam, maSP, phanTram });
             dlg.dispose();
         });
-        btnHuy.addActionListener(e -> {
-            boolean dirty = false;
-            for (JTextField f : tfs) {
-                if (!f.getText().trim().isEmpty()) { dirty = true; break; }
-            }
-            if (dirty) {
-                int cf = JOptionPane.showConfirmDialog(dlg,
-                        "Bạn có chắc muốn hủy? Thông tin đã nhập sẽ mất.",
-                        "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (cf != JOptionPane.YES_OPTION) return;
-            }
-            dlg.dispose();
+        btnHuy.addActionListener(e -> {
+
+            boolean dirty = false;
+
+            for (JTextField f : tfs) {
+
+                if (!f.getText().trim().isEmpty()) { dirty = true; break; }
+
+            }
+
+            if (dirty) {
+
+                int cf = JOptionPane.showConfirmDialog(dlg,
+
+                        "Bạn có chắc muốn hủy? Thông tin đã nhập sẽ mất.",
+
+                        "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+                if (cf != JOptionPane.YES_OPTION) return;
+
+            }
+
+            dlg.dispose();
+
         });
         dlg.pack();
         dlg.setMinimumSize(new Dimension(420, dlg.getPreferredSize().height));

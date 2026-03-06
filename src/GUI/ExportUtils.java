@@ -321,25 +321,108 @@ public class ExportUtils {
      * ─────────────────────────────────────────────
      */
     public static JButton makeExportButton(String label, Color bg) {
-        // Tẩy emoji nếu có vì font mặc định Java trên Windows thường lỗi ô vuông
-        String cleanLabel = label.replace("📄", "").replace("📊", "").trim();
+        // Strip emoji – Java's default font on Windows can't render them
+        String cleanLabel = label.replace("\uD83D\uDCC4", "").replace("\uD83D\uDCCA", "").replace("📄", "").replace("📊", "").trim();
         JButton btn = new JButton(cleanLabel);
-        btn.setFont(new Font("Arial", Font.BOLD, 16));
+        btn.setFont(new Font("Arial", Font.BOLD, 13));
         btn.setBackground(bg);
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
-        btn.setPreferredSize(new Dimension(160, 42));
+        btn.setOpaque(true);
+        btn.setBorder(BorderFactory.createEmptyBorder(9, 16, 9, 16));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 btn.setBackground(bg.darker());
             }
-
             public void mouseExited(java.awt.event.MouseEvent e) {
                 btn.setBackground(bg);
             }
         });
         return btn;
     }
+
+    /*
+     * ─────────────────────────────────────────────
+     * TẠO NÚT NHẬP — style giống makeExportButton, màu xanh dương
+     * ─────────────────────────────────────────────
+     */
+    public static JButton makeImportButton(String label) {
+        return makeExportButton(label, new Color(0x1565C0));
+    }
+
+    /*
+     * ─────────────────────────────────────────────
+     * NHẬP CSV — đọc file CSV, trả List<String[]> (bỏ header dòng 0).
+     * Hỗ trợ quoted fields ("a,b","c"). Trả null nếu user hủy.
+     * Cách dùng:
+     *   List<String[]> rows = ExportUtils.importCSV(this);
+     *   if (rows != null) { for (String[] r : rows) { tableModel.addRow(r); } }
+     * ─────────────────────────────────────────────
+     */
+    public static java.util.List<String[]> importCSV(Component parent) {
+        JFileChooser fc = getSystemFileChooser("Chọn file CSV", "CSV Files (*.csv)", "csv");
+        if (fc.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION) return null;
+
+        File file = fc.getSelectedFile();
+        java.util.List<String[]> result = new java.util.ArrayList<>();
+        try (java.io.BufferedReader br = new java.io.BufferedReader(
+                new java.io.InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+            String line;
+            boolean firstLine = true;
+            while ((line = br.readLine()) != null) {
+                // Strip BOM if present
+                if (firstLine && line.startsWith("\uFEFF")) line = line.substring(1);
+                firstLine = false;
+                if (line.trim().isEmpty()) continue;
+                result.add(parseCsvLine(line));
+            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(parent,
+                    "L\u1ed7i khi \u0111\u1ecdc file: " + ex.getMessage(),
+                    "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+        if (result.size() < 2) {
+            JOptionPane.showMessageDialog(parent,
+                    "File CSV kh\u00f4ng c\u00f3 d\u1eef li\u1ec7u (ch\u1ec9 c\u00f3 header ho\u1eb7c r\u1ed7ng).",
+                    "Th\u00f4ng b\u00e1o", JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+        result.remove(0); // bỏ dòng header
+        return result;
+    }
+
+    /** Parse one CSV line, handling double-quoted fields with embedded commas/quotes. */
+    private static String[] parseCsvLine(String line) {
+        java.util.List<String> fields = new java.util.ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        boolean inQuote = false;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (inQuote) {
+                if (c == '"') {
+                    if (i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                        sb.append('"'); i++; // escaped ""
+                    } else {
+                        inQuote = false;
+                    }
+                } else {
+                    sb.append(c);
+                }
+            } else {
+                if (c == '"') {
+                    inQuote = true;
+                } else if (c == ',') {
+                    fields.add(sb.toString()); sb.setLength(0);
+                } else {
+                    sb.append(c);
+                }
+            }
+        }
+        fields.add(sb.toString());
+        return fields.toArray(new String[0]);
+    }
 }
+
