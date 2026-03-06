@@ -4,11 +4,13 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.util.ArrayList;
-
+import BUS.DiscountBUS;
+import DTO.DiscountDTO;
 import BUS.SalesBUS;
 import DTO.SaleDTO;
 import DAO.SaleDAO;
 public class KhuyenMaiPanel extends JPanel {
+    private DiscountBUS discountBUS = new DiscountBUS();
     private SalesBUS saleBUS = new SalesBUS();
     private static final Color PAGE_BG   = new Color(0xF8F7FF);
     private static final Color RIGHT_BG  = new Color(0x5C4A7F);
@@ -42,7 +44,7 @@ public class KhuyenMaiPanel extends JPanel {
         body.add(rightCol, gc);
 
         add(body, BorderLayout.CENTER);
-         loadVoucherTable(); // load database
+         loadDiscountTables(); // load database
     }
 
     // ── Page header ──────────────────────────────────────────────────────────
@@ -197,7 +199,7 @@ public class KhuyenMaiPanel extends JPanel {
         col.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
 
         voucherModel = new DefaultTableModel(
-                new String[]{"S\u1ed1 voucher", "M\u00e3 voucher", "% Gi\u1ea3m", "S\u1ed1 l\u01b0\u1ee3ng"}, 0) {
+                new String[]{ "M\u00e3 voucher","Tên Voucher", "% Gi\u1ea3m", "S\u1ed1 l\u01b0\u1ee3ng"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         col.add(buildListSection("Danh s\u00e1ch voucher", "+ TH\u00caM VOUCHER", voucherModel, this::showAddVoucherDialog));
@@ -433,20 +435,35 @@ public class KhuyenMaiPanel extends JPanel {
         dlg.setLocationRelativeTo(this);
         dlg.setVisible(true);
     }
-    private void loadVoucherTable(){
+   private void loadDiscountTables(){
 
-    ArrayList<SaleDTO> list = saleBUS.getAllSales();
+    ArrayList<DiscountDTO> list = discountBUS.getAllDiscounts();
 
     voucherModel.setRowCount(0);
+    discountModel.setRowCount(0);
 
-    for(SaleDTO s : list){
+    for(DiscountDTO d : list){
 
-        voucherModel.addRow(new Object[]{
-            s.getSaleID(),
-            s.getSaleCode(),
-            s.getDiscountAmount(),
-            s.getSaleStatus().getValue()
-        });
+        if(d.getDiscountType().name().equals("FIXED")){
+
+            voucherModel.addRow(new Object[]{
+                d.getId(),
+                d.getName(),
+                d.getValue(),
+                d.getMinOrderAmount()
+            });
+
+        }
+
+        if(d.getDiscountType().name().equals("PERCENT")){
+
+            discountModel.addRow(new Object[]{
+                d.getId(),
+                d.getName(),
+                d.getValue()
+            });
+
+        }
 
     }
 }
