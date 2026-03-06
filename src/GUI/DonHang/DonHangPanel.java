@@ -3,6 +3,7 @@ package GUI.DonHang;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.Dialog;
 
 /**
  * Panel quản lý đơn hàng.
@@ -36,6 +37,7 @@ public class DonHangPanel extends JPanel {
 
     private final DonHangDetailCard  detailCard;
     private final DonHangInvoiceCard invoiceCard;
+    JDialog createDialog = null;
 
     public DonHangPanel() {
         setLayout(innerCard);
@@ -52,7 +54,29 @@ public class DonHangPanel extends JPanel {
     }
 
     void showCard(String card) {
+        if (CARD_TABLE.equals(card) && createDialog != null && createDialog.isVisible()) {
+            createDialog.dispose();
+            createDialog = null;
+            return;
+        }
         innerCard.show(this, card);
+    }
+
+    void openCreatePopup(java.awt.Window owner) {
+        if (createDialog != null && createDialog.isVisible()) {
+            createDialog.toFront();
+            return;
+        }
+        createDialog = new JDialog(owner,
+                "+ T\u1ea1o \u0111\u01a1n h\u00e0ng m\u1edbi",
+                Dialog.ModalityType.APPLICATION_MODAL);
+        DonHangCreateCard card = new DonHangCreateCard(this);
+        createDialog.setContentPane(card);
+        createDialog.setSize(1280, 780);
+        createDialog.setMinimumSize(new Dimension(960, 620));
+        createDialog.setLocationRelativeTo(owner);
+        createDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        createDialog.setVisible(true);
     }
 
     void showDetail(int modelRow) {
