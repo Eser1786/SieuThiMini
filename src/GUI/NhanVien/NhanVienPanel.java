@@ -753,7 +753,20 @@ public class NhanVienPanel extends JPanel {
 
         });
 
-        btnHuy.addActionListener(e -> dlg.dispose());
+        btnHuy.addActionListener(e -> {
+            boolean dirty = false;
+            for (JTextField f : tfs) {
+                if (!f.getText().trim().isEmpty()) { dirty = true; break; }
+            }
+            if (!dirty) dirty = new String(pfPass.getPassword()).trim().length() > 0;
+            if (dirty) {
+                int cf = JOptionPane.showConfirmDialog(dlg,
+                        "Bạn có chắc muốn hủy? Thông tin đã nhập sẽ mất.",
+                        "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (cf != JOptionPane.YES_OPTION) return;
+            }
+            dlg.dispose();
+        });
 
         dlg.pack();
 

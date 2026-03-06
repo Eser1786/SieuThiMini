@@ -65,6 +65,14 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 - **Giải pháp**: Viết PowerShell `.ps1` đọc file bằng `[System.IO.File]::ReadAllText`, normalize `\r\n` → `\n`, tìm match, thay thế bằng `.Replace()`, rồi khôi phục CRLF và ghi lại. Chạy qua `powershell -ExecutionPolicy Bypass -File patch.ps1`.
 - **Phòng tránh**: Các file `.java` mới nên được tạo với LF (hoặc chấp nhận dùng script khi cần patch multi-line).
 
+### 10. Pattern xác nhận thoát / hủy thao tác
+
+- **Thoát app (X button)**: Trong `GUI.java`, dùng `setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE)` + `addWindowListener(new java.awt.event.WindowAdapter() { windowClosing → JOptionPane.showConfirmDialog → System.exit(0) })`. KHÔNG dùng `EXIT_ON_CLOSE` trực tiếp.
+- **Hủy trong dialog có form trống**: Chỉ `dlg.dispose()` — không hỏi.
+- **Hủy trong dialog có dữ liệu (add form)**: Duyệt `tfs[]` array: `for (JTextField f : tfs) if (!f.getText().trim().isEmpty()) dirty = true;`. Nếu dirty → `JOptionPane.showConfirmDialog(dlg, "Bạn có chắc muốn hủy? Thông tin đã nhập sẽ mất.", ...)`. Nếu có `JPasswordField` thêm: `|| new String(pfPass.getPassword()).trim().length() > 0`.
+- **Hủy trong edit dialog (pre-filled)**: Luôn confirm — `JOptionPane.showConfirmDialog(popup, "Bạn có chắc muốn hủy? Thay đổi chưa lưu sẽ bị mất.", ...)` → `if YES: popup.dispose()`.
+- **Không thêm xác nhận cho**: "Đóng" view-only popup (KhachHang detail), standalone `main()` test frames (KhoPanel.main), "Đã hủy" trạng thái đơn hàng (đó là biz ops, không phải dialog cancel).
+
 ### 9. Pattern tái sử dụng — NhanVienPanel (và các panel tương tự)
 
 - **Cột mật khẩu**: Dùng `PasswordCellRenderer` kế thừa `DefaultTableCellRenderer`; field `Set<Integer> revealedRows` lưu row nào đang hiện. Click vào 28px cuối ô password để toggle reveal/hide. Thêm `HierarchyListener` vào constructor để auto-clear `revealedRows` khi tab bị ẩn.

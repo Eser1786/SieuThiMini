@@ -377,7 +377,19 @@ public class KhuyenMaiPanel extends JPanel {
             });
             dlg.dispose();
         });
-        btnHuy.addActionListener(e -> dlg.dispose());
+        btnHuy.addActionListener(e -> {
+            boolean dirty = false;
+            for (JTextField f : tfs) {
+                if (!f.getText().trim().isEmpty()) { dirty = true; break; }
+            }
+            if (dirty) {
+                int cf = JOptionPane.showConfirmDialog(dlg,
+                        "Bạn có chắc muốn hủy? Thông tin đã nhập sẽ mất.",
+                        "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (cf != JOptionPane.YES_OPTION) return;
+            }
+            dlg.dispose();
+        });
         dlg.pack();
         dlg.setMinimumSize(new Dimension(440, dlg.getPreferredSize().height));
         dlg.setLocationRelativeTo(this);
@@ -460,7 +472,19 @@ public class KhuyenMaiPanel extends JPanel {
             discountModel.addRow(new Object[]{ maGiam, maSP, phanTram });
             dlg.dispose();
         });
-        btnHuy.addActionListener(e -> dlg.dispose());
+        btnHuy.addActionListener(e -> {
+            boolean dirty = false;
+            for (JTextField f : tfs) {
+                if (!f.getText().trim().isEmpty()) { dirty = true; break; }
+            }
+            if (dirty) {
+                int cf = JOptionPane.showConfirmDialog(dlg,
+                        "Bạn có chắc muốn hủy? Thông tin đã nhập sẽ mất.",
+                        "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (cf != JOptionPane.YES_OPTION) return;
+            }
+            dlg.dispose();
+        });
         dlg.pack();
         dlg.setMinimumSize(new Dimension(420, dlg.getPreferredSize().height));
         dlg.setLocationRelativeTo(this);
