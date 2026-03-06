@@ -17,7 +17,7 @@ public class KhuyenMaiPanel extends JPanel {
     private static final Color CARD_LEFT = new Color(0xD1C4E9);
     private static final Color TBL_HDR   = new Color(0x3D2F5C);
     private static final Color BTN_ADD   = new Color(0x3D2F5C);
-
+    
     private DefaultTableModel voucherModel;
     private DefaultTableModel discountModel;
 

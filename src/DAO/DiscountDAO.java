@@ -36,38 +36,66 @@ public class DiscountDAO {
 }
 
     }
-    public ArrayList<DiscountDTO> getAllDiscounts(){
-        ArrayList<DiscountDTO> arr = new ArrayList<DiscountDTO>();
-        if(openConnection()){
-            try{
-                String sql = "SELECT * FROM discounts";
-                Statement stmt = con.createStatement();
-                ResultSet rs = stmt.executeQuery(sql);
-                while(rs.next()){
-                    DiscountDTO discount = new DiscountDTO();
-                    discount.setId(rs.getInt("discount_id"));
-                    discount.setName(rs.getString("name"));
-                    discount.setDiscountType(DiscountType.valueOf(rs.getString("discount_type")));
-                    discount.setValue(rs.getBigDecimal("value"));
-                    discount.setMinOrderAmount(rs.getBigDecimal("min_order_amount"));
-                    discount.setStartDate(rs.getDate("start_date").toLocalDate());
-                    discount.setEndDate(rs.getDate("end_date").toLocalDate());
-                    discount.setDescription(rs.getString("description"));
-                    discount.setStatus(DiscountStatus.valueOf(rs.getString("status")));
-                    discount.setIsAutoApply(rs.getBoolean("is_auto_apply"));
-                    discount.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                    discount.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
-                    arr.add(discount);
-                }
-            }catch(SQLException e){
-                System.out.println("Không thể lấy danh sách discounts \n DiscountDAO - getAllDiscounts \n");
-                e.printStackTrace();
-            }finally{
-                closeConnection();
+    public ArrayList<DiscountDTO> getAllDiscounts() {
+
+    ArrayList<DiscountDTO> list = new ArrayList<>();
+
+    if(openConnection()){
+        try{
+
+            String sql = "SELECT * FROM discounts";
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while(rs.next()){
+
+                DiscountDTO d = new DiscountDTO();
+
+                d.setId(rs.getInt("discount_id"));
+                d.setName(rs.getString("name"));
+                d.setDiscountType(
+                        DiscountType.valueOf(rs.getString("discount_type"))
+                );
+
+                d.setValue(rs.getBigDecimal("value"));
+                d.setMinOrderAmount(rs.getBigDecimal("min_order_amount"));
+
+                Date start = rs.getDate("start_date");
+                if(start != null)
+                    d.setStartDate(start.toLocalDate());
+
+                Date end = rs.getDate("end_date");
+                if(end != null)
+                    d.setEndDate(end.toLocalDate());
+
+                d.setDescription(rs.getString("description"));
+
+                d.setStatus(
+                        DiscountStatus.valueOf(rs.getString("status"))
+                );
+
+                d.setIsAutoApply(rs.getBoolean("is_auto_apply"));
+
+                Timestamp ct = rs.getTimestamp("created_at");
+                if(ct != null)
+                    d.setCreatedAt(ct.toLocalDateTime());
+
+                Timestamp ut = rs.getTimestamp("updated_at");
+                if(ut != null)
+                    d.setUpdatedAt(ut.toLocalDateTime());
+
+                list.add(d);
             }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }finally{
+            closeConnection();
         }
-        return arr;
     }
+
+    return list;
+}
     public boolean addDiscount(DiscountDTO discount){
         boolean result = false;
         if(openConnection()){
