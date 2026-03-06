@@ -18,6 +18,7 @@ public class KhachHangPanel extends JPanel {
     private int editingRow = -1;
     private JTextField tfMaKH, tfTen, tfSdt, tfEmail, tfDiaChi, tfDiem, tfTgDK, tfLanCuoiMua, tfTongTien, tfHang,
             tfTrangThai;
+    private JButton btnLuu, btnSua, btnXoa, btnHoanTac;
 
     public static final String CARD_TABLE = "TABLE";
     public static final String CARD_THEM = "THEM";
@@ -38,39 +39,35 @@ public class KhachHangPanel extends JPanel {
         tfHang = UIUtils.makeField();
         tfTrangThai = UIUtils.makeField();
 
+        // ĐÃ SỬA: Chỉ giữ lại các cột hiển thị trên table, bỏ "Thời gian đăng kí", "Lần cuối mua", "Tổng tiền", "Điểm"
         String[] columns = {
                 "Mã KH", "Tên", "Số điện thoại", "Email",
-                "Địa chỉ", "Điểm", "Thời gian đăng kí",
-                "Lần cuối mua", "Tổng tiền", "Hạng", "Trạng thái", "Thao tác"
+                "Địa chỉ", "Hạng", "Trạng thái", "Thao tác"
         };
 
         DefaultTableModel model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 11; // Chỉ cột cuối (Thao tác) được phép chỉnh sửa
+                return column == 7; // Chỉ cột cuối (Thao tác) được phép chỉnh sửa
             }
         };
 
-        // thim đại mấy ngừ
+        // ĐÃ SỬA: Cập nhật dữ liệu mẫu chỉ với các cột hiển thị trên table
         model.addRow(new Object[] {
                 "KH001", "Lê Đỗ Thái Anh", "098754321", "anhdo@gmail.com",
-                "213LDTA", "36", "01/01/2026",
-                "15/03/2026", "3.600.000đ", "Bạc", "Hoạt động", ""
+                "213LDTA", "Bạc", "Hoạt động", ""
         });
         model.addRow(new Object[] {
                 "KH002", "Lý Nguyễn", "0915987654", "nguyenly@gmail.com",
-                "456 Nguyễn Trãii", "580", "15/03/2023",
-                "20/03/2024", "12.070.000đ", "Vàng", "Hoạt động", ""
+                "456 Nguyễn Trãii", "Vàng", "Hoạt động", ""
         });
         model.addRow(new Object[] {
                 "KH003", "Nguyễn Hoàng Sang", "0933777888", "sangnguyen@gmail.com",
-                "789KTX", "120", "20/06/2023",
-                "10/02/2024", "1.012.000đ", "Đồng", "Không hoạt động", ""
+                "789KTX", "Đồng", "Không hoạt động", ""
         });
         model.addRow(new Object[] {
                 "KH004", "Trân dơ hầy", "0977111222", "tranbado@gmail.com",
-                "Bụi chúi", "950", "10/10/2023",
-                "11/03/2024", "27.000.000đ", "Kim cương", "Hoạt động", ""
+                "Bụi chúi", "Kim cương", "Hoạt động", ""
         });
 
         JPanel tableCard = new JPanel(new BorderLayout());
@@ -86,6 +83,7 @@ public class KhachHangPanel extends JPanel {
                 BorderFactory.createLineBorder(Color.BLACK, 1),
                 BorderFactory.createEmptyBorder(0, 10, 0, 10)));
 
+        // ĐÃ SỬA: Cập nhật bộ lọc theo hạng và trạng thái (cột index đã thay đổi)
         String[] boloc = { "Tất cả", "Đồng", "Bạc", "Vàng", "Kim cương", "Hoạt động", "Không hoạt động" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
         cbLoc.setPreferredSize(new Dimension(220, 42));
@@ -139,34 +137,37 @@ public class KhachHangPanel extends JPanel {
             editingRow = -1;
             clearForm();
             enableFormFields(true);
+            btnLuu.setVisible(true);     
+            btnSua.setVisible(false);    
+            btnXoa.setVisible(false);    
+            btnHoanTac.setVisible(false);
             innerCard.show(this, CARD_THEM);
         });
-
         Runnable applyFilter = () -> {
             String tuKhoa = tim.getText().trim();
             int idxLoc = cbLoc.getSelectedIndex();
 
-            // Tạo filter theo loại lọc
+            // Tạo filter theo loại lọc - ĐÃ SỬA index cột
             RowFilter<DefaultTableModel, Integer> filterLoc = null;
 
             switch (idxLoc) {
                 case 1: // Đồng
-                    filterLoc = RowFilter.regexFilter("(?i)^Đồng$", 9);
+                    filterLoc = RowFilter.regexFilter("(?i)^Đồng$", 5); // Cột Hạng (index 5)
                     break;
                 case 2: // Bạc
-                    filterLoc = RowFilter.regexFilter("(?i)^Bạc$", 9);
+                    filterLoc = RowFilter.regexFilter("(?i)^Bạc$", 5);
                     break;
                 case 3: // Vàng
-                    filterLoc = RowFilter.regexFilter("(?i)^Vàng$", 9);
+                    filterLoc = RowFilter.regexFilter("(?i)^Vàng$", 5);
                     break;
                 case 4: // Kim cương
-                    filterLoc = RowFilter.regexFilter("(?i)^Kim cương$", 9);
+                    filterLoc = RowFilter.regexFilter("(?i)^Kim cương$", 5);
                     break;
                 case 5: // Hoạt động
-                    filterLoc = RowFilter.regexFilter("(?i)^Hoạt động$", 10);
+                    filterLoc = RowFilter.regexFilter("(?i)^Hoạt động$", 6); // Cột Trạng thái (index 6)
                     break;
                 case 6: // Không hoạt động
-                    filterLoc = RowFilter.regexFilter("(?i)^Không hoạt động$", 10);
+                    filterLoc = RowFilter.regexFilter("(?i)^Không hoạt động$", 6);
                     break;
                 default: // Tất cả
                     filterLoc = null;
@@ -237,18 +238,15 @@ public class KhachHangPanel extends JPanel {
         bang.setGridColor(new Color(0xEEEEEE));
         bang.setIntercellSpacing(new Dimension(0, 1));
 
+        // ĐÃ SỬA: Cập nhật độ rộng cột cho table mới
         bang.getColumnModel().getColumn(0).setPreferredWidth(80); // Mã KH
         bang.getColumnModel().getColumn(1).setPreferredWidth(150); // Tên
         bang.getColumnModel().getColumn(2).setPreferredWidth(120); // SĐT
         bang.getColumnModel().getColumn(3).setPreferredWidth(180); // Email
         bang.getColumnModel().getColumn(4).setPreferredWidth(200); // Địa chỉ
-        bang.getColumnModel().getColumn(5).setPreferredWidth(60); // Điểm
-        bang.getColumnModel().getColumn(6).setPreferredWidth(100); // Tg đăng kí
-        bang.getColumnModel().getColumn(7).setPreferredWidth(100); // Lần cuối mua
-        bang.getColumnModel().getColumn(8).setPreferredWidth(100); // Tổng tiền
-        bang.getColumnModel().getColumn(9).setPreferredWidth(80); // Hạng
-        bang.getColumnModel().getColumn(10).setPreferredWidth(100); // Trạng thái
-        bang.getColumnModel().getColumn(11).setPreferredWidth(100); // Thao tác
+        bang.getColumnModel().getColumn(5).setPreferredWidth(80); // Hạng
+        bang.getColumnModel().getColumn(6).setPreferredWidth(100); // Trạng thái
+        bang.getColumnModel().getColumn(7).setPreferredWidth(100); // Thao tác
 
         DefaultTableCellRenderer altRenderer = new DefaultTableCellRenderer() {
             @Override
@@ -264,7 +262,7 @@ public class KhachHangPanel extends JPanel {
                 setHorizontalAlignment(SwingConstants.CENTER);
 
                 if (!isSelected) {
-                    if (column == 9) { // Cột Hạng
+                    if (column == 5) { // Cột Hạng (index 5)
                         String val = value == null ? "" : value.toString();
                         switch (val) {
                             case "Đồng" -> setForeground(new Color(0x8B4513)); // Màu nâu
@@ -273,7 +271,7 @@ public class KhachHangPanel extends JPanel {
                             case "Kim cương" -> setForeground(new Color(0x00BFFF)); // Màu xanh dương
                             default -> setForeground(Color.BLACK);
                         }
-                    } else if (column == 10) { // Cột Trạng thái
+                    } else if (column == 6) { // Cột Trạng thái (index 6)
                         String val = value == null ? "" : value.toString();
                         if (val.equals("Hoạt động")) {
                             setForeground(new Color(0x388E3C)); // Màu xanh lá
@@ -291,7 +289,7 @@ public class KhachHangPanel extends JPanel {
         for (int i = 0; i < bang.getColumnCount() - 1; i++)
             bang.getColumnModel().getColumn(i).setCellRenderer(altRenderer);
 
-        bang.getColumnModel().getColumn(11).setCellRenderer(new TableCellRenderer() {
+        bang.getColumnModel().getColumn(7).setCellRenderer(new TableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(
                     JTable table, Object value, boolean isSelected,
@@ -304,7 +302,7 @@ public class KhachHangPanel extends JPanel {
             }
         });
 
-        bang.getColumnModel().getColumn(11).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+        bang.getColumnModel().getColumn(7).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
             private final JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
             private final JButton chiTiet = UIUtils.makeActionButton("Chi tiết", new Color(0x6677C8));
             private int currentRow = -1; // Lưu dòng hiện tại đang được click
@@ -317,13 +315,7 @@ public class KhachHangPanel extends JPanel {
                 chiTiet.addActionListener(e -> {
                     fireEditingStopped();
                     int modelRow = bang.convertRowIndexToModel(currentRow);
-                    editingRow = modelRow;
-
-                    loadFormData(model, modelRow);
-
-                    enableFormFields(false);
-
-                    innerCard.show(KhachHangPanel.this, CARD_THEM);
+                    showDetailDialog(modelRow, model, bang);
                 });
             }
 
@@ -379,6 +371,7 @@ public class KhachHangPanel extends JPanel {
 
         Font labelFont = new Font("Arial", Font.BOLD, 18);
 
+        // Hàng 1: Mã KH và Tên
         gbc.gridx = 0;
         gbc.gridy = 0;
         JLabel lbMaKH = new JLabel("Mã KH:");
@@ -396,6 +389,7 @@ public class KhachHangPanel extends JPanel {
         gbc.gridx = 3;
         formBody.add(tfTen, gbc);
 
+        // Hàng 2: SĐT và Email
         gbc.gridx = 0;
         gbc.gridy = 1;
         JLabel lbSdt = new JLabel("Số điện thoại:");
@@ -413,6 +407,7 @@ public class KhachHangPanel extends JPanel {
         gbc.gridx = 3;
         formBody.add(tfEmail, gbc);
 
+        // Hàng 3: Địa chỉ
         gbc.gridx = 0;
         gbc.gridy = 2;
         JLabel lbDiaChi = new JLabel("Địa chỉ:");
@@ -424,6 +419,7 @@ public class KhachHangPanel extends JPanel {
         formBody.add(tfDiaChi, gbc);
         gbc.gridwidth = 1;
 
+        // Hàng 4: Điểm và Thời gian ĐK
         gbc.gridx = 0;
         gbc.gridy = 3;
         JLabel lbDiem = new JLabel("Điểm tích lũy:");
@@ -434,39 +430,40 @@ public class KhachHangPanel extends JPanel {
         formBody.add(tfDiem, gbc);
 
         gbc.gridx = 2;
-        JLabel lbHang = new JLabel("Hạng:");
-        lbHang.setFont(labelFont);
-        formBody.add(lbHang, gbc);
-
-        gbc.gridx = 3;
-        formBody.add(tfHang, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 4;
         JLabel lbTgDK = new JLabel("Thời gian ĐK:");
         lbTgDK.setFont(labelFont);
         formBody.add(lbTgDK, gbc);
 
-        gbc.gridx = 1;
+        gbc.gridx = 3;
         formBody.add(tfTgDK, gbc);
 
-        gbc.gridx = 2;
+        // Hàng 5: Lần cuối mua và Tổng tiền
+        gbc.gridx = 0;
+        gbc.gridy = 4;
         JLabel lbLanCuoi = new JLabel("Lần cuối mua:");
         lbLanCuoi.setFont(labelFont);
         formBody.add(lbLanCuoi, gbc);
 
-        gbc.gridx = 3;
+        gbc.gridx = 1;
         formBody.add(tfLanCuoiMua, gbc);
 
-        // Hàng 6: Tổng tiền và Trạng thái
-        gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridx = 2;
         JLabel lbTongTien = new JLabel("Tổng tiền đã mua:");
         lbTongTien.setFont(labelFont);
         formBody.add(lbTongTien, gbc);
 
-        gbc.gridx = 1;
+        gbc.gridx = 3;
         formBody.add(tfTongTien, gbc);
+
+        // Hàng 6: Hạng và Trạng thái
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        JLabel lbHang = new JLabel("Hạng:");
+        lbHang.setFont(labelFont);
+        formBody.add(lbHang, gbc);
+
+        gbc.gridx = 1;
+        formBody.add(tfHang, gbc);
 
         gbc.gridx = 2;
         JLabel lbTrangThai = new JLabel("Trạng thái:");
@@ -482,7 +479,7 @@ public class KhachHangPanel extends JPanel {
         btnWrapper.setBackground(new Color(0xF0EFF8));
         btnWrapper.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
 
-        JButton btnLuu = new JButton("LƯU");
+        btnLuu = new JButton("LƯU");
         btnLuu.setFont(new Font("Arial", Font.BOLD, 24));
         btnLuu.setBackground(new Color(0xB83434));
         btnLuu.setForeground(Color.WHITE);
@@ -490,8 +487,16 @@ public class KhachHangPanel extends JPanel {
         btnLuu.setBorderPainted(false);
         btnLuu.setPreferredSize(new Dimension(160, 52));
         btnLuu.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLuu.addActionListener(e -> {
+            if (editingRow == -1) {
+                saveNewCustomer(model);
+            } else {
+                updateCustomer(model);
+                innerCard.show(this, CARD_TABLE);
+            }
+        });
 
-        JButton btnSua = new JButton("SỬA");
+        btnSua = new JButton("SỬA");
         btnSua.setFont(new Font("Arial", Font.BOLD, 24));
         btnSua.setBackground(new Color(0x6677C8));
         btnSua.setForeground(Color.WHITE);
@@ -499,8 +504,17 @@ public class KhachHangPanel extends JPanel {
         btnSua.setBorderPainted(false);
         btnSua.setPreferredSize(new Dimension(160, 52));
         btnSua.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSua.addActionListener(e -> {
+            if (editingRow >= 0) {
+                enableFormFields(true);
+                btnSua.setVisible(false);
+                btnLuu.setVisible(true);
+                btnXoa.setVisible(true);
+                btnHoanTac.setVisible(true);
+            }
+        });
 
-        JButton btnXoa = new JButton("XÓA");
+        btnXoa = new JButton("XÓA");
         btnXoa.setFont(new Font("Arial", Font.BOLD, 24));
         btnXoa.setBackground(new Color(0xB83434));
         btnXoa.setForeground(Color.WHITE);
@@ -508,67 +522,11 @@ public class KhachHangPanel extends JPanel {
         btnXoa.setBorderPainted(false);
         btnXoa.setPreferredSize(new Dimension(160, 52));
         btnXoa.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        JButton btnHoanTac = new JButton("HOÀN TÁC");
-        btnHoanTac.setFont(new Font("Arial", Font.BOLD, 24));
-        btnHoanTac.setBackground(new Color(0xFF7043));
-        btnHoanTac.setForeground(Color.WHITE);
-        btnHoanTac.setFocusPainted(false);
-        btnHoanTac.setBorderPainted(false);
-        btnHoanTac.setPreferredSize(new Dimension(180, 52));
-        btnHoanTac.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnHoanTac.setVisible(false);
-
-        String[] origVals = new String[11]; // snapshot khi bấm SỬA
-
-        btnLuu.addActionListener(e -> {
-            if (editingRow == -1) {
-                // Chế độ thêm mới
-                saveNewCustomer(model);
-            } else {
-                // Chế độ sửa (đã bật editable)
-                updateCustomer(model);
-            }
-        });
-
-        btnSua.addActionListener(e -> {
-            if (editingRow >= 0) {
-                // Snapshot giá trị trước khi sửa
-                origVals[0]  = tfMaKH.getText();      origVals[1]  = tfTen.getText();
-                origVals[2]  = tfSdt.getText();        origVals[3]  = tfEmail.getText();
-                origVals[4]  = tfDiaChi.getText();     origVals[5]  = tfDiem.getText();
-                origVals[6]  = tfTgDK.getText();       origVals[7]  = tfLanCuoiMua.getText();
-                origVals[8]  = tfTongTien.getText();   origVals[9]  = tfHang.getText();
-                origVals[10] = tfTrangThai.getText();
-                // Chuyển sang chế độ sửa
-                enableFormFields(true);
-                btnSua.setVisible(false);
-                btnHoanTac.setVisible(true);
-            }
-        });
-
-        btnHoanTac.addActionListener(e -> {
-            int c = JOptionPane.showConfirmDialog(KhachHangPanel.this,
-                    "Bỏ các thay đổi và khôi phục dữ liệu gốc?",
-                    "Hoàn tác", JOptionPane.YES_NO_OPTION);
-            if (c == JOptionPane.YES_OPTION) {
-                tfMaKH.setText(origVals[0]);       tfTen.setText(origVals[1]);
-                tfSdt.setText(origVals[2]);         tfEmail.setText(origVals[3]);
-                tfDiaChi.setText(origVals[4]);      tfDiem.setText(origVals[5]);
-                tfTgDK.setText(origVals[6]);        tfLanCuoiMua.setText(origVals[7]);
-                tfTongTien.setText(origVals[8]);    tfHang.setText(origVals[9]);
-                tfTrangThai.setText(origVals[10]);
-                enableFormFields(false);
-                btnHoanTac.setVisible(false);
-                btnSua.setVisible(true);
-            }
-        });
-
         btnXoa.addActionListener(e -> {
             if (editingRow >= 0) {
-                int confirm = JOptionPane.showConfirmDialog(this,
-                        "Bạn có chắc muốn xóa khách hàng này?",
-                        "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+                int confirm = JOptionPane.showConfirmDialog(this, 
+                    "Bạn có chắc muốn xóa khách hàng này?", 
+                    "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                 if (confirm == JOptionPane.YES_OPTION) {
                     model.removeRow(editingRow);
                     clearForm();
@@ -579,15 +537,229 @@ public class KhachHangPanel extends JPanel {
             }
         });
 
+        btnHoanTac = new JButton("HOÀN TÁC");
+        btnHoanTac.setFont(new Font("Arial", Font.BOLD, 24));
+        btnHoanTac.setBackground(new Color(0xFF7043));
+        btnHoanTac.setForeground(Color.WHITE);
+        btnHoanTac.setFocusPainted(false);
+        btnHoanTac.setBorderPainted(false);
+        btnHoanTac.setPreferredSize(new Dimension(180, 52));
+        btnHoanTac.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnHoanTac.setVisible(false);
+        btnHoanTac.addActionListener(e -> {
+            // Load lại dữ liệu gốc từ model
+            loadFormData(model, editingRow);
+            enableFormFields(false);
+            btnSua.setVisible(true);
+            btnLuu.setVisible(false);
+            btnXoa.setVisible(false);
+            btnHoanTac.setVisible(false);
+        });
+
         btnWrapper.add(btnLuu);
         btnWrapper.add(btnSua);
-        btnWrapper.add(btnHoanTac);
         btnWrapper.add(btnXoa);
+        btnWrapper.add(btnHoanTac);
         themCard.add(btnWrapper, BorderLayout.SOUTH);
+
+        btnSua.setVisible(false);
+        btnXoa.setVisible(false);
+        btnHoanTac.setVisible(false);
 
         add(tableCard, CARD_TABLE);
         add(themCard, CARD_THEM);
-        innerCard.show(this, CARD_TABLE); // Hiển thị card bảng ban đầu
+        innerCard.show(this, CARD_TABLE);
+    }
+
+    /**
+     * Hiển thị dialog chi tiết khách hàng với ĐẦY ĐỦ thông tin
+     */
+    private void showDetailDialog(int modelRow, DefaultTableModel model, JTable bang) {
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        JDialog detail = new JDialog(owner, "Chi tiết khách hàng", Dialog.ModalityType.APPLICATION_MODAL);
+        detail.setSize(600, 650);
+        detail.setLocationRelativeTo(this);
+        detail.setResizable(false);
+        detail.getContentPane().setBackground(new Color(0xF0EFF8));
+        detail.setLayout(new BorderLayout(0, 0));
+
+        // Header
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
+        header.setBackground(new Color(0xAF9FCB));
+        JLabel lblTitle = new JLabel("Thông tin khách hàng chi tiết");
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
+        lblTitle.setForeground(Color.WHITE);
+        header.add(lblTitle);
+        detail.add(header, BorderLayout.NORTH);
+
+        // Lấy dữ liệu từ model và các field (vì model chỉ có 8 cột, cần lấy thêm từ data gốc)
+        // Trong thực tế, bạn nên lưu trữ đầy đủ dữ liệu ở đâu đó, nhưng tạm thời lấy từ form fields
+        String maKH = model.getValueAt(modelRow, 0).toString();
+        String ten = model.getValueAt(modelRow, 1).toString();
+        String sdt = model.getValueAt(modelRow, 2).toString();
+        String email = model.getValueAt(modelRow, 3).toString();
+        String diaChi = model.getValueAt(modelRow, 4).toString();
+        String hang = model.getValueAt(modelRow, 5).toString();
+        String trangThai = model.getValueAt(modelRow, 6).toString();
+        
+        // Các trường bị ẩn trên table - lấy từ data gốc (ở đây dùng giá trị mẫu)
+        // Trong thực tế, bạn cần lưu trữ đầy đủ dữ liệu hoặc query lại từ database
+        String diem = getDiemFromData(maKH);
+        String tgDK = getTgDKFromData(maKH);
+        String lanCuoiMua = getLanCuoiMuaFromData(maKH);
+        String tongTien = getTongTienFromData(maKH);
+
+        String[] labels = {
+            "Mã KH:", "Tên khách hàng:", "Số điện thoại:", "Email:",
+            "Địa chỉ:", "Điểm tích lũy:", "Thời gian đăng kí:",
+            "Lần cuối mua hàng:", "Tổng tiền đã mua:", "Hạng:", "Trạng thái:"
+        };
+        
+        Object[] values = {
+            maKH, ten, sdt, email, diaChi, diem, tgDK, lanCuoiMua, tongTien, hang, trangThai
+        };
+
+        JPanel body = new JPanel(new GridLayout(labels.length, 2, 10, 10));
+        body.setBackground(new Color(0xF0EFF8));
+        body.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        
+        for (int i = 0; i < labels.length; i++) {
+            JLabel lbl = new JLabel(labels[i]);
+            lbl.setFont(new Font("Arial", Font.BOLD, 15));
+            
+            JLabel val = new JLabel(values[i] == null ? "-" : values[i].toString());
+            val.setFont(new Font("Arial", Font.PLAIN, 15));
+            
+            // Tô màu cho Hạng và Trạng thái
+            if (i == 9) { // Hạng
+                String hangVal = values[i] == null ? "" : values[i].toString();
+                switch (hangVal) {
+                    case "Đồng" -> val.setForeground(new Color(0x8B4513));
+                    case "Bạc" -> val.setForeground(new Color(0x808080));
+                    case "Vàng" -> val.setForeground(new Color(0xFFD700));
+                    case "Kim cương" -> val.setForeground(new Color(0x00BFFF));
+                }
+            } else if (i == 10) { // Trạng thái
+                String tt = values[i] == null ? "" : values[i].toString();
+                if (tt.equals("Hoạt động")) {
+                    val.setForeground(new Color(0x388E3C));
+                } else {
+                    val.setForeground(new Color(0xC62828));
+                }
+            }
+            
+            body.add(lbl);
+            body.add(val);
+        }
+        
+        JScrollPane scrollDetail = new JScrollPane(body);
+        scrollDetail.setBorder(null);
+        scrollDetail.getVerticalScrollBar().setUnitIncrement(16);
+        detail.add(scrollDetail, BorderLayout.CENTER);
+
+        // Footer với các nút chức năng
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 14));
+        footer.setBackground(new Color(0xF0EFF8));
+        footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
+
+        JButton btnSua = new JButton("✏ Sửa");
+        styleButton(btnSua, new Color(0x6677C8), 100, 40);
+        btnSua.addActionListener(e -> {
+            detail.dispose();
+            editingRow = modelRow;
+            // Load đầy đủ dữ liệu lên form
+            tfMaKH.setText(maKH);
+            tfTen.setText(ten);
+            tfSdt.setText(sdt);
+            tfEmail.setText(email);
+            tfDiaChi.setText(diaChi);
+            tfDiem.setText(diem);
+            tfTgDK.setText(tgDK);
+            tfLanCuoiMua.setText(lanCuoiMua);
+            tfTongTien.setText(tongTien);
+            tfHang.setText(hang);
+            tfTrangThai.setText(trangThai);
+            enableFormFields(true);
+            innerCard.show(this, CARD_THEM);
+        });
+
+        JButton btnXoa = new JButton("🗑 Xóa");
+        styleButton(btnXoa, new Color(0xB83434), 100, 40);
+        btnXoa.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(detail,
+                "Bạn có chắc muốn xóa khách hàng \"" + ten + "\"?",
+                "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (confirm == JOptionPane.YES_OPTION) {
+                model.removeRow(modelRow);
+                detail.dispose();
+            }
+        });
+
+        JButton btnDong = new JButton("Đóng");
+        styleButton(btnDong, new Color(0x9B8EA8), 100, 40);
+        btnDong.addActionListener(e -> detail.dispose());
+
+        footer.add(btnSua);
+        footer.add(btnXoa);
+        footer.add(btnDong);
+        detail.add(footer, BorderLayout.SOUTH);
+        
+        detail.setVisible(true);
+    }
+
+    // Các phương thức tạm thời để lấy dữ liệu bị ẩn - trong thực tế bạn sẽ lấy từ database
+    private String getDiemFromData(String maKH) {
+        // Trong thực tế, bạn sẽ query database
+        switch(maKH) {
+            case "KH001": return "36";
+            case "KH002": return "580";
+            case "KH003": return "120";
+            case "KH004": return "950";
+            default: return "0";
+        }
+    }
+
+    private String getTgDKFromData(String maKH) {
+        switch(maKH) {
+            case "KH001": return "01/01/2026";
+            case "KH002": return "15/03/2023";
+            case "KH003": return "20/06/2023";
+            case "KH004": return "10/10/2023";
+            default: return "01/01/2024";
+        }
+    }
+
+    private String getLanCuoiMuaFromData(String maKH) {
+        switch(maKH) {
+            case "KH001": return "15/03/2026";
+            case "KH002": return "20/03/2024";
+            case "KH003": return "10/02/2024";
+            case "KH004": return "11/03/2024";
+            default: return "01/01/2024";
+        }
+    }
+
+    private String getTongTienFromData(String maKH) {
+        switch(maKH) {
+            case "KH001": return "3.600.000đ";
+            case "KH002": return "12.070.000đ";
+            case "KH003": return "1.012.000đ";
+            case "KH004": return "27.000.000đ";
+            default: return "0đ";
+        }
+    }
+
+    /**
+     * Style cho các nút trong dialog
+     */
+    private void styleButton(JButton btn, Color bg, int width, int height) {
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setPreferredSize(new Dimension(width, height));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setFont(new Font("Arial", Font.BOLD, 14));
     }
 
     /**
@@ -625,7 +797,7 @@ public class KhachHangPanel extends JPanel {
     }
 
     /**
-     * Load dữ liệu từ model lên form
+     * Load dữ liệu từ model lên form (chỉ các cột hiển thị)
      */
     private void loadFormData(DefaultTableModel model, int row) {
         tfMaKH.setText(model.getValueAt(row, 0).toString());
@@ -633,12 +805,15 @@ public class KhachHangPanel extends JPanel {
         tfSdt.setText(model.getValueAt(row, 2).toString());
         tfEmail.setText(model.getValueAt(row, 3).toString());
         tfDiaChi.setText(model.getValueAt(row, 4).toString());
-        tfDiem.setText(model.getValueAt(row, 5).toString());
-        tfTgDK.setText(model.getValueAt(row, 6).toString());
-        tfLanCuoiMua.setText(model.getValueAt(row, 7).toString());
-        tfTongTien.setText(model.getValueAt(row, 8).toString());
-        tfHang.setText(model.getValueAt(row, 9).toString());
-        tfTrangThai.setText(model.getValueAt(row, 10).toString());
+        tfHang.setText(model.getValueAt(row, 5).toString());
+        tfTrangThai.setText(model.getValueAt(row, 6).toString());
+        
+        // Các trường bị ẩn - lấy từ data gốc
+        String maKH = model.getValueAt(row, 0).toString();
+        tfDiem.setText(getDiemFromData(maKH));
+        tfTgDK.setText(getTgDKFromData(maKH));
+        tfLanCuoiMua.setText(getLanCuoiMuaFromData(maKH));
+        tfTongTien.setText(getTongTienFromData(maKH));
     }
 
     /**
@@ -646,22 +821,21 @@ public class KhachHangPanel extends JPanel {
      */
     private void saveNewCustomer(DefaultTableModel model) {
         // Kiểm tra dữ liệu bắt buộc
-        if (tfMaKH.getText().trim().isEmpty() || tfTen.getText().trim().isEmpty() ||
-                tfSdt.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Vui lòng nhập Mã KH, Tên và Số điện thoại!",
-                    "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+        if (tfMaKH.getText().trim().isEmpty() || tfTen.getText().trim().isEmpty() || 
+            tfSdt.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                "Vui lòng nhập Mã KH, Tên và Số điện thoại!", 
+                "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        // Thêm dòng mới
+        
+        // Thêm dòng mới vào table (chỉ các cột hiển thị)
         model.addRow(new Object[] {
-                tfMaKH.getText(), tfTen.getText(), tfSdt.getText(), tfEmail.getText(),
-                tfDiaChi.getText(), tfDiem.getText(), tfTgDK.getText(),
-                tfLanCuoiMua.getText(), tfTongTien.getText(), tfHang.getText(),
-                tfTrangThai.getText(), ""
+            tfMaKH.getText(), tfTen.getText(), tfSdt.getText(), tfEmail.getText(),
+            tfDiaChi.getText(), tfHang.getText(), tfTrangThai.getText(), ""
         });
-
+        
+        // Reset form và quay lại bảng
         clearForm();
         innerCard.show(this, CARD_TABLE);
     }
@@ -676,17 +850,13 @@ public class KhachHangPanel extends JPanel {
             model.setValueAt(tfSdt.getText(), editingRow, 2);
             model.setValueAt(tfEmail.getText(), editingRow, 3);
             model.setValueAt(tfDiaChi.getText(), editingRow, 4);
-            model.setValueAt(tfDiem.getText(), editingRow, 5);
-            model.setValueAt(tfTgDK.getText(), editingRow, 6);
-            model.setValueAt(tfLanCuoiMua.getText(), editingRow, 7);
-            model.setValueAt(tfTongTien.getText(), editingRow, 8);
-            model.setValueAt(tfHang.getText(), editingRow, 9);
-            model.setValueAt(tfTrangThai.getText(), editingRow, 10);
-
+            model.setValueAt(tfHang.getText(), editingRow, 5);
+            model.setValueAt(tfTrangThai.getText(), editingRow, 6);
+            
+            // Reset form và quay lại bảng
             clearForm();
             enableFormFields(true);
             editingRow = -1;
-            innerCard.show(this, CARD_TABLE);
         }
     }
 
@@ -695,4 +865,3 @@ public class KhachHangPanel extends JPanel {
         innerCard.show(this, card);
     }
 }
-

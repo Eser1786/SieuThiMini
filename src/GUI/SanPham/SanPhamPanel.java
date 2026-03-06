@@ -506,7 +506,12 @@ public class SanPhamPanel extends JPanel {
 
         JButton btnHuy = new JButton("Hủy");
         styleBtn(btnHuy, new Color(0x9B8EA8), 100, 40);
-        btnHuy.addActionListener(e -> popup.dispose());
+        btnHuy.addActionListener(e -> {
+            int cf = JOptionPane.showConfirmDialog(popup,
+                    "Bạn có chắc muốn hủy? Thay đổi chưa lưu sẽ bị mất.",
+                    "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (cf == JOptionPane.YES_OPTION) popup.dispose();
+        });
 
         JButton btnLuu = new JButton("Lưu");
         styleBtn(btnLuu, new Color(0xB83434), 100, 40);

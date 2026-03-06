@@ -58,7 +58,30 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 - **Nếu có unstaged changes**: `git stash` → `git pull --rebase` → `git stash pop` → `git push`.
 - **Nếu rebase conflict với binary files (`.class`)**: `git rm -r --cached bin/` → `git add -A` → `git rebase --continue`.
 
+### 8. CRLF line endings block multi-line replace_string_in_file
+
+- **Vấn đề**: `replace_string_in_file` dùng `\n` để match — fail hoàn toàn trên file có `\r\n` (Windows CRLF) khi oldString có nhiều dòng.
+- **Cách phát hiện**: `(Get-Content file -Raw) -match "\r\n"` → True thì file là CRLF.
+- **Giải pháp**: Viết PowerShell `.ps1` đọc file bằng `[System.IO.File]::ReadAllText`, normalize `\r\n` → `\n`, tìm match, thay thế bằng `.Replace()`, rồi khôi phục CRLF và ghi lại. Chạy qua `powershell -ExecutionPolicy Bypass -File patch.ps1`.
+- **Phòng tránh**: Các file `.java` mới nên được tạo với LF (hoặc chấp nhận dùng script khi cần patch multi-line).
+
+### 10. Pattern xác nhận thoát / hủy thao tác
+
+- **Thoát app (X button)**: Trong `GUI.java`, dùng `setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE)` + `addWindowListener(new java.awt.event.WindowAdapter() { windowClosing → JOptionPane.showConfirmDialog → System.exit(0) })`. KHÔNG dùng `EXIT_ON_CLOSE` trực tiếp.
+- **Hủy trong dialog có form trống**: Chỉ `dlg.dispose()` — không hỏi.
+- **Hủy trong dialog có dữ liệu (add form)**: Duyệt `tfs[]` array: `for (JTextField f : tfs) if (!f.getText().trim().isEmpty()) dirty = true;`. Nếu dirty → `JOptionPane.showConfirmDialog(dlg, "Bạn có chắc muốn hủy? Thông tin đã nhập sẽ mất.", ...)`. Nếu có `JPasswordField` thêm: `|| new String(pfPass.getPassword()).trim().length() > 0`.
+- **Hủy trong edit dialog (pre-filled)**: Luôn confirm — `JOptionPane.showConfirmDialog(popup, "Bạn có chắc muốn hủy? Thay đổi chưa lưu sẽ bị mất.", ...)` → `if YES: popup.dispose()`.
+- **Không thêm xác nhận cho**: "Đóng" view-only popup (KhachHang detail), standalone `main()` test frames (KhoPanel.main), "Đã hủy" trạng thái đơn hàng (đó là biz ops, không phải dialog cancel).
+
+### 9. Pattern tái sử dụng — NhanVienPanel (và các panel tương tự)
+
+- **Cột mật khẩu**: Dùng `PasswordCellRenderer` kế thừa `DefaultTableCellRenderer`; field `Set<Integer> revealedRows` lưu row nào đang hiện. Click vào 28px cuối ô password để toggle reveal/hide. Thêm `HierarchyListener` vào constructor để auto-clear `revealedRows` khi tab bị ẩn.
+- **Header bảng chuẩn** (theo KhachHang): `Font("Arial", BOLD, 16)`, `setPreferredSize(new Dimension(0, 52))`, `setBackground(new Color(0xAF9FCB))`, `setForeground(WHITE)`.
+- **Tìm kiếm an toàn**: Dùng `Pattern.quote(kw)` trước khi  truyền vào `RowFilter.regexFilter(...)` để input của user không bị interpret là regex.
+- **Dialog thêm mới**: `JPasswordField` với nút toggle show/hide (`echoChar = 0` ↔ `•`). Collect tất cả lỗi vào `List<String> errs` trước rồi hiển thị cùng một lần (all-at-once validation), không return sớm từng lỗi. Kiểm tra trùng mã trước khi thêm.
+
 ### 7. Popup dialog vs CardLayout
+
 - **Vấn đề cũ**: Tạo đơn hàng dùng chung CardLayout, nhấn "Tạo đơn hàng" thay toàn bộ màn hình.
 - **Giải pháp mới**: Dùng `JDialog` (APPLICATION_MODAL) để mở form tạo đơn hàng như popup riêng biệt.
 - **Lưu ý**: `showCard(CARD_TABLE)` phải kiểm tra nếu có dialog đang mở thì `dispose()` thay vì switch card.
@@ -79,7 +102,7 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 
 ## Cấu trúc thư mục quan trọng
 
-```
+```text
 src/
 ├── BUS/          # Business logic layer
 ├── DAO/          # Data access layer (DB)

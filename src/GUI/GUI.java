@@ -11,7 +11,19 @@ public class GUI extends JFrame {
         setTitle("Siu Thị 36");
         setSize(1440, 1024);
         setMinimumSize(new Dimension(1000, 700));
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                int opt = JOptionPane.showConfirmDialog(
+                        GUI.this,
+                        "Bạn có muốn thoát ứng dụng không?",
+                        "Xác nhận thoát",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+                if (opt == JOptionPane.YES_OPTION) System.exit(0);
+            }
+        });
         setLocationRelativeTo(null);
 
         try {
