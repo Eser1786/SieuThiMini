@@ -37,28 +37,32 @@ class DonHangTableCard extends JPanel {
                 "Tất cả", "Chờ xác nhận", "Đã xác nhận",
                 "Chờ vận chuyển", "Đang giao", "Đã giao", "Đã hủy"
         };
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 25));
+
+        // Single-row: filters LEFT, buttons RIGHT
+        JPanel top = new JPanel(new BorderLayout());
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.BLACK, 1),
-                BorderFactory.createEmptyBorder(0, 10, 0, 10)));
-        top.setPreferredSize(new Dimension(0, 94));
+                BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
+                BorderFactory.createEmptyBorder(8, 10, 8, 10)));
+
+        // Left: filter combo + search field
+        JPanel dhLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        dhLeft.setBackground(new Color(0xF8F7FF));
 
         JComboBox<String> cbLoc = new JComboBox<>(trangThais);
-        cbLoc.setPreferredSize(new Dimension(220, 42));
-        cbLoc.setFont(new Font("Arial", Font.PLAIN, 22));
-        cbLoc.setBackground(new Color(0xD9D9D9));
+        cbLoc.setPreferredSize(new Dimension(200, 36));
+        UIUtils.styleComboBox(cbLoc);
 
         JPanel timPanel = new JPanel(new BorderLayout());
-        timPanel.setPreferredSize(new Dimension(229, 42));
-        timPanel.setBackground(new Color(0xD9D9D9));
+        timPanel.setPreferredSize(new Dimension(220, 36));
+        timPanel.setBackground(Color.WHITE);
+        timPanel.setBorder(BorderFactory.createLineBorder(new Color(0xBBBBBB), 1));
 
         JTextField tfTim = new JTextField();
-        tfTim.setFont(new Font("Arial", Font.PLAIN, 22));
-        tfTim.setBackground(new Color(0xD9D9D9));
+        tfTim.setFont(new Font("Arial", Font.PLAIN, 13));
         tfTim.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
 
-        JButton btnTim = new JButton("🔍");
+        JButton btnTim = new JButton("\uD83D\uDD0D");
         btnTim.setBorderPainted(false);
         btnTim.setContentAreaFilled(false);
         btnTim.setFocusPainted(false);
@@ -77,37 +81,55 @@ class DonHangTableCard extends JPanel {
         timPanel.add(tfTim, BorderLayout.CENTER);
         timPanel.add(btnTim, BorderLayout.EAST);
 
-        top.add(cbLoc);
-        top.add(timPanel);
+        JLabel lbLoc = new JLabel("Tr\u1ea1ng th\u00e1i:");
+        lbLoc.setFont(new Font("Arial", Font.PLAIN, 13));
+        JLabel lbTim = new JLabel("T\u00ecm ki\u1ebfm:");
+        lbTim.setFont(new Font("Arial", Font.PLAIN, 13));
 
-        JButton btnTao = new JButton("+ Tạo đơn hàng");
+        dhLeft.add(lbLoc);
+        dhLeft.add(cbLoc);
+        dhLeft.add(Box.createHorizontalStrut(6));
+        dhLeft.add(lbTim);
+        dhLeft.add(timPanel);
+
+        // Right: Tạo + export buttons
+        JPanel dhRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
+        dhRight.setBackground(new Color(0xF8F7FF));
+
+        JButton btnTao = new JButton("+ T\u1ea1o \u0111\u01a1n h\u00e0ng");
         btnTao.setFocusPainted(false);
         btnTao.setBackground(new Color(0xD9D9D9));
-        btnTao.setPreferredSize(new Dimension(200, 42));
-        btnTao.setFont(new Font("Arial", Font.BOLD, 18));
+        btnTao.setFont(new Font("Arial", Font.BOLD, 13));
+        btnTao.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnTao.setOpaque(true);
+        btnTao.setBorderPainted(false);
         btnTao.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnTao.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) { btnTao.setBackground(new Color(0xC5B3E6)); }
             public void mouseExited(java.awt.event.MouseEvent e)  { btnTao.setBackground(new Color(0xD9D9D9)); }
         });
         btnTao.addActionListener(e -> parent.openCreatePopup(SwingUtilities.getWindowAncestor(this)));
-        top.add(btnTao);
 
-        JButton btnPDF = ExportUtils.makeExportButton("Xuất PDF", new Color(0x7B52AB));
-        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, parent.tableModel, "Danh sách đơn hàng"));
-        top.add(btnPDF);
+        JButton btnPDF = ExportUtils.makeExportButton("Xu\u1ea5t PDF", new Color(0x7B52AB));
+        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, parent.tableModel, "Danh s\u00e1ch \u0111\u01a1n h\u00e0ng"));
 
-        JButton btnExcel = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
+        JButton btnExcel = ExportUtils.makeExportButton("Xu\u1ea5t Excel", new Color(0x2E7D32));
         btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, parent.tableModel, "don_hang"));
-        top.add(btnExcel);
 
-        JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
+        JButton btnImport = ExportUtils.makeImportButton("Nh\u1eadp CSV");
         btnImport.addActionListener(e -> {
             List<String[]> rows = ExportUtils.importCSV(this);
             if (rows == null) return;
             for (String[] r : rows) { if (r.length < 6) continue; parent.tableModel.addRow((Object[])r); }
         });
-        top.add(btnImport);
+
+        dhRight.add(btnTao);
+        dhRight.add(btnPDF);
+        dhRight.add(btnExcel);
+        dhRight.add(btnImport);
+
+        top.add(dhLeft, BorderLayout.WEST);
+        top.add(dhRight, BorderLayout.EAST);
 
         /* Bảng */
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(parent.tableModel);
@@ -199,7 +221,26 @@ class DonHangTableCard extends JPanel {
         JScrollPane scroll = new JScrollPane(bang);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        add(top, BorderLayout.NORTH);
+        // Header
+        JPanel dhHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
+        dhHeader.setBackground(new Color(0xF8F7FF));
+        dhHeader.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xDDDDDD)),
+                BorderFactory.createEmptyBorder(0, 20, 0, 20)));
+        JPanel dhBar = new JPanel();
+        dhBar.setPreferredSize(new Dimension(5, 26));
+        dhBar.setBackground(new Color(0x5C4A7F));
+        dhHeader.add(dhBar);
+        dhHeader.add(Box.createHorizontalStrut(12));
+        JLabel dhTitle = new JLabel("QUẢN LÝ ĐƠN HÀNG");
+        dhTitle.setFont(new Font("Arial", Font.BOLD, 20));
+        dhHeader.add(dhTitle);
+
+        JPanel dhNorth = new JPanel();
+        dhNorth.setLayout(new BoxLayout(dhNorth, BoxLayout.Y_AXIS));
+        dhNorth.add(dhHeader);
+        dhNorth.add(top);
+        add(dhNorth, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
     }
 

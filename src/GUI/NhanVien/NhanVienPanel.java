@@ -9,12 +9,9 @@ import GUI.UIUtils;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.Dialog;
 import java.awt.event.*;
 import java.awt.geom.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
@@ -32,13 +29,13 @@ public class NhanVienPanel extends JPanel {
     private static final Color BTN_HOVER = new Color(0xC5B3E6);
 
     // Column indices
-    private static final int COL_MA = 0, COL_TEN = 1, COL_CHUCVU = 2;
-    private static final int COL_SDT = 3, COL_EMAIL = 4, COL_NGAY = 5, COL_PASS = 6;
+    static final int COL_MA = 0, COL_TEN = 1, COL_CHUCVU = 2;
+    static final int COL_SDT = 3, COL_EMAIL = 4, COL_NGAY = 5, COL_PASS = 6;
 
     // Fields
-    private DefaultTableModel tableModel;
+    DefaultTableModel tableModel;
     private final EmployeeBUS empBUS = new EmployeeBUS();
-    private List<RoleDTO> roles = new ArrayList<>();
+    List<RoleDTO> roles = new ArrayList<>();
     private final Map<Integer, String> roleMap = new HashMap<>();
     private final Set<Integer> revealedRows = new HashSet<>();
     private JTable table;
@@ -46,7 +43,7 @@ public class NhanVienPanel extends JPanel {
     private int selectedModelRow = -1;
 
     // Photo map: maNV -> absolute path
-    private final Map<String, String> photoPathMap = new HashMap<>();
+    final Map<String, String> photoPathMap = new HashMap<>();
 
     // Detail card
     private JLabel lbName, lbRole, lbMaNV, lbGioiTinh, lbCMND, lbNgaySinh,
@@ -516,7 +513,7 @@ public class NhanVienPanel extends JPanel {
         }
     }
 
-    private void fillDetail(int modelRow) {
+    void fillDetail(int modelRow) {
         selectedModelRow = modelRow;
         btnSuaNV.setEnabled(true);
         btnXoaNV.setEnabled(true);
@@ -536,7 +533,7 @@ public class NhanVienPanel extends JPanel {
         if (avatarBox != null) avatarBox.repaint();
     }
 
-    private String generateMaNV() {
+    String generateMaNV() {
         int max = 0;
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             String ma = tableModel.getValueAt(i, COL_MA).toString();
@@ -548,344 +545,11 @@ public class NhanVienPanel extends JPanel {
         return String.format("NV%03d", max + 1);
     }
 
-    private void showAddDialog() { showEmployeeDialog(null, -1); }
-    private void showEditDialog(int modelRow) { showEmployeeDialog(modelRow, modelRow); }
+    private void showAddDialog() { NhanVienEmployeeDialog.show(this, null, -1); }
+    private void showEditDialog(int modelRow) { NhanVienEmployeeDialog.show(this, modelRow, modelRow); }
 
-    private void showEmployeeDialog(Integer prefilledRow, int editRow) {
-        boolean isEdit = (prefilledRow != null);
-        String title = isEdit ? "S\u1eeda Nh\u00e2n Vi\u00ean" : "Th\u00eam Nh\u00e2n Vi\u00ean";
 
-        JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(this),
-                title, Dialog.ModalityType.APPLICATION_MODAL);
-        dlg.setLayout(new BorderLayout());
-
-        // Photo section
-        final String[] tmpPhotoPath = {null};
-        JPanel photoSection = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 8));
-        photoSection.setBackground(new Color(0xF3F0FA));
-        photoSection.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xD1C4E9)));
-
-        JLabel photoPreview = new JLabel() {
-            @Override protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                if (getIcon() == null) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setColor(new Color(0xBBBBBB));
-                    g2.setFont(new Font("Arial", Font.PLAIN, 11));
-                    String hint = "Ch\u01b0a c\u00f3 \u1ea3nh";
-                    FontMetrics fm = g2.getFontMetrics();
-                    g2.drawString(hint, (getWidth()-fm.stringWidth(hint))/2, getHeight()/2 + fm.getAscent()/2);
-                    g2.dispose();
-                }
-            }
-        };
-        photoPreview.setPreferredSize(new Dimension(80, 80));
-        photoPreview.setBorder(BorderFactory.createLineBorder(new Color(0xAAAAAA)));
-        photoPreview.setBackground(Color.WHITE);
-        photoPreview.setOpaque(true);
-        photoPreview.setHorizontalAlignment(SwingConstants.CENTER);
-
-        if (isEdit) {
-            String ma = tableModel.getValueAt(prefilledRow, COL_MA).toString();
-            String path = photoPathMap.get(ma);
-            if (path != null) {
-                try {
-                    BufferedImage img = ImageIO.read(new File(path));
-                    if (img != null) photoPreview.setIcon(new ImageIcon(img.getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
-                    tmpPhotoPath[0] = path;
-                } catch (Exception ignored) {}
-            }
-        }
-
-        JButton btnChonAnh = makeAppBtn("Ch\u1ecdn \u1ea3nh");
-        JLabel lbPhotoHint = new JLabel("<html><font color='gray' size='2'>Vu\u00f4ng, 256\u2013512px<br>(t\u1ef1 \u0111\u1ed9ng scale)</font></html>");
-
-        btnChonAnh.addActionListener(ev -> {
-            Window owner = SwingUtilities.getWindowAncestor(dlg);
-            java.awt.FileDialog fd = new java.awt.FileDialog(
-                (owner instanceof java.awt.Frame) ? (java.awt.Frame) owner : null,
-                "Ch\u1ecdn \u1ea3nh nh\u00e2n vi\u00ean", java.awt.FileDialog.LOAD);
-            fd.setFilenameFilter((dir, name) -> {
-                String n = name.toLowerCase();
-                return n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".png");
-            });
-            fd.setVisible(true);
-            String chosenDir  = fd.getDirectory();
-            String chosenFile = fd.getFile();
-            if (chosenDir == null || chosenFile == null) return;
-            File f = new File(chosenDir, chosenFile);
-            try {
-                BufferedImage img = ImageIO.read(f);
-                if (img == null) { JOptionPane.showMessageDialog(dlg, "Kh\u00f4ng \u0111\u1ecdc \u0111\u01b0\u1ee3c file \u1ea3nh.", "L\u1ed7i", JOptionPane.ERROR_MESSAGE); return; }
-                if (img.getWidth() != img.getHeight())
-                    JOptionPane.showMessageDialog(dlg, "\u1ea2nh kh\u00f4ng vu\u00f4ng \u2014 s\u1ebd b\u1ecb c\u1eaft khi hi\u1ec3n th\u1ecb.", "C\u1ea3nh b\u00e1o", JOptionPane.WARNING_MESSAGE);
-                tmpPhotoPath[0] = f.getAbsolutePath();
-                photoPreview.setIcon(new ImageIcon(img.getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
-                photoPreview.repaint();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dlg, "L\u1ed7i khi \u0111\u1ecdc \u1ea3nh: " + ex.getMessage(), "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        photoSection.add(photoPreview);
-        JPanel photoRight = new JPanel(new GridLayout(2, 1, 0, 4));
-        photoRight.setOpaque(false);
-        photoRight.add(btnChonAnh);
-        photoRight.add(lbPhotoHint);
-        photoSection.add(photoRight);
-        dlg.add(photoSection, BorderLayout.NORTH);
-
-        // Form fields: [0]Ho ten, [1]Username, [2]SDT, [3]Email, [4]Luong
-        JTextField[] tfs = new JTextField[5];
-        String[] fieldLabels = {
-            "H\u1ecd v\u00e0 t\u00ean *:",
-            "T\u00ean \u0111\u0103ng nh\u1eadp *:",
-            "S\u0110T (10 s\u1ed1):",
-            "Email:",
-            "L\u01b0\u01a1ng (VN\u0110):"
-        };
-        for (int i = 0; i < tfs.length; i++) {
-            tfs[i] = new JTextField(18);
-            tfs[i].setFont(new Font("Arial", Font.PLAIN, 13));
-        }
-        UIUtils.attachMoneyFormatter(tfs[4]);
-
-        SpinnerDateModel dateModel = new SpinnerDateModel();
-        JSpinner spNgay = new JSpinner(dateModel);
-        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spNgay, "dd/MM/yyyy");
-        spNgay.setEditor(dateEditor);
-        spNgay.setFont(new Font("Arial", Font.PLAIN, 13));
-
-        JPasswordField pfPass = new JPasswordField(18);
-        pfPass.setFont(new Font("Arial", Font.PLAIN, 13));
-        JButton btnShowPass = new JButton(UIUtils.iconEyeOpen(18, ACCENT));
-        btnShowPass.setToolTipText("Hi\u1ec7n / \u1ea8n m\u1eadt kh\u1ea9u");
-        btnShowPass.setPreferredSize(new Dimension(32, 32));
-        btnShowPass.setFocusPainted(false);
-        btnShowPass.setBorderPainted(false);
-        btnShowPass.setContentAreaFilled(false);
-        btnShowPass.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnShowPass.addActionListener(ev -> {
-            if (pfPass.getEchoChar() != 0) {
-                pfPass.setEchoChar((char) 0);
-                btnShowPass.setIcon(UIUtils.iconEyeOff(18, ACCENT));
-            } else {
-                pfPass.setEchoChar('\u2022');
-                btnShowPass.setIcon(UIUtils.iconEyeOpen(18, ACCENT));
-            }
-        });
-
-        String[] roleNames = roles.isEmpty()
-            ? new String[]{"Nh\u00e2n vi\u00ean", "Qu\u1ea3n l\u00fd"}
-            : roles.stream().map(RoleDTO::getName).toArray(String[]::new);
-        JComboBox<String> cbRole = new JComboBox<>(roleNames);
-        UIUtils.styleComboBox(cbRole);
-
-        JLabel[] errLabels = new JLabel[5];
-        for (int i = 0; i < errLabels.length; i++) {
-            errLabels[i] = new JLabel(" ");
-            errLabels[i].setFont(new Font("Arial", Font.ITALIC, 11));
-            errLabels[i].setForeground(Color.RED);
-        }
-
-        if (isEdit) {
-            tfs[0].setText(tableModel.getValueAt(prefilledRow, COL_TEN).toString());
-            tfs[2].setText(tableModel.getValueAt(prefilledRow, COL_SDT).toString());
-            tfs[3].setText(tableModel.getValueAt(prefilledRow, COL_EMAIL).toString());
-            String ngayStr = tableModel.getValueAt(prefilledRow, COL_NGAY).toString();
-            if (!ngayStr.isEmpty()) {
-                try { dateModel.setValue(new SimpleDateFormat("dd/MM/yyyy").parse(ngayStr)); }
-                catch (Exception ignored) {}
-            }
-            // pre-select role
-            String currentRole = tableModel.getValueAt(prefilledRow, COL_CHUCVU).toString();
-            for (int i = 0; i < cbRole.getItemCount(); i++) {
-                if (cbRole.getItemAt(i).equals(currentRole)) { cbRole.setSelectedIndex(i); break; }
-            }
-        }
-
-        JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(Color.WHITE);
-        form.setBorder(BorderFactory.createEmptyBorder(12, 20, 8, 20));
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.fill = GridBagConstraints.HORIZONTAL;
-        Font labelFont = new Font("Arial", Font.BOLD, 13);
-        Font fieldFont = new Font("Arial", Font.PLAIN, 13);
-
-        int row = 0;
-        if (isEdit) {
-            gc.gridx = 0; gc.gridy = row; gc.weightx = 0.35; gc.insets = new Insets(5,5,2,5);
-            JLabel lMa = new JLabel("M\u00e3 nh\u00e2n vi\u00ean:"); lMa.setFont(labelFont);
-            form.add(lMa, gc);
-            gc.gridx = 1; gc.weightx = 0.65;
-            JLabel lMaVal = new JLabel(tableModel.getValueAt(prefilledRow, COL_MA).toString());
-            lMaVal.setFont(new Font("Arial", Font.BOLD, 13));
-            lMaVal.setForeground(ACCENT);
-            form.add(lMaVal, gc);
-            row++;
-        }
-
-        for (int i = 0; i < fieldLabels.length; i++) {
-            gc.gridx = 0; gc.gridy = row; gc.weightx = 0.35; gc.insets = new Insets(5,5,2,5);
-            JLabel lbl = new JLabel(fieldLabels[i]); lbl.setFont(labelFont);
-            form.add(lbl, gc);
-            gc.gridx = 1; gc.weightx = 0.65;
-            tfs[i].setFont(fieldFont);
-            form.add(tfs[i], gc);
-            row++;
-            gc.gridx = 1; gc.gridy = row; gc.insets = new Insets(0,5,4,5);
-            form.add(errLabels[i], gc);
-            row++;
-        }
-
-        gc.gridx = 0; gc.gridy = row; gc.weightx = 0.35; gc.insets = new Insets(5,5,2,5);
-        JLabel lDate = new JLabel("Ng\u00e0y tham gia:"); lDate.setFont(labelFont);
-        form.add(lDate, gc);
-        gc.gridx = 1; gc.weightx = 0.65;
-        form.add(spNgay, gc);
-        row++;
-
-        gc.gridx = 0; gc.gridy = row; gc.weightx = 0.35; gc.insets = new Insets(5,5,2,5);
-        JLabel lPass = new JLabel("M\u1eadt kh\u1ea9u *:"); lPass.setFont(labelFont);
-        form.add(lPass, gc);
-        gc.gridx = 1; gc.weightx = 0.65;
-        JPanel passRow = new JPanel(new BorderLayout(4, 0));
-        passRow.setOpaque(false);
-        passRow.add(pfPass, BorderLayout.CENTER);
-        passRow.add(btnShowPass, BorderLayout.EAST);
-        form.add(passRow, gc);
-        row++;
-        gc.gridx = 1; gc.gridy = row; gc.insets = new Insets(0,5,4,5);
-        // errLabels[4] is password error
-        form.add(errLabels[4], gc);
-        row++;
-
-        gc.gridx = 0; gc.gridy = row; gc.weightx = 0.35; gc.insets = new Insets(5,5,5,5);
-        JLabel lRole = new JLabel("Ch\u1ee9c v\u1ee5:"); lRole.setFont(labelFont);
-        form.add(lRole, gc);
-        gc.gridx = 1; gc.weightx = 0.65;
-        form.add(cbRole, gc);
-
-        JScrollPane formScroll = new JScrollPane(form);
-        formScroll.setBorder(null);
-        formScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        dlg.add(formScroll, BorderLayout.CENTER);
-
-        JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
-        btns.setBackground(new Color(0xF3F0FA));
-        btns.setBorder(BorderFactory.createMatteBorder(1,0,0,0, new Color(0xD1C4E9)));
-        JButton btnLuu = new JButton("L\u01b0u");
-        btnLuu.setBackground(ACCENT); btnLuu.setForeground(Color.WHITE);
-        btnLuu.setFont(new Font("Arial", Font.BOLD, 13));
-        btnLuu.setFocusPainted(false); btnLuu.setBorderPainted(false);
-        btnLuu.setPreferredSize(new Dimension(80, 32));
-        JButton btnHuy = new JButton("H\u1ee7y");
-        btnHuy.setFont(new Font("Arial", Font.BOLD, 13));
-        btnHuy.setBackground(BTN_IDLE); btnHuy.setForeground(Color.DARK_GRAY);
-        btnHuy.setFocusPainted(false); btnHuy.setBorderPainted(false);
-        btnHuy.setPreferredSize(new Dimension(80, 32));
-        btns.add(btnHuy); btns.add(btnLuu);
-        dlg.add(btns, BorderLayout.SOUTH);
-
-        btnLuu.addActionListener(e -> {
-            for (JLabel el : errLabels) el.setText(" ");
-
-            String ten   = tfs[0].getText().trim();
-            String user  = tfs[1].getText().trim();
-            String sdt   = tfs[2].getText().trim();
-            String email = tfs[3].getText().trim();
-            String pass  = new String(pfPass.getPassword()).trim();
-            String ngay  = new SimpleDateFormat("dd/MM/yyyy").format((java.util.Date) spNgay.getValue());
-
-            boolean hasError = false;
-
-            if (ten.isEmpty())  { errLabels[0].setText("Vui l\u00f2ng nh\u1eadp h\u1ecd v\u00e0 t\u00ean"); hasError = true; }
-            if (user.isEmpty()) { errLabels[1].setText("Vui l\u00f2ng nh\u1eadp t\u00ean \u0111\u0103ng nh\u1eadp"); hasError = true; }
-            if (!sdt.isEmpty() && !sdt.matches("^0\\d{9}$"))
-                { errLabels[2].setText("S\u0110T ph\u1ea3i 10 s\u1ed1, b\u1eaft \u0111\u1ea7u 0"); hasError = true; }
-            if (!email.isEmpty() && !email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))
-                { errLabels[3].setText("Email kh\u00f4ng h\u1ee3p l\u1ec7"); hasError = true; }
-
-            if (!isEdit || !pass.isEmpty()) {
-                if (pass.isEmpty()) {
-                    errLabels[4].setText("Vui l\u00f2ng nh\u1eadp m\u1eadt kh\u1ea9u");
-                    hasError = true;
-                } else if (pass.length() < 6) {
-                    errLabels[4].setText("T\u1ed1i thi\u1ec3u 6 k\u00fd t\u1ef1");
-                    hasError = true;
-                } else {
-                    boolean hasLetter = pass.chars().anyMatch(Character::isLetter);
-                    boolean hasDigit  = pass.chars().anyMatch(Character::isDigit);
-                    if (!hasLetter || !hasDigit) {
-                        errLabels[4].setText("Ph\u1ea3i c\u00f3 c\u1ea3 ch\u1eef v\u00e0 s\u1ed1");
-                        hasError = true;
-                    }
-                }
-            }
-
-            if (hasError) { dlg.revalidate(); dlg.repaint(); return; }
-
-            String ma = isEdit ? tableModel.getValueAt(prefilledRow, COL_MA).toString() : generateMaNV();
-
-            if (tmpPhotoPath[0] != null && !tmpPhotoPath[0].isEmpty()) {
-                try {
-                    File src = new File(tmpPhotoPath[0]);
-                    String ext = tmpPhotoPath[0].contains(".") ? tmpPhotoPath[0].substring(tmpPhotoPath[0].lastIndexOf('.')) : ".png";
-                    File dest = new File("img/employees/" + ma + ext);
-                    dest.getParentFile().mkdirs();
-                    java.nio.file.Files.copy(src.toPath(), dest.toPath(),
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                    photoPathMap.put(ma, dest.getAbsolutePath());
-                } catch (Exception ex) {
-                    System.err.println("Photo copy failed: " + ex.getMessage());
-                }
-            }
-
-            String finalPass = (pass.isEmpty() && isEdit)
-                ? tableModel.getValueAt(prefilledRow, COL_PASS).toString()
-                : pass;
-
-            if (isEdit) {
-                tableModel.setValueAt(ten,  editRow, COL_TEN);
-                tableModel.setValueAt(cbRole.getSelectedItem().toString(), editRow, COL_CHUCVU);
-                tableModel.setValueAt(sdt,  editRow, COL_SDT);
-                tableModel.setValueAt(email,editRow, COL_EMAIL);
-                tableModel.setValueAt(ngay, editRow, COL_NGAY);
-                tableModel.setValueAt(finalPass, editRow, COL_PASS);
-                fillDetail(editRow);
-            } else {
-                tableModel.addRow(new Object[]{ma, ten, cbRole.getSelectedItem().toString(), sdt, email, ngay, finalPass});
-            }
-            dlg.dispose();
-        });
-
-        btnHuy.addActionListener(e -> {
-            if (isEdit) {
-                int cf = JOptionPane.showConfirmDialog(dlg,
-                        "H\u1ee7y s\u1eeda? Thay \u0111\u1ed5i ch\u01b0a l\u01b0u s\u1ebd m\u1ea5t.",
-                        "X\u00e1c nh\u1eadn", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (cf != JOptionPane.YES_OPTION) return;
-            } else {
-                boolean dirty = false;
-                for (JTextField f : tfs) if (!f.getText().trim().isEmpty()) { dirty = true; break; }
-                if (!dirty) dirty = new String(pfPass.getPassword()).trim().length() > 0;
-                if (dirty) {
-                    int cf = JOptionPane.showConfirmDialog(dlg,
-                            "B\u1ea1n c\u00f3 ch\u1eafc mu\u1ed1n h\u1ee7y? Th\u00f4ng tin \u0111\u00e3 nh\u1eadp s\u1ebd m\u1ea5t.",
-                            "X\u00e1c nh\u1eadn h\u1ee7y", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                    if (cf != JOptionPane.YES_OPTION) return;
-                }
-            }
-            dlg.dispose();
-        });
-
-        dlg.pack();
-        dlg.setMinimumSize(new Dimension(500, dlg.getPreferredSize().height));
-        dlg.setLocationRelativeTo(this);
-        dlg.setVisible(true);
-    }
-
-    private JButton makeAppBtn(String text) {
+    JButton makeAppBtn(String text) {
         JButton b = new JButton(text);
         b.setFont(new Font("Arial", Font.BOLD, 13));
         b.setBackground(BTN_IDLE);

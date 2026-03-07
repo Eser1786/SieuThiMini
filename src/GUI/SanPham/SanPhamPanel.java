@@ -73,31 +73,30 @@ public class SanPhamPanel extends JPanel {
             bang.getColumnModel().getColumn(i).setPreferredWidth(0);
         }
 
-        // ── TOP PANEL: Row 1 (filter/search) + Row 2 (action buttons) ──────
-        JPanel top = new JPanel();
-        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
+        // ── TOP PANEL: filters LEFT, buttons RIGHT (single row) ──────────
+        JPanel top = new JPanel(new BorderLayout());
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Color.BLACK, 1),
+            BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
             BorderFactory.createEmptyBorder(8, 10, 8, 10)
         ));
 
-        // Row 1: filter combo + search
+        // Left: filter combo + search
         JPanel topRow1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
         topRow1.setBackground(new Color(0xF8F7FF));
 
         String[] boloc = { "Tất cả", "Còn hàng", "Hết hàng", "Có khuyến mãi", "Cận date" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
-        cbLoc.setPreferredSize(new Dimension(180, 38));
-        cbLoc.setFont(new Font("Arial", Font.PLAIN, 14));
-        cbLoc.setBackground(new Color(0xD9D9D9));
+        cbLoc.setPreferredSize(new Dimension(200, 36));
         UIUtils.styleComboBox(cbLoc);
 
         JPanel timkiem = new JPanel(new BorderLayout());
-        timkiem.setPreferredSize(new Dimension(220, 38));
-        timkiem.setBackground(new Color(0xD9D9D9));
+        timkiem.setPreferredSize(new Dimension(220, 36));
+        timkiem.setBackground(Color.WHITE);
+        timkiem.setBorder(BorderFactory.createLineBorder(new Color(0xBBBBBB), 1));
         JTextField tim = new JTextField();
-        tim.setFont(new Font("Arial", Font.PLAIN, 14));
+        tim.setFont(new Font("Arial", Font.PLAIN, 13));
+        tim.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
         timkiem.add(tim, BorderLayout.CENTER);
 
         JButton nuttim = new JButton("🔍");
@@ -118,24 +117,34 @@ public class SanPhamPanel extends JPanel {
         });
         timkiem.add(nuttim, BorderLayout.EAST);
 
+        JLabel lbLoc = new JLabel("Tr\u1ea1ng th\u00e1i:");
+        lbLoc.setFont(new Font("Arial", Font.PLAIN, 13));
+        JLabel lbTim = new JLabel("T\u00ecm ki\u1ebfm:");
+        lbTim.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        topRow1.add(lbLoc);
         topRow1.add(cbLoc);
+        topRow1.add(Box.createHorizontalStrut(6));
+        topRow1.add(lbTim);
         topRow1.add(timkiem);
 
-        // Row 2: Thêm + export/import buttons
-        JPanel topRow2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        // Right: Thêm + export/import buttons
+        JPanel topRow2 = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
         topRow2.setBackground(new Color(0xF8F7FF));
 
         JButton them = new JButton("+ Thêm sản phẩm");
         them.setFocusPainted(false);
         them.setBackground(new Color(0xD9D9D9));
-        them.setPreferredSize(new Dimension(200, 36));
-        them.setFont(new Font("Arial", Font.BOLD, 14));
+        them.setFont(new Font("Arial", Font.BOLD, 13));
+        them.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        them.setOpaque(true);
+        them.setBorderPainted(false);
         them.setCursor(new Cursor(Cursor.HAND_CURSOR));
         them.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) { them.setBackground(new Color(0xC5B3E6)); }
             public void mouseExited(java.awt.event.MouseEvent evt)  { them.setBackground(new Color(0xD9D9D9)); }
         });
-        them.addActionListener(e -> showThemPopup(model));
+        them.addActionListener(e -> SanPhamAddDialog.show(SanPhamPanel.this, model));
 
         Runnable applyFilter = () -> {
             String tuKhoa = tim.getText().trim();
@@ -199,8 +208,8 @@ public class SanPhamPanel extends JPanel {
         topRow2.add(btnExcel);
         topRow2.add(btnImport);
 
-        top.add(topRow1);
-        top.add(topRow2);
+        top.add(topRow1, BorderLayout.WEST);
+        top.add(topRow2, BorderLayout.EAST);
 
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(new Color(0xF8F7FF));
@@ -272,7 +281,7 @@ public class SanPhamPanel extends JPanel {
                 xem.addActionListener(e -> {
                     fireEditingStopped();
                     int modelRow = bang.convertRowIndexToModel(currentRow);
-                    showDetailDialog(modelRow, model, bang);
+                    SanPhamDetailDialog.showDetail(SanPhamPanel.this, modelRow, model, bang);
                 });
             }
             @Override
@@ -288,289 +297,33 @@ public class SanPhamPanel extends JPanel {
         JScrollPane bangScroll = new JScrollPane(bang);
         UIUtils.styleScrollPane(bangScroll);
         content.add(bangScroll, BorderLayout.CENTER);
-        tableCard.add(top,     BorderLayout.NORTH);
-        tableCard.add(content, BorderLayout.CENTER);
+
+        // Header
+        JPanel spHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
+        spHeader.setBackground(new Color(0xF8F7FF));
+        spHeader.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xDDDDDD)),
+            BorderFactory.createEmptyBorder(0, 20, 0, 20)));
+        JPanel spBar = new JPanel();
+        spBar.setPreferredSize(new Dimension(5, 26));
+        spBar.setBackground(new Color(0x5C4A7F));
+        spHeader.add(spBar);
+        spHeader.add(Box.createHorizontalStrut(12));
+        JLabel spTitle = new JLabel("QUẢN LÝ SẢN PHẨM");
+        spTitle.setFont(new Font("Arial", Font.BOLD, 20));
+        spHeader.add(spTitle);
+
+        JPanel spNorth = new JPanel();
+        spNorth.setLayout(new BoxLayout(spNorth, BoxLayout.Y_AXIS));
+        spNorth.add(spHeader);
+        spNorth.add(top);
+        tableCard.add(spNorth,  BorderLayout.NORTH);
+        tableCard.add(content,  BorderLayout.CENTER);
 
         add(tableCard, CARD_TABLE);
         innerCard.show(this, CARD_TABLE);
     }
 
-    // ---- helpers ----
-    private JTextField makePopupField() { return UIUtils.makeField(); }
-
-    private void styleBtn(JButton b, Color bg, int w, int h) {
-        b.setFont(new Font("Arial", Font.BOLD, 15));
-        b.setBackground(bg); b.setForeground(Color.WHITE);
-        b.setFocusPainted(false); b.setBorderPainted(false);
-        b.setPreferredSize(new Dimension(w, h));
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }
-
-    /**
-     * Popup thêm sản phẩm — form đầy đủ tất cả trường DTO, null layout y chang code gốc.
-     */
-    private void showThemPopup(DefaultTableModel model) {
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        JDialog popup = new JDialog(owner, "Thêm sản phẩm", Dialog.ModalityType.APPLICATION_MODAL);
-        popup.setSize(860, 640);
-        popup.setLocationRelativeTo(this);
-        popup.setResizable(false);
-        popup.getContentPane().setBackground(new Color(0xF0EFF8));
-        popup.setLayout(new BorderLayout());
-
-        // Header
-        JPanel formHeader = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 18));
-        formHeader.setBackground(new Color(0xF0EFF8));
-        formHeader.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xCCCCCC)));
-        JButton btnQuayLai = new JButton("← Quay lại danh sách");
-        btnQuayLai.setFont(new Font("Arial", Font.BOLD, 22));
-        btnQuayLai.setBackground(new Color(0x9B8EA8));
-        btnQuayLai.setForeground(Color.WHITE);
-        btnQuayLai.setFocusPainted(false); btnQuayLai.setBorderPainted(false);
-        btnQuayLai.setPreferredSize(new Dimension(300, 48));
-        btnQuayLai.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnQuayLai.addActionListener(e -> popup.dispose());
-        formHeader.add(btnQuayLai);
-        popup.add(formHeader, BorderLayout.NORTH);
-
-        // Form (null layout)
-        JPanel form = new JPanel(null);
-        form.setBackground(new Color(0xF0EFF8));
-        Font lf = new Font("Arial", Font.BOLD, 20);
-        int lx = 60, fx = 250, fw = 380, fh = 42, gap = 70;
-
-        JTextField fMa      = makePopupField(); JTextField fTen     = makePopupField();
-        JTextField fMoTa    = makePopupField(); JTextField fNCC     = makePopupField();
-        JTextField fDM      = makePopupField(); JTextField fGiaVon  = makePopupField();
-        JTextField fGiaBan  = makePopupField(); JTextField fSL      = makePopupField();
-        JTextField fTonMin  = makePopupField(); JTextField fXX      = makePopupField();
-        JTextField fNgaySX  = makePopupField(); JTextField fNgayHH  = makePopupField();
-        JTextField fViTri   = makePopupField(); JTextField fDonVi   = makePopupField();
-        JTextField fTT      = makePopupField(); JTextField fKM      = makePopupField();
-
-        String[] lblTexts = {
-            "Mã SP", "Tên sản phẩm", "Mô tả", "Nhà cung cấp", "Danh mục",
-            "Giá vốn", "Giá bán", "Số lượng", "Tồn kho tối thiểu",
-            "Xuất xứ", "Ngày sản xuất", "Ngày hết hạn",
-            "Vị trí", "Đơn vị", "Trạng thái", "Khuyến mãi"
-        };
-        JTextField[] flds = {
-            fMa, fTen, fMoTa, fNCC, fDM,
-            fGiaVon, fGiaBan, fSL, fTonMin,
-            fXX, fNgaySX, fNgayHH,
-            fViTri, fDonVi, fTT, fKM
-        };
-        int y = 20;
-        for (int i = 0; i < lblTexts.length; i++) {
-            JLabel lb = new JLabel(lblTexts[i]); lb.setFont(lf); lb.setBounds(lx, y, 220, 30);
-            flds[i].setBounds(fx, y, fw, fh);
-            form.add(lb); form.add(flds[i]);
-            y += gap;
-        }
-        JLabel lbAnh = new JLabel("Ảnh"); lbAnh.setFont(lf); lbAnh.setBounds(lx, y, 220, 30);
-        JButton btnAnh = new JButton("+ Thêm ảnh");
-        btnAnh.setFont(new Font("Arial", Font.PLAIN, 18));
-        btnAnh.setBackground(new Color(0xE0DDE8)); btnAnh.setForeground(new Color(0x666666));
-        btnAnh.setFocusPainted(false); btnAnh.setBounds(fx, y, 200, 70);
-        btnAnh.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnAnh.setBorder(BorderFactory.createLineBorder(new Color(0xAAAAAA), 1, true));
-        form.add(lbAnh); form.add(btnAnh);
-        y += 90;
-
-        form.setPreferredSize(new Dimension(800, y));
-        JScrollPane scroll = new JScrollPane(form);
-        scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
-        popup.add(scroll, BorderLayout.CENTER);
-
-        // Footer
-        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 30, 16));
-        footer.setBackground(new Color(0xF0EFF8));
-        footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
-        JButton btnLuu = new JButton("LƯU");
-        btnLuu.setFont(new Font("Arial", Font.BOLD, 24));
-        btnLuu.setBackground(new Color(0xB83434)); btnLuu.setForeground(Color.WHITE);
-        btnLuu.setFocusPainted(false); btnLuu.setBorderPainted(false);
-        btnLuu.setPreferredSize(new Dimension(160, 52));
-        btnLuu.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnLuu.addActionListener(e -> {
-            int sl = 0;
-            try { sl = Integer.parseInt(fSL.getText().trim()); } catch (NumberFormatException ignore) {}
-            String kho = sl > 0 ? "Còn hàng" : "Hết hàng";
-            model.addRow(new Object[]{
-                fMa.getText(), "", fTen.getText(), fGiaBan.getText(),
-                sl, kho, fNgayHH.getText(), fKM.getText().isEmpty() ? "-" : fKM.getText(), "",
-                fMoTa.getText(), fNCC.getText(), fDM.getText(), fGiaVon.getText(),
-                fTonMin.getText(), fXX.getText(), fNgaySX.getText(),
-                fViTri.getText(), fDonVi.getText(), fTT.getText()
-            });
-            popup.dispose();
-        });
-        footer.add(btnLuu);
-        popup.add(footer, BorderLayout.SOUTH);
-        popup.setVisible(true);
-    }
-
-    /**
-     * Popup xem chi tiết — hiển thị đầy đủ tất cả trường kể cả cột ẩn.
-     * Có nút Sửa (mở showEditPopup) và Xóa.
-     */
-    private void showDetailDialog(int modelRow, DefaultTableModel model, JTable bang) {
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        JDialog detail = new JDialog(owner, "Chi tiết sản phẩm", Dialog.ModalityType.APPLICATION_MODAL);
-        detail.setSize(520, 640);
-        detail.setLocationRelativeTo(this);
-        detail.setResizable(false);
-        detail.getContentPane().setBackground(new Color(0xF0EFF8));
-        detail.setLayout(new BorderLayout(0, 0));
-
-        // Header
-        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
-        header.setBackground(new Color(0xAF9FCB));
-        JLabel lblTitle = new JLabel("Thông tin sản phẩm");
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 20)); lblTitle.setForeground(Color.WHITE);
-        header.add(lblTitle);
-        detail.add(header, BorderLayout.NORTH);
-
-        // Body — hiển thị tất cả 15 trường (visible + hidden)
-        String[] lbls = {
-            "Mã SP", "Tên sản phẩm", "Mô tả", "Nhà cung cấp", "Danh mục",
-            "Giá vốn", "Giá bán", "Số lượng", "Tồn kho tối thiểu",
-            "Xuất xứ", "Ngày sản xuất", "Ngày hết hạn",
-            "Vị trí", "Đơn vị", "Trạng thái"
-        };
-        // col indices in model: 0=Mã,2=Tên,9=MoTa,10=NCC,11=DM,12=GiaVon,3=GiaBan,4=SL,13=TonMin,14=XX,15=NgaySX,6=NgayHH,16=ViTri,17=DonVi,18=TT
-        int[] colIdx = { 0, 2, 9, 10, 11, 12, 3, 4, 13, 14, 15, 6, 16, 17, 18 };
-
-        JPanel body = new JPanel(new GridLayout(lbls.length, 2, 12, 10));
-        body.setBackground(new Color(0xF0EFF8));
-        body.setBorder(BorderFactory.createEmptyBorder(16, 36, 16, 36));
-        for (int i = 0; i < lbls.length; i++) {
-            JLabel lbl = new JLabel(lbls[i] + ":");
-            lbl.setFont(new Font("Arial", Font.BOLD, 15));
-            Object v = model.getValueAt(modelRow, colIdx[i]);
-            JLabel val = new JLabel(v == null ? "-" : v.toString());
-            val.setFont(new Font("Arial", Font.PLAIN, 15));
-            body.add(lbl); body.add(val);
-        }
-        JScrollPane scrollDetail = new JScrollPane(body);
-        scrollDetail.setBorder(null);
-        scrollDetail.getVerticalScrollBar().setUnitIncrement(16);
-        detail.add(scrollDetail, BorderLayout.CENTER);
-
-        // Footer
-        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 14));
-        footer.setBackground(new Color(0xF0EFF8));
-        footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
-
-        JButton btnSua = new JButton("✏ Sửa");
-        styleBtn(btnSua, new Color(0x6677C8), 110, 40);
-        btnSua.addActionListener(e -> { detail.dispose(); showEditPopup(modelRow, model, bang); });
-
-        JButton btnXoa = new JButton("🗑 Xóa");
-        styleBtn(btnXoa, new Color(0xB83434), 110, 40);
-        btnXoa.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(detail,
-                "Bạn có chắc muốn xóa sản phẩm \"" + model.getValueAt(modelRow, 2) + "\"?",
-                "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (confirm == JOptionPane.YES_OPTION) { model.removeRow(modelRow); detail.dispose(); }
-        });
-
-        footer.add(btnSua); footer.add(btnXoa);
-        detail.add(footer, BorderLayout.SOUTH);
-        detail.setVisible(true);
-    }
-
-    /**
-     * Popup sửa — có đầy đủ tất cả trường DTO, lưu lại vào model.
-     */
-    private void showEditPopup(int modelRow, DefaultTableModel model, JTable bang) {
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        JDialog popup = new JDialog(owner, "Sửa sản phẩm", Dialog.ModalityType.APPLICATION_MODAL);
-        popup.setSize(580, 640);
-        popup.setLocationRelativeTo(this);
-        popup.setResizable(false);
-        popup.getContentPane().setBackground(new Color(0xF0EFF8));
-        popup.setLayout(new BorderLayout(0, 0));
-
-        // Header
-        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
-        header.setBackground(new Color(0x6677C8));
-        JLabel lblTitle = new JLabel("Chỉnh sửa thông tin");
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 20)); lblTitle.setForeground(Color.WHITE);
-        header.add(lblTitle);
-        popup.add(header, BorderLayout.NORTH);
-
-        // Fields — same order as detail
-        String[] lbls = {
-            "Mã SP", "Tên sản phẩm", "Mô tả", "Nhà cung cấp", "Danh mục",
-            "Giá vốn", "Giá bán", "Số lượng", "Tồn kho tối thiểu",
-            "Xuất xứ", "Ngày sản xuất", "Ngày hết hạn",
-            "Vị trí", "Đơn vị", "Trạng thái", "Khuyến mãi"
-        };
-        int[] colIdx = { 0, 2, 9, 10, 11, 12, 3, 4, 13, 14, 15, 6, 16, 17, 18, 7 };
-
-        JTextField[] flds = new JTextField[lbls.length];
-        for (int i = 0; i < lbls.length; i++) {
-            flds[i] = UIUtils.makeField();
-            Object v = model.getValueAt(modelRow, colIdx[i]);
-            flds[i].setText(v == null ? "" : v.toString());
-        }
-
-        JPanel formBody = new JPanel();
-        formBody.setLayout(new BoxLayout(formBody, BoxLayout.Y_AXIS));
-        formBody.setBackground(new Color(0xF0EFF8));
-        formBody.setBorder(BorderFactory.createEmptyBorder(10, 36, 10, 36));
-        for (int i = 0; i < lbls.length; i++) {
-            JLabel lbl = new JLabel(lbls[i]);
-            lbl.setFont(new Font("Arial", Font.BOLD, 15));
-            lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
-            flds[i].setAlignmentX(Component.LEFT_ALIGNMENT);
-            flds[i].setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-            formBody.add(lbl);
-            formBody.add(flds[i]);
-            formBody.add(Box.createVerticalStrut(8));
-        }
-        JScrollPane scrollEdit = new JScrollPane(formBody);
-        scrollEdit.setBorder(null);
-        scrollEdit.getVerticalScrollBar().setUnitIncrement(16);
-        popup.add(scrollEdit, BorderLayout.CENTER);
-
-        // Footer
-        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 14));
-        footer.setBackground(new Color(0xF0EFF8));
-        footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
-
-        JButton btnHuy = new JButton("Hủy");
-        styleBtn(btnHuy, new Color(0x9B8EA8), 100, 40);
-        btnHuy.addActionListener(e -> {
-
-            int cf = JOptionPane.showConfirmDialog(popup,
-
-                    "Bạn có chắc muốn hủy? Thay đổi chưa lưu sẽ bị mất.",
-
-                    "Xác nhận hủy", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-
-            if (cf == JOptionPane.YES_OPTION) popup.dispose();
-
-        });
-
-        JButton btnLuu = new JButton("Lưu");
-        styleBtn(btnLuu, new Color(0xB83434), 100, 40);
-        btnLuu.addActionListener(e -> {
-            for (int i = 0; i < colIdx.length; i++)
-                model.setValueAt(flds[i].getText(), modelRow, colIdx[i]);
-            // cập nhật kho tự động theo số lượng
-            try {
-                int sl = Integer.parseInt(flds[7].getText().trim());
-                model.setValueAt(sl > 0 ? "Còn hàng" : "Hết hàng", modelRow, 5);
-            } catch (NumberFormatException ignore) {}
-            bang.repaint();
-            popup.dispose();
-        });
-
-        footer.add(btnHuy); footer.add(btnLuu);
-        popup.add(footer, BorderLayout.SOUTH);
-        popup.setVisible(true);
-    }
+    // Dialog methods moved to SanPhamAddDialog and SanPhamDetailDialog
 }
+
