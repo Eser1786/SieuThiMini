@@ -57,6 +57,21 @@ public class SanPhamPanel extends JPanel {
             "Thịt mèo vị cháy", "Công ty XYZ", "Thực phẩm",
             "12.000đ", 5, "Thái Lan", "15/03/2026", "Kệ B2", "Gói", "Đang bán"
         });
+        model.addRow(new Object[]{
+            "SP003", "", "Mì Ý sốt kem", "36.000đ", 12, "Còn hàng", "20/12/2026", "-5.000đ", "",
+            "Mì Ý sốt kem phô mai", "FreshFood", "Thực phẩm",
+            "28.000đ", 8, "Việt Nam", "02/02/2026", "Kệ C1", "Hộp", "Đang bán"
+        });
+        model.addRow(new Object[]{
+            "SP004", "", "Pepsi không calo", "10.000đ", 0, "Hết hàng", "15/09/2026", "-", "",
+            "Nước ngọt không đường", "PepsiCo", "Đồ uống",
+            "8.000đ", 10, "Việt Nam", "10/01/2026", "Kệ A2", "Lon", "Tạm ngưng"
+        });
+        model.addRow(new Object[]{
+            "SP005", "", "Bánh quy bơ", "22.000đ", 4, "Còn hàng", "07/07/2026", "-2.000đ", "",
+            "Bánh quy vị bơ", "SweetHome", "Bánh kẹo",
+            "17.000đ", 6, "Malaysia", "01/12/2025", "Kệ D3", "Gói", "Đang bán"
+        });
 
         // ---- Table card ----
         JPanel tableCard = new JPanel(new BorderLayout());

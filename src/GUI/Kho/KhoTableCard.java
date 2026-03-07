@@ -84,6 +84,20 @@ class KhoTableCard extends JPanel {
         JPanel khoRow2 = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
         khoRow2.setBackground(new Color(0xF8F7FF));
 
+        JButton btnThem = new JButton("+ Nhập hàng");
+        btnThem.setFont(new Font("Arial", Font.BOLD, 13));
+        btnThem.setBackground(new Color(0xD9D9D9));
+        btnThem.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnThem.setOpaque(true);
+        btnThem.setBorderPainted(false);
+        btnThem.setFocusPainted(false);
+        btnThem.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnThem.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnThem.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnThem.setBackground(new Color(0xD9D9D9)); }
+        });
+        btnThem.addActionListener(e -> showNhapHangDialog());
+
         JButton btnPDF    = ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
         JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
         JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
@@ -94,7 +108,7 @@ class KhoTableCard extends JPanel {
             if (rows == null) return;
             for (String[] r : rows) { if (r.length < 7) continue; model.addRow((Object[])r); }
         });
-        khoRow2.add(btnPDF); khoRow2.add(btnExcel); khoRow2.add(btnImport);
+        khoRow2.add(btnThem); khoRow2.add(btnPDF); khoRow2.add(btnExcel); khoRow2.add(btnImport);
 
         topPanel.add(khoRow1, BorderLayout.WEST);
         topPanel.add(khoRow2, BorderLayout.EAST);
@@ -209,6 +223,10 @@ class KhoTableCard extends JPanel {
     private void loadData() {
         ProductBUS bus = new ProductBUS();
         ArrayList<ProductDTO> list = bus.getAllProducts();
+        if (list == null || list.isEmpty()) {
+            loadMockData();
+            return;
+        }
         String keyword = txtSearch.getText().trim().toLowerCase();
         String selectedSupplier = cbSupplier.getSelectedItem().toString();
         String selectedStatus = (cbStatus.getSelectedItem() != null) ? cbStatus.getSelectedItem().toString() : "Tất cả";
@@ -226,6 +244,29 @@ class KhoTableCard extends JPanel {
             model.addRow(new Object[]{
                     loadProductIcon(p.getImagePath()), stt++, p.getCode(), p.getName(), quantity, supplierName, status
             });
+        }
+    }
+
+    private void loadMockData() {
+        String keyword = txtSearch.getText().trim().toLowerCase();
+        String selectedSupplier = cbSupplier.getSelectedItem() != null ? cbSupplier.getSelectedItem().toString() : "Tất cả";
+        String selectedStatus = cbStatus.getSelectedItem() != null ? cbStatus.getSelectedItem().toString() : "Tất cả";
+        Object[][] mocks = {
+            {"SP001", "Nước F trái K", 20L, "Công ty ABC", "Còn hàng"},
+            {"SP002", "Thịt mèo cháy", 3L, "Công ty XYZ", "Gần hết"},
+            {"SP003", "Mì Ý sốt kem", 0L, "FreshFood", "Hết hàng"},
+            {"SP004", "Pepsi không calo", 15L, "PepsiCo", "Còn hàng"}
+        };
+        model.setRowCount(0);
+        int stt = 1;
+        for (Object[] m : mocks) {
+            String ten = m[1].toString().toLowerCase();
+            String ncc = m[3].toString();
+            String tt = m[4].toString();
+            if (!ten.contains(keyword)) continue;
+            if (!"Tất cả".equals(selectedSupplier) && !selectedSupplier.equals(ncc)) continue;
+            if (!"Tất cả".equals(selectedStatus) && !selectedStatus.equals(tt)) continue;
+            model.addRow(new Object[]{null, stt++, m[0], m[1], m[2], m[3], m[4]});
         }
     }
 
@@ -251,6 +292,13 @@ class KhoTableCard extends JPanel {
         ArrayList<ProductDTO> list = bus.getAllProducts();
         cbSupplier.removeAllItems();
         cbSupplier.addItem("Tất cả");
+        if (list == null || list.isEmpty()) {
+            cbSupplier.addItem("Công ty ABC");
+            cbSupplier.addItem("Công ty XYZ");
+            cbSupplier.addItem("FreshFood");
+            cbSupplier.addItem("PepsiCo");
+            return;
+        }
         for (ProductDTO p : list) {
             String supplierName = p.getSupplier().getName();
             boolean exists = false;
@@ -268,5 +316,135 @@ class KhoTableCard extends JPanel {
         cbStatus.addItem("Gần hết");
         cbStatus.addItem("Hết hàng");
         cbStatus.setSelectedIndex(0);
+    }
+
+    private void showNhapHangDialog() {
+        Window w = SwingUtilities.getWindowAncestor(this);
+        JDialog dlg = w instanceof Dialog
+                ? new JDialog((Dialog) w, "Nhập hàng vào kho", true)
+                : new JDialog((Frame) w, "Nhập hàng vào kho", true);
+        dlg.setLayout(new BorderLayout());
+        dlg.setResizable(false);
+
+        // Header
+        JPanel hdr = new JPanel(new BorderLayout());
+        hdr.setBackground(new Color(0xAF9FCB));
+        hdr.setBorder(BorderFactory.createEmptyBorder(14, 20, 14, 20));
+        JLabel hdrLbl = new JLabel("Nhập hàng vào kho");
+        hdrLbl.setFont(new Font("Arial", Font.BOLD, 18));
+        hdrLbl.setForeground(Color.WHITE);
+        hdr.add(hdrLbl, BorderLayout.WEST);
+        dlg.add(hdr, BorderLayout.NORTH);
+
+        // Form
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(new Color(0xF0EFF8));
+        form.setBorder(BorderFactory.createEmptyBorder(18, 28, 14, 28));
+
+        String maSP = String.format("SP%03d", model.getRowCount() + 1);
+        JTextField fMa  = new JTextField(maSP);
+        fMa.setEditable(false);
+        fMa.setBackground(new Color(0xE8E6F0));
+        fMa.setForeground(new Color(0x888888));
+        fMa.setFont(new Font("Arial", Font.PLAIN, 13));
+        fMa.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+        fMa.setPreferredSize(new Dimension(200, 36));
+
+        JTextField fTen = new JTextField();
+        fTen.setFont(new Font("Arial", Font.PLAIN, 13));
+        fTen.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+        fTen.setPreferredSize(new Dimension(200, 36));
+
+        JTextField fSL  = new JTextField();
+        fSL.setFont(new Font("Arial", Font.PLAIN, 13));
+        fSL.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+        fSL.setPreferredSize(new Dimension(200, 36));
+
+        String[] suppliers = new String[cbSupplier.getItemCount()];
+        for (int i = 0; i < cbSupplier.getItemCount(); i++) suppliers[i] = cbSupplier.getItemAt(i);
+        JComboBox<String> fNCC = new JComboBox<>(suppliers);
+        UIUtils.styleComboBox(fNCC);
+        fNCC.setPreferredSize(new Dimension(200, 36));
+        // default to first real supplier (skip 'Tất cả')
+        if (fNCC.getItemCount() > 1) fNCC.setSelectedIndex(1);
+
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.insets = new Insets(6, 6, 6, 6);
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.anchor = GridBagConstraints.WEST;
+
+        Object[][] formRows = {
+            {"Mã sản phẩm:",    fMa,  "Nhà cung cấp:", fNCC},
+            {"Tên sản phẩm *:", fTen, "Số lượng *:",    fSL},
+        };
+        for (int r = 0; r < formRows.length; r++) {
+            for (int c2 = 0; c2 < 4; c2++) {
+                gc.gridx = c2; gc.gridy = r;
+                if (c2 % 2 == 0) {
+                    gc.weightx = 0;
+                    JLabel lb = new JLabel(formRows[r][c2].toString());
+                    lb.setFont(new Font("Arial", Font.PLAIN, 13));
+                    form.add(lb, gc);
+                } else {
+                    gc.weightx = 1;
+                    form.add((Component) formRows[r][c2], gc);
+                }
+            }
+        }
+        dlg.add(form, BorderLayout.CENTER);
+
+        // Footer
+        JPanel foot = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        foot.setBackground(new Color(0xF0EFF8));
+        foot.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xD1C4E9)));
+
+        JButton btnLuu = new JButton("Lưu");
+        btnLuu.setBackground(new Color(0x5C4A7F)); btnLuu.setForeground(Color.WHITE);
+        btnLuu.setFont(new Font("Arial", Font.BOLD, 13));
+        btnLuu.setOpaque(true); btnLuu.setBorderPainted(false); btnLuu.setFocusPainted(false);
+        btnLuu.setBorder(BorderFactory.createEmptyBorder(9, 24, 9, 24));
+        btnLuu.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        JButton btnHuy = new JButton("Hủy");
+        btnHuy.setBackground(new Color(0x9B8EA8)); btnHuy.setForeground(Color.WHITE);
+        btnHuy.setFont(new Font("Arial", Font.BOLD, 13));
+        btnHuy.setOpaque(true); btnHuy.setBorderPainted(false); btnHuy.setFocusPainted(false);
+        btnHuy.setBorder(BorderFactory.createEmptyBorder(9, 24, 9, 24));
+        btnHuy.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        foot.add(btnLuu); foot.add(btnHuy);
+        dlg.add(foot, BorderLayout.SOUTH);
+
+        btnHuy.addActionListener(ev -> dlg.dispose());
+        btnLuu.addActionListener(ev -> {
+            String ten = fTen.getText().trim();
+            String slStr = fSL.getText().trim();
+            if (ten.isEmpty()) {
+                JOptionPane.showMessageDialog(dlg, "Vui lòng nhập Tên sản phẩm!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                fTen.requestFocus(); return;
+            }
+            long sl;
+            try { sl = Long.parseLong(slStr); if (sl < 0) throw new NumberFormatException(); }
+            catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dlg, "Số lượng phải là số nguyên ≥ 0!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                fSL.requestFocus(); return;
+            }
+            String ncc = fNCC.getSelectedItem() != null ? fNCC.getSelectedItem().toString() : "Chưa rõ";
+            if ("Tất cả".equals(ncc)) ncc = "Chưa rõ";
+            String status = sl == 0 ? "Hết hàng" : sl < 5 ? "Gần hết" : "Còn hàng";
+            model.addRow(new Object[]{null, model.getRowCount() + 1, fMa.getText(), ten, sl, ncc, status});
+            dlg.dispose();
+        });
+
+        dlg.pack();
+        dlg.setMinimumSize(new Dimension(520, dlg.getPreferredSize().height));
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
     }
 }
