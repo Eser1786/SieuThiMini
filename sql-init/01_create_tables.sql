@@ -1,4 +1,6 @@
 -- 01_create_tables.sql
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
 -- Tạo database (nếu cần, nhưng Docker đã tạo từ env)
 CREATE DATABASE IF NOT EXISTS sieuthiminiv2 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

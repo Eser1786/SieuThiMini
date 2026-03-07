@@ -17,8 +17,6 @@ class SanPhamAddDialog {
     static void show(Component parent, DefaultTableModel model) {
         Window owner = SwingUtilities.getWindowAncestor(parent);
         JDialog popup = new JDialog(owner, "Thêm sản phẩm", Dialog.ModalityType.APPLICATION_MODAL);
-        popup.setSize(720, 620);
-        popup.setLocationRelativeTo(parent);
         popup.setResizable(false);
         popup.setLayout(new BorderLayout());
 
@@ -29,7 +27,75 @@ class SanPhamAddDialog {
         hdrLbl.setFont(new Font("Arial", Font.BOLD, 18));
         hdrLbl.setForeground(Color.WHITE);
         hdr.add(hdrLbl);
-        popup.add(hdr, BorderLayout.NORTH);
+
+        // ── Photo section (NhanVien style) ────────────────────────────────────
+        final String[] tmpPhotoPath = {null};
+
+        JLabel photoPreview = new JLabel() {
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (getIcon() == null) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setColor(new Color(0xBBBBBB));
+                    g2.setFont(new Font("Arial", Font.PLAIN, 11));
+                    String hint = "Chưa có ảnh";
+                    FontMetrics fm = g2.getFontMetrics();
+                    g2.drawString(hint, (getWidth()-fm.stringWidth(hint))/2, getHeight()/2 + fm.getAscent()/2);
+                    g2.dispose();
+                }
+            }
+        };
+        photoPreview.setPreferredSize(new Dimension(80, 80));
+        photoPreview.setBorder(BorderFactory.createLineBorder(new Color(0xAAAAAA)));
+        photoPreview.setBackground(Color.WHITE);
+        photoPreview.setOpaque(true);
+        photoPreview.setHorizontalAlignment(SwingConstants.CENTER);
+
+        JButton btnAnh = new JButton("Chọn ảnh");
+        btnAnh.setFont(new Font("Arial", Font.BOLD, 13));
+        btnAnh.setBackground(new Color(0xD9D9D9));
+        btnAnh.setForeground(new Color(0x333333));
+        btnAnh.setFocusPainted(false);
+        btnAnh.setBorderPainted(false);
+        btnAnh.setOpaque(true);
+        btnAnh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnAnh.addActionListener(ev -> {
+            java.awt.FileDialog fileDlg = new java.awt.FileDialog(popup, "Chọn ảnh sản phẩm", java.awt.FileDialog.LOAD);
+            fileDlg.setFilenameFilter((dir, name) -> {
+                String n = name.toLowerCase();
+                return n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".png");
+            });
+            fileDlg.setVisible(true);
+            String chosenDir  = fileDlg.getDirectory();
+            String chosenFile = fileDlg.getFile();
+            if (chosenDir == null || chosenFile == null) return;
+            try {
+                File f = new File(chosenDir, chosenFile);
+                BufferedImage img = ImageIO.read(f);
+                if (img != null) {
+                    tmpPhotoPath[0] = f.getAbsolutePath();
+                    photoPreview.setIcon(new ImageIcon(img.getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
+                    photoPreview.repaint();
+                }
+            } catch (Exception ex) { /* ignore */ }
+        });
+
+        JLabel lbPhotoHint = new JLabel("<html><font color='gray' size='2'>JPG / PNG<br>tự động scale</font></html>");
+
+        JPanel photoSection = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 8));
+        photoSection.setBackground(new Color(0xF3F0FA));
+        photoSection.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xD1C4E9)));
+        JPanel photoRight = new JPanel(new GridLayout(2, 1, 0, 4));
+        photoRight.setOpaque(false);
+        photoRight.add(btnAnh);
+        photoRight.add(lbPhotoHint);
+        photoSection.add(photoPreview);
+        photoSection.add(photoRight);
+
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.add(hdr, BorderLayout.NORTH);
+        northPanel.add(photoSection, BorderLayout.SOUTH);
+        popup.add(northPanel, BorderLayout.NORTH);
 
         // ── Form (2-column GridBagLayout) ─────────────────────────────────────
         JPanel form = new JPanel(new GridBagLayout());
@@ -42,6 +108,10 @@ class SanPhamAddDialog {
         Dimension fd = new Dimension(200, 32);
 
         JTextField fMa     = UIUtils.makeField(); fMa.setPreferredSize(fd);
+        fMa.setText(String.format("SP%03d", model.getRowCount() + 1));
+        fMa.setEditable(false);
+        fMa.setBackground(new Color(0xE8E6F0));
+        fMa.setForeground(new Color(0x888888));
         JTextField fTen    = UIUtils.makeField(); fTen.setPreferredSize(fd);
         JTextField fMoTa   = UIUtils.makeField(); fMoTa.setPreferredSize(fd);
         JTextField fNCC    = UIUtils.makeField(); fNCC.setPreferredSize(fd);
@@ -88,78 +158,7 @@ class SanPhamAddDialog {
                 form.add((Component) rows[i][3], g);
             }
         }
-        // Ảnh row — preview + pick (NhanVien style)
-        final String[] tmpPhotoPath = {null};
-
-        JLabel photoPreview = new JLabel() {
-            @Override protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                if (getIcon() == null) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setColor(new Color(0xBBBBBB));
-                    g2.setFont(new Font("Arial", Font.PLAIN, 10));
-                    String hint = "Chưa có ảnh";
-                    FontMetrics fm = g2.getFontMetrics();
-                    g2.drawString(hint, (getWidth() - fm.stringWidth(hint)) / 2, getHeight() / 2 + fm.getAscent() / 2);
-                    g2.dispose();
-                }
-            }
-        };
-        photoPreview.setPreferredSize(new Dimension(80, 80));
-        photoPreview.setBorder(BorderFactory.createLineBorder(new Color(0xAAAAAA)));
-        photoPreview.setBackground(Color.WHITE);
-        photoPreview.setOpaque(true);
-        photoPreview.setHorizontalAlignment(SwingConstants.CENTER);
-
-        JButton btnAnh = new JButton("Chọn ảnh...");
-        btnAnh.setFont(new Font("Arial", Font.PLAIN, 13));
-        btnAnh.setBackground(new Color(0xE0DDE8));
-        btnAnh.setForeground(new Color(0x444444));
-        btnAnh.setFocusPainted(false);
-        btnAnh.setBorder(BorderFactory.createLineBorder(new Color(0xAAAAAA), 1, true));
-        btnAnh.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnAnh.setPreferredSize(new Dimension(140, 32));
-        btnAnh.addActionListener(ev -> {
-            java.awt.FileDialog fileDlg = new java.awt.FileDialog(popup, "Chọn ảnh sản phẩm", java.awt.FileDialog.LOAD);
-            fileDlg.setFilenameFilter((dir, name) -> {
-                String n = name.toLowerCase();
-                return n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".png");
-            });
-            fileDlg.setVisible(true);
-            String chosenDir  = fileDlg.getDirectory();
-            String chosenFile = fileDlg.getFile();
-            if (chosenDir == null || chosenFile == null) return;
-            try {
-                File f = new File(chosenDir, chosenFile);
-                BufferedImage img = ImageIO.read(f);
-                if (img != null) {
-                    tmpPhotoPath[0] = f.getAbsolutePath();
-                    photoPreview.setIcon(new ImageIcon(img.getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
-                    photoPreview.repaint();
-                }
-            } catch (Exception ex) { /* ignore */ }
-        });
-
-        JLabel lbPhotoHint = new JLabel("<html><font color='gray' size='2'>JPG / PNG<br>tự động scale</font></html>");
-
-        JPanel anhPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        anhPanel.setOpaque(false);
-        anhPanel.add(photoPreview);
-        anhPanel.add(btnAnh);
-        anhPanel.add(lbPhotoHint);
-
-        int anhRow = rows.length;
-        g.gridy = anhRow; g.gridx = 0; g.weightx = 0; g.gridwidth = 1;
-        JLabel lbAnh = new JLabel("Ảnh:"); lbAnh.setFont(lf);
-        form.add(lbAnh, g);
-        g.gridx = 1; g.weightx = 1; g.gridwidth = 3;
-        form.add(anhPanel, g);
-        g.gridwidth = 1;
-
-        JScrollPane scroll = new JScrollPane(form);
-        scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
-        popup.add(scroll, BorderLayout.CENTER);
+        popup.add(form, BorderLayout.CENTER);
 
         // ── Footer ────────────────────────────────────────────────────────────
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
@@ -184,11 +183,56 @@ class SanPhamAddDialog {
         btnHuy.addActionListener(e -> popup.dispose());
 
         btnLuu.addActionListener(e -> {
+            // ── Validation ────────────────────────────────────────────────────
+            if (fTen.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(popup, "Tên sản phẩm không được để trống.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                fTen.requestFocus(); return;
+            }
+            if (fDM.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(popup, "Danh mục không được để trống.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                fDM.requestFocus(); return;
+            }
+            if (fNCC.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(popup, "Nhà cung cấp không được để trống.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                fNCC.requestFocus(); return;
+            }
+            double giaVon = 0, giaBan = 0;
+            try { giaVon = Double.parseDouble(fGiaVon.getText().trim()); if (giaVon < 0) throw new NumberFormatException(); }
+            catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(popup, "Giá vốn phải là số không âm.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                fGiaVon.requestFocus(); return;
+            }
+            try { giaBan = Double.parseDouble(fGiaBan.getText().trim()); if (giaBan < 0) throw new NumberFormatException(); }
+            catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(popup, "Giá bán phải là số không âm.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                fGiaBan.requestFocus(); return;
+            }
+            if (giaBan < giaVon) {
+                JOptionPane.showMessageDialog(popup, "Giá bán phải lớn hơn hoặc bằng giá vốn.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                fGiaBan.requestFocus(); return;
+            }
+            int sl = 0;
+            try { sl = Integer.parseInt(fSL.getText().trim()); if (sl < 0) throw new NumberFormatException(); }
+            catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(popup, "Số lượng phải là số nguyên không âm.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                fSL.requestFocus(); return;
+            }
+            if (!fTonMin.getText().trim().isEmpty()) {
+                try { int t = Integer.parseInt(fTonMin.getText().trim()); if (t < 0) throw new NumberFormatException(); }
+                catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(popup, "Tồn kho tối thiểu phải là số nguyên không âm.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                    fTonMin.requestFocus(); return;
+                }
+            }
+            if (dcNgaySX.getDate() != null && dcNgayHH.getDate() != null
+                    && !dcNgayHH.getDate().after(dcNgaySX.getDate())) {
+                JOptionPane.showMessageDialog(popup, "Ngày hết hạn phải sau ngày sản xuất.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            // ── Save ──────────────────────────────────────────────────────────
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             String ngaySX = dcNgaySX.getDate() != null ? sdf.format(dcNgaySX.getDate()) : "";
             String ngayHH = dcNgayHH.getDate() != null ? sdf.format(dcNgayHH.getDate()) : "";
-            int sl = 0;
-            try { sl = Integer.parseInt(fSL.getText().trim()); } catch (NumberFormatException ignore) {}
             String kho = sl > 0 ? "Còn hàng" : "Hết hàng";
             model.addRow(new Object[]{
                 fMa.getText(), tmpPhotoPath[0] != null ? tmpPhotoPath[0] : "", fTen.getText(), fGiaBan.getText(),
@@ -202,6 +246,9 @@ class SanPhamAddDialog {
         footer.add(btnLuu);
         footer.add(btnHuy);
         popup.add(footer, BorderLayout.SOUTH);
+        popup.pack();
+        popup.setMinimumSize(new Dimension(700, popup.getPreferredSize().height));
+        popup.setLocationRelativeTo(parent);
         popup.setVisible(true);
     }
 }
