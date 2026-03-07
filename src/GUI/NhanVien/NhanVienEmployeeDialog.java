@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
 class NhanVienEmployeeDialog {
 
     private static final Color ACCENT    = new Color(0x5C4A7F);
+    private static final Color BTN_IDLE  = new Color(0xD9D9D9);
     private static final int COL_MA = 0, COL_TEN = 1, COL_CHUCVU = 2;
     private static final int COL_SDT = 3, COL_EMAIL = 4, COL_NGAY = 5, COL_PASS = 6;
 
@@ -26,16 +27,7 @@ class NhanVienEmployeeDialog {
 
         JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(parent),
                 title, Dialog.ModalityType.APPLICATION_MODAL);
-        dlg.setResizable(false);
         dlg.setLayout(new BorderLayout());
-
-        // Header
-        JPanel hdr = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
-        hdr.setBackground(new Color(0xAF9FCB));
-        JLabel hdrLbl = new JLabel(isEdit ? "Sửa thông tin nhân viên" : "Thêm nhân viên mới");
-        hdrLbl.setFont(new Font("Arial", Font.BOLD, 18));
-        hdrLbl.setForeground(Color.WHITE);
-        hdr.add(hdrLbl);
 
         // Photo section
         final String[] tmpPhotoPath = {null};
@@ -75,14 +67,7 @@ class NhanVienEmployeeDialog {
             }
         }
 
-        JButton btnChonAnh = new JButton("Chọn ảnh");
-        btnChonAnh.setFont(new Font("Arial", Font.BOLD, 13));
-        btnChonAnh.setBackground(new Color(0xD9D9D9));
-        btnChonAnh.setForeground(new Color(0x333333));
-        btnChonAnh.setFocusPainted(false);
-        btnChonAnh.setBorderPainted(false);
-        btnChonAnh.setOpaque(true);
-        btnChonAnh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnChonAnh = parent.makeAppBtn("Chọn ảnh");
         JLabel lbPhotoHint = new JLabel("<html><font color='gray' size='2'>Vuông, 256–512px<br>(tự động scale)</font></html>");
 
         btnChonAnh.addActionListener(ev -> {
@@ -118,17 +103,14 @@ class NhanVienEmployeeDialog {
         photoRight.add(btnChonAnh);
         photoRight.add(lbPhotoHint);
         photoSection.add(photoRight);
-
-        JPanel northPanel = new JPanel(new BorderLayout());
-        northPanel.add(hdr, BorderLayout.NORTH);
-        northPanel.add(photoSection, BorderLayout.SOUTH);
-        dlg.add(northPanel, BorderLayout.NORTH);
+        dlg.add(photoSection, BorderLayout.NORTH);
 
         // Form fields: [0]Ho ten, [1]Username, [2]SDT, [3]Email, [4]Luong
         JTextField[] tfs = new JTextField[5];
+        String[] fieldLabels = { "Họ và tên *:", "Tên đăng nhập *:", "SĐT (10 số):", "Email:", "Lương (VNĐ):" };
         for (int i = 0; i < tfs.length; i++) {
-            tfs[i] = UIUtils.makeField();
-            tfs[i].setPreferredSize(new Dimension(200, 32));
+            tfs[i] = new JTextField(18);
+            tfs[i].setFont(new Font("Arial", Font.PLAIN, 13));
         }
         UIUtils.attachMoneyFormatter(tfs[4]);
 
@@ -136,12 +118,10 @@ class NhanVienEmployeeDialog {
         JSpinner spNgay = new JSpinner(dateModel);
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spNgay, "dd/MM/yyyy");
         spNgay.setEditor(dateEditor);
-        spNgay.setPreferredSize(new Dimension(200, 32));
         spNgay.setFont(new Font("Arial", Font.PLAIN, 13));
 
         JPasswordField pfPass = new JPasswordField(18);
         pfPass.setFont(new Font("Arial", Font.PLAIN, 13));
-        pfPass.setPreferredSize(new Dimension(200, 32));
         JButton btnShowPass = new JButton(UIUtils.iconEyeOpen(18, ACCENT));
         btnShowPass.setToolTipText("Hiện / Ẩn mật khẩu");
         btnShowPass.setPreferredSize(new Dimension(32, 32));
@@ -164,14 +144,13 @@ class NhanVienEmployeeDialog {
             : parent.roles.stream().map(RoleDTO::getName).toArray(String[]::new);
         JComboBox<String> cbRole = new JComboBox<>(roleNames);
         UIUtils.styleComboBox(cbRole);
-        cbRole.setPreferredSize(new Dimension(200, 32));
 
-        JTextField tfMa = UIUtils.makeField();
-        tfMa.setPreferredSize(new Dimension(200, 32));
-        tfMa.setEditable(false);
-        tfMa.setBackground(new Color(0xE8E6F0));
-        tfMa.setForeground(new Color(0x888888));
-        tfMa.setText(isEdit ? parent.tableModel.getValueAt(prefilledRow, COL_MA).toString() : parent.generateMaNV());
+        JLabel[] errLabels = new JLabel[5];
+        for (int i = 0; i < errLabels.length; i++) {
+            errLabels[i] = new JLabel(" ");
+            errLabels[i].setFont(new Font("Arial", Font.ITALIC, 11));
+            errLabels[i].setForeground(Color.RED);
+        }
 
         if (isEdit) {
             tfs[0].setText(parent.tableModel.getValueAt(prefilledRow, COL_TEN).toString());
@@ -189,68 +168,90 @@ class NhanVienEmployeeDialog {
         }
 
         JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(new Color(0xF0EFF8));
-        form.setBorder(BorderFactory.createEmptyBorder(18, 28, 18, 28));
+        form.setBackground(Color.WHITE);
+        form.setBorder(BorderFactory.createEmptyBorder(12, 20, 8, 20));
         GridBagConstraints gc = new GridBagConstraints();
         gc.fill = GridBagConstraints.HORIZONTAL;
-        gc.insets = new Insets(7, 6, 7, 6);
         Font labelFont = new Font("Arial", Font.BOLD, 13);
+        Font fieldFont = new Font("Arial", Font.PLAIN, 13);
 
+        int row = 0;
+        if (isEdit) {
+            gc.gridx = 0; gc.gridy = row; gc.weightx = 0.35; gc.insets = new Insets(5,5,2,5);
+            JLabel lMa = new JLabel("Mã nhân viên:"); lMa.setFont(labelFont);
+            form.add(lMa, gc);
+            gc.gridx = 1; gc.weightx = 0.65;
+            JLabel lMaVal = new JLabel(parent.tableModel.getValueAt(prefilledRow, COL_MA).toString());
+            lMaVal.setFont(new Font("Arial", Font.BOLD, 13));
+            lMaVal.setForeground(ACCENT);
+            form.add(lMaVal, gc);
+            row++;
+        }
+
+        for (int i = 0; i < fieldLabels.length; i++) {
+            gc.gridx = 0; gc.gridy = row; gc.weightx = 0.35; gc.insets = new Insets(5,5,2,5);
+            JLabel lbl = new JLabel(fieldLabels[i]); lbl.setFont(labelFont);
+            form.add(lbl, gc);
+            gc.gridx = 1; gc.weightx = 0.65;
+            tfs[i].setFont(fieldFont);
+            form.add(tfs[i], gc);
+            row++;
+            gc.gridx = 1; gc.gridy = row; gc.insets = new Insets(0,5,4,5);
+            form.add(errLabels[i], gc);
+            row++;
+        }
+
+        gc.gridx = 0; gc.gridy = row; gc.weightx = 0.35; gc.insets = new Insets(5,5,2,5);
+        JLabel lDate = new JLabel("Ngày tham gia:"); lDate.setFont(labelFont);
+        form.add(lDate, gc);
+        gc.gridx = 1; gc.weightx = 0.65;
+        form.add(spNgay, gc);
+        row++;
+
+        gc.gridx = 0; gc.gridy = row; gc.weightx = 0.35; gc.insets = new Insets(5,5,2,5);
+        JLabel lPass = new JLabel("Mật khẩu *:"); lPass.setFont(labelFont);
+        form.add(lPass, gc);
+        gc.gridx = 1; gc.weightx = 0.65;
         JPanel passRow = new JPanel(new BorderLayout(4, 0));
         passRow.setOpaque(false);
         passRow.add(pfPass, BorderLayout.CENTER);
         passRow.add(btnShowPass, BorderLayout.EAST);
+        form.add(passRow, gc);
+        row++;
+        gc.gridx = 1; gc.gridy = row; gc.insets = new Insets(0,5,4,5);
+        form.add(errLabels[4], gc);
+        row++;
 
-        Object[][] rows = {
-            {"Mã nhân viên:", tfMa, "Chức vụ:", cbRole},
-            {"Họ và tên *:", tfs[0], "Tên đăng nhập *:", tfs[1]},
-            {"SĐT (10 số):", tfs[2], "Email:", tfs[3]},
-            {"Lương (VNĐ):", tfs[4], "Ngày tham gia:", spNgay},
-            {"Mật khẩu *:", passRow, null, null}
-        };
+        gc.gridx = 0; gc.gridy = row; gc.weightx = 0.35; gc.insets = new Insets(5,5,5,5);
+        JLabel lRole = new JLabel("Chức vụ:"); lRole.setFont(labelFont);
+        form.add(lRole, gc);
+        gc.gridx = 1; gc.weightx = 0.65;
+        form.add(cbRole, gc);
 
-        for (int i = 0; i < rows.length; i++) {
-            gc.gridy = i;
-            gc.gridx = 0; gc.weightx = 0;
-            JLabel l0 = new JLabel((String) rows[i][0]);
-            l0.setFont(labelFont);
-            form.add(l0, gc);
-
-            gc.gridx = 1; gc.weightx = 1;
-            form.add((Component) rows[i][1], gc);
-
-            if (rows[i][2] != null) {
-                gc.gridx = 2; gc.weightx = 0;
-                JLabel l1 = new JLabel((String) rows[i][2]);
-                l1.setFont(labelFont);
-                form.add(l1, gc);
-
-                gc.gridx = 3; gc.weightx = 1;
-                form.add((Component) rows[i][3], gc);
-            }
-        }
-
-        dlg.add(form, BorderLayout.CENTER);
+        JScrollPane formScroll = new JScrollPane(form);
+        formScroll.setBorder(null);
+        formScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        dlg.add(formScroll, BorderLayout.CENTER);
 
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
-        btns.setBackground(new Color(0xF0EFF8));
-        btns.setBorder(BorderFactory.createMatteBorder(1,0,0,0, new Color(0xCCCCCC)));
+        btns.setBackground(new Color(0xF3F0FA));
+        btns.setBorder(BorderFactory.createMatteBorder(1,0,0,0, new Color(0xD1C4E9)));
         JButton btnLuu = new JButton("Lưu");
-        btnLuu.setFont(new Font("Arial", Font.BOLD, 13));
         btnLuu.setBackground(ACCENT); btnLuu.setForeground(Color.WHITE);
-        btnLuu.setBorder(BorderFactory.createEmptyBorder(9, 22, 9, 22));
-        btnLuu.setOpaque(true); btnLuu.setBorderPainted(false); btnLuu.setFocusPainted(false);
-        btnLuu.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLuu.setFont(new Font("Arial", Font.BOLD, 13));
+        btnLuu.setFocusPainted(false); btnLuu.setBorderPainted(false);
+        btnLuu.setPreferredSize(new Dimension(80, 32));
         JButton btnHuy = new JButton("Hủy");
         btnHuy.setFont(new Font("Arial", Font.BOLD, 13));
-        btnHuy.setBackground(new Color(0x9B8EA8)); btnHuy.setForeground(Color.WHITE);
-        btnHuy.setBorder(BorderFactory.createEmptyBorder(9, 22, 9, 22));
-        btnHuy.setOpaque(true); btnHuy.setBorderPainted(false); btnHuy.setFocusPainted(false);
-        btnHuy.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btns.add(btnLuu); btns.add(btnHuy);
+        btnHuy.setBackground(BTN_IDLE); btnHuy.setForeground(Color.DARK_GRAY);
+        btnHuy.setFocusPainted(false); btnHuy.setBorderPainted(false);
+        btnHuy.setPreferredSize(new Dimension(80, 32));
+        btns.add(btnHuy); btns.add(btnLuu);
         dlg.add(btns, BorderLayout.SOUTH);
 
         btnLuu.addActionListener(e -> {
+            for (JLabel el : errLabels) el.setText(" ");
+
             String ten   = tfs[0].getText().trim();
             String user  = tfs[1].getText().trim();
             String sdt   = tfs[2].getText().trim();
@@ -258,49 +259,27 @@ class NhanVienEmployeeDialog {
             String pass  = new String(pfPass.getPassword()).trim();
             String ngay  = new SimpleDateFormat("dd/MM/yyyy").format((Date) spNgay.getValue());
 
-            if (ten.isEmpty()) {
-                JOptionPane.showMessageDialog(dlg, "Vui lòng nhập họ và tên.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                tfs[0].requestFocus();
-                return;
-            }
-            if (user.isEmpty()) {
-                JOptionPane.showMessageDialog(dlg, "Vui lòng nhập tên đăng nhập.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                tfs[1].requestFocus();
-                return;
-            }
-            if (!sdt.isEmpty() && !sdt.matches("^0\\d{9}$")) {
-                JOptionPane.showMessageDialog(dlg, "SĐT phải 10 số và bắt đầu bằng 0.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
-                tfs[2].requestFocus();
-                return;
-            }
-            if (!email.isEmpty() && !email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
-                JOptionPane.showMessageDialog(dlg, "Email không hợp lệ.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
-                tfs[3].requestFocus();
-                return;
-            }
-
             boolean hasError = false;
+            if (ten.isEmpty())  { errLabels[0].setText("Vui lòng nhập họ và tên"); hasError = true; }
+            if (user.isEmpty()) { errLabels[1].setText("Vui lòng nhập tên đăng nhập"); hasError = true; }
+            if (!sdt.isEmpty() && !sdt.matches("^0\\d{9}$"))
+                { errLabels[2].setText("SĐT phải 10 số, bắt đầu 0"); hasError = true; }
+            if (!email.isEmpty() && !email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))
+                { errLabels[3].setText("Email không hợp lệ"); hasError = true; }
+
             if (!isEdit || !pass.isEmpty()) {
                 if (pass.isEmpty()) {
-                    JOptionPane.showMessageDialog(dlg, "Vui lòng nhập mật khẩu.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                    pfPass.requestFocus();
-                    hasError = true;
+                    errLabels[4].setText("Vui lòng nhập mật khẩu"); hasError = true;
                 } else if (pass.length() < 6) {
-                    JOptionPane.showMessageDialog(dlg, "Mật khẩu tối thiểu 6 ký tự.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
-                    pfPass.requestFocus();
-                    hasError = true;
+                    errLabels[4].setText("Tối thiểu 6 ký tự"); hasError = true;
                 } else {
                     boolean hasLetter = pass.chars().anyMatch(Character::isLetter);
                     boolean hasDigit  = pass.chars().anyMatch(Character::isDigit);
-                    if (!hasLetter || !hasDigit) {
-                        JOptionPane.showMessageDialog(dlg, "Mật khẩu phải có cả chữ và số.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
-                        pfPass.requestFocus();
-                        hasError = true;
-                    }
+                    if (!hasLetter || !hasDigit) { errLabels[4].setText("Phải có cả chữ và số"); hasError = true; }
                 }
             }
 
-            if (hasError) return;
+            if (hasError) { dlg.revalidate(); dlg.repaint(); return; }
 
             String ma = isEdit ? parent.tableModel.getValueAt(prefilledRow, COL_MA).toString() : parent.generateMaNV();
 
@@ -359,7 +338,7 @@ class NhanVienEmployeeDialog {
         });
 
         dlg.pack();
-        dlg.setMinimumSize(new Dimension(700, dlg.getPreferredSize().height));
+        dlg.setMinimumSize(new Dimension(500, dlg.getPreferredSize().height));
         dlg.setLocationRelativeTo(parent);
         dlg.setVisible(true);
     }

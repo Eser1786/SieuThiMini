@@ -1,6 +1,4 @@
 USE sieuthiminiv2;
-SET NAMES utf8mb4;
-SET CHARACTER SET utf8mb4;
 
 -- 1. categories
 INSERT

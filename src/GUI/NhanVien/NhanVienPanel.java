@@ -285,60 +285,14 @@ public class NhanVienPanel extends JPanel {
         JPanel section = new JPanel(new BorderLayout(0, 8));
         section.setBackground(PAGE_BG);
 
-        // Toolbar: filters LEFT, actions RIGHT (same pattern as SanPham)
-        JPanel toolbar = new JPanel(new BorderLayout());
-        toolbar.setBackground(PAGE_BG);
-        toolbar.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
-                BorderFactory.createEmptyBorder(8, 10, 8, 10)));
+        // ── ROW 1: title + action buttons ──────────────────────────────────
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        row1.setBackground(PAGE_BG);
 
-        JPanel tbLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
-        tbLeft.setBackground(PAGE_BG);
+        JLabel lbTitle = new JLabel("Danh s\u00e1ch nh\u00e2n vi\u00ean");
+        lbTitle.setFont(new Font("Arial", Font.BOLD | Font.ITALIC, 16));
+        lbTitle.setForeground(ACCENT);
 
-        String[] roleFilters = {"Tất cả", "Quản lý", "Nhân viên"};
-        JComboBox<String> cbRoleFilter = new JComboBox<>(roleFilters);
-        cbRoleFilter.setPreferredSize(new Dimension(170, 38));
-        UIUtils.styleComboBox(cbRoleFilter);
-
-        JPanel timPanel = new JPanel(new BorderLayout());
-        timPanel.setPreferredSize(new Dimension(240, 38));
-        timPanel.setBackground(Color.WHITE);
-        timPanel.setBorder(BorderFactory.createLineBorder(new Color(0xBBBBBB), 1));
-        JTextField tfSearch = new JTextField();
-        tfSearch.setFont(new Font("Arial", Font.PLAIN, 13));
-        tfSearch.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 4));
-        JButton btnSearch = new JButton("🔍");
-        btnSearch.setBorderPainted(false);
-        btnSearch.setContentAreaFilled(false);
-        btnSearch.setFocusPainted(false);
-        btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnSearch.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) {
-                btnSearch.setContentAreaFilled(true);
-                btnSearch.setBackground(BTN_HOVER);
-                btnSearch.setOpaque(true);
-            }
-            public void mouseExited(MouseEvent e) {
-                btnSearch.setContentAreaFilled(false);
-                btnSearch.setOpaque(false);
-            }
-        });
-        timPanel.add(tfSearch, BorderLayout.CENTER);
-        timPanel.add(btnSearch, BorderLayout.EAST);
-
-        JLabel lbRoleFilter = new JLabel("Chức vụ:");
-        lbRoleFilter.setFont(new Font("Arial", Font.PLAIN, 13));
-        JLabel lbSearch = new JLabel("Tìm kiếm:");
-        lbSearch.setFont(new Font("Arial", Font.PLAIN, 13));
-
-        tbLeft.add(lbRoleFilter);
-        tbLeft.add(cbRoleFilter);
-        tbLeft.add(Box.createHorizontalStrut(6));
-        tbLeft.add(lbSearch);
-        tbLeft.add(timPanel);
-
-        JPanel tbRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
-        tbRight.setBackground(PAGE_BG);
         JButton btnThem    = makeAppBtn("+ TH\u00caM nh\u00e2n vi\u00ean");
         JButton btnRefresh = makeAppBtn("L\u00e0m m\u1edbi");
         btnRefresh.setIcon(UIUtils.iconRefresh(14, new Color(0x388E3C)));
@@ -351,14 +305,50 @@ public class NhanVienPanel extends JPanel {
         for (JButton b : new JButton[]{btnPDF, btnExcel, btnImport}) {
             b.setFont(btnFont);
         }
-        tbRight.add(btnThem);
-        tbRight.add(btnRefresh);
-        tbRight.add(btnPDF);
-        tbRight.add(btnExcel);
-        tbRight.add(btnImport);
 
-        toolbar.add(tbLeft, BorderLayout.WEST);
-        toolbar.add(tbRight, BorderLayout.EAST);
+        row1.add(lbTitle);
+        row1.add(Box.createHorizontalStrut(8));
+        row1.add(btnThem);
+        row1.add(btnRefresh);
+        row1.add(btnPDF);
+        row1.add(btnExcel);
+        row1.add(btnImport);
+
+        // ── ROW 2: search controls ──────────────────────────────────────────
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        row2.setBackground(PAGE_BG);
+
+        JLabel lbTimTheo = new JLabel("T\u00ecm theo:");
+        lbTimTheo.setFont(new Font("Arial", Font.PLAIN, 13));
+        String[] searchFields = {"M\u00e3 NV", "T\u00ean nh\u00e2n vi\u00ean", "Ch\u1ee9c v\u1ee5", "S\u0110T"};
+        JComboBox<String> cbField = new JComboBox<>(searchFields);
+        UIUtils.styleComboBox(cbField);
+        cbField.setPreferredSize(new Dimension(140, 32));
+
+        JTextField tfSearch = new JTextField(16);
+        tfSearch.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        JButton btnSearch = new JButton("T\u00ecm");
+        btnSearch.setFont(new Font("Arial", Font.BOLD, 13));
+        btnSearch.setBackground(new Color(0x3D2F5C));
+        btnSearch.setForeground(Color.WHITE);
+        btnSearch.setFocusPainted(false);
+        btnSearch.setBorderPainted(false);
+        btnSearch.setOpaque(true);
+        btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSearch.setPreferredSize(new Dimension(70, 32));
+
+        row2.add(lbTimTheo);
+        row2.add(cbField);
+        row2.add(tfSearch);
+        row2.add(btnSearch);
+
+        // ── Combined toolbar ────────────────────────────────────────────────
+        JPanel toolbar = new JPanel();
+        toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
+        toolbar.setBackground(PAGE_BG);
+        toolbar.add(row1);
+        toolbar.add(row2);
 
         String[] cols = {"M\u00e3 NV", "T\u00ean nh\u00e2n vi\u00ean", "Ch\u1ee9c v\u1ee5",
                          "S\u0110T", "Email", "Ng\u00e0y tham gia", "M\u1eadt kh\u1ea9u"};
@@ -424,32 +414,11 @@ public class NhanVienPanel extends JPanel {
 
         Runnable applyFilter = () -> {
             String kw = tfSearch.getText().trim();
-            int roleFilterIdx = cbRoleFilter.getSelectedIndex();
-
-            RowFilter<DefaultTableModel, Integer> rfRole = switch (roleFilterIdx) {
-                case 1 -> RowFilter.regexFilter("(?i)^Quản lý$", COL_CHUCVU);
-                case 2 -> RowFilter.regexFilter("(?i)^Nhân viên$", COL_CHUCVU);
-                default -> null;
-            };
-            RowFilter<DefaultTableModel, Integer> rfSearch = kw.isEmpty()
-                    ? null
-                    : RowFilter.orFilter(java.util.List.of(
-                            RowFilter.regexFilter("(?i)" + Pattern.quote(kw), COL_MA),
-                            RowFilter.regexFilter("(?i)" + Pattern.quote(kw), COL_TEN),
-                            RowFilter.regexFilter("(?i)" + Pattern.quote(kw), COL_SDT),
-                            RowFilter.regexFilter("(?i)" + Pattern.quote(kw), COL_EMAIL)));
-
-            if (rfRole != null && rfSearch != null) {
-                sorter.setRowFilter(RowFilter.andFilter(java.util.List.of(rfRole, rfSearch)));
-            } else if (rfRole != null) {
-                sorter.setRowFilter(rfRole);
-            } else if (rfSearch != null) {
-                sorter.setRowFilter(rfSearch);
-            } else {
-                sorter.setRowFilter(null);
-            }
+            int col = cbField.getSelectedIndex();
+            if (kw.isEmpty()) { sorter.setRowFilter(null); return; }
+            try { sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(kw), col)); }
+            catch (Exception ignored) {}
         };
-        cbRoleFilter.addActionListener(e -> applyFilter.run());
         btnSearch.addActionListener(e -> applyFilter.run());
         tfSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
@@ -459,7 +428,6 @@ public class NhanVienPanel extends JPanel {
 
         btnRefresh.addActionListener(e -> {
             revealedRows.clear(); sorter.setRowFilter(null); tfSearch.setText("");
-            cbRoleFilter.setSelectedIndex(0);
             loadEmployees();
         });
         btnThem.addActionListener(e -> showAddDialog());
@@ -529,10 +497,7 @@ public class NhanVienPanel extends JPanel {
         revealedRows.clear();
         try {
             List<EmployeeDTO> list = empBUS.getAllEmployees();
-            if (list == null || list.isEmpty()) {
-                loadMockEmployees();
-                return;
-            }
+            if (list == null) return;
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             for (EmployeeDTO e : list) {
                 String ngay = e.getHireDate() != null ? e.getHireDate().format(fmt) : "";
@@ -543,16 +508,9 @@ public class NhanVienPanel extends JPanel {
                 });
             }
         } catch (Exception ignored) {
-            loadMockEmployees();
+            tableModel.addRow(new Object[]{"NV001", "Nguy\u1ec5n V\u0103n A", "Qu\u1ea3n l\u00fd",  "0901234567", "nva@mail.com",  "01/01/2024", "pass123"});
+            tableModel.addRow(new Object[]{"NV002", "Tr\u1ea7n Th\u1ecb B",   "Nh\u00e2n vi\u00ean", "0907654321", "ttb@mail.com",  "15/03/2024", "abc456"});
         }
-    }
-
-    private void loadMockEmployees() {
-        tableModel.addRow(new Object[]{"NV001", "Nguyễn Minh Khôi", "Quản lý", "0901234567", "khoi.nguyen@stmini.vn", "01/01/2024", "Khoi2024"});
-        tableModel.addRow(new Object[]{"NV002", "Trần Gia Hân", "Nhân viên", "0914567890", "han.tran@stmini.vn", "15/03/2024", "Han4567"});
-        tableModel.addRow(new Object[]{"NV003", "Lê Tuấn Đạt", "Nhân viên", "0932211455", "dat.le@stmini.vn", "21/05/2024", "Dat9988"});
-        tableModel.addRow(new Object[]{"NV004", "Phạm Ngọc Anh", "Nhân viên", "0977886655", "anh.pham@stmini.vn", "10/08/2024", "Anh2025"});
-        tableModel.addRow(new Object[]{"NV005", "Hoàng Bảo Linh", "Quản lý", "0988112233", "linh.hoang@stmini.vn", "12/12/2024", "Linh4455"});
     }
 
     void fillDetail(int modelRow) {

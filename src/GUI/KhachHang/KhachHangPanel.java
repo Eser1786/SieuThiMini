@@ -44,8 +44,6 @@ public class KhachHangPanel extends JPanel {
         tableModel.addRow(new Object[]{"KH002", "Lý Nguyễn",          "0915987654", "nguyenly@gmail.com", "456 Nguyễn Trãi", "Vàng",      "Hoạt động",         ""});
         tableModel.addRow(new Object[]{"KH003", "Nguyễn Hoàng Sang",  "0933777888", "sangnguyen@gmail.com","789KTX",         "Đồng",      "Không hoạt động",   ""});
         tableModel.addRow(new Object[]{"KH004", "Trân dơ hầy",        "0977111222", "tranbado@gmail.com", "Bụi chúi",        "Kim cương", "Hoạt động",         ""});
-        tableModel.addRow(new Object[]{"KH005", "Phạm Quang Vinh",    "0903123456", "vinh.pham@gmail.com", "12 Lê Lợi",       "Vàng",      "Hoạt động",         ""});
-        tableModel.addRow(new Object[]{"KH006", "Đặng Mỹ Linh",       "0988123987", "linh.dang@gmail.com", "88 Pasteur",      "Bạc",       "Hoạt động",         ""});
 
         add(new KhachHangTableCard(this), CARD_TABLE);
         add(new KhachHangFormCard(this),  CARD_THEM);
