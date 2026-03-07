@@ -151,5 +151,22 @@ public class ProductDAO {
             closeConnection();
         }
     }
-    
+
+    /**
+     * Cộng/trừ tồn kho. delta > 0 là nhập, delta < 0 là xuất.
+     * Dùng atomic UPDATE để tránh race condition.
+     */
+    public boolean updateStock(long productId, long delta) {
+        String sql = "UPDATE products SET total_quantity = total_quantity + ?, updated_at = NOW() WHERE product_id = ?";
+        try (java.sql.Connection conn = DAO.DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, delta);
+            ps.setLong(2, productId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

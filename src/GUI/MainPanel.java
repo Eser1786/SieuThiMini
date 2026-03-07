@@ -5,6 +5,7 @@ import GUI.KhachHang.KhachHangPanel;
 import GUI.Kho.KhoPanel;
 import GUI.KhuyenMai.KhuyenMaiPanel;
 import GUI.NhanVien.NhanVienPanel;
+import GUI.NhapXuat.NhapXuatPanel;
 import GUI.SanPham.SanPhamPanel;
 import GUI.TrangChu.TrangChuPanel;
 import GUI.User.UserPanel;
@@ -21,6 +22,7 @@ public class MainPanel extends JPanel {
     public static final String NHAN_VIEN = "NHAN_VIEN";
     public static final String DON_HANG = "DON_HANG";
     public static final String KHO = "KHO";
+    public static final String NHAP_XUAT = "NHAP_XUAT";
     public static final String KHUYEN_MAI = "KHUYEN_MAI";
     public static final String USER = "USER";
 
@@ -75,6 +77,7 @@ public class MainPanel extends JPanel {
         JButton btnNhanVien = createNavButton("Nhân viên");
         JButton btnDonHang = createNavButton("Đơn hàng");
         JButton btnKho = createNavButton("Kho");
+        JButton btnNhapXuat = createNavButton("Nhập Xuất");
         JButton btnKhuyenMai = createNavButton("Khuyến mãi");
         JButton btnUser = createNavButton("👤 Tài khoản"); // tránh emoji --hem, emoji đẹp mò
 
@@ -89,6 +92,8 @@ public class MainPanel extends JPanel {
         nav.add(btnDonHang);
         nav.add(Box.createVerticalStrut(12));
         nav.add(btnKho);
+        nav.add(Box.createVerticalStrut(12));
+        nav.add(btnNhapXuat);
         nav.add(Box.createVerticalStrut(12));
         nav.add(btnKhuyenMai);
         nav.add(Box.createVerticalGlue());
@@ -105,6 +110,7 @@ public class MainPanel extends JPanel {
         mainCards.add(new NhanVienPanel(), NHAN_VIEN);
         mainCards.add(new DonHangPanel(), DON_HANG);
         mainCards.add(new KhoPanel(), KHO);
+        mainCards.add(new NhapXuatPanel(), NHAP_XUAT);
         mainCards.add(new KhuyenMaiPanel(), KHUYEN_MAI);
         mainCards.add(new UserPanel(), USER);
         add(mainCards, BorderLayout.CENTER);
@@ -116,6 +122,7 @@ public class MainPanel extends JPanel {
         btnNhanVien.addActionListener(e -> navigate(mainCards, NHAN_VIEN, btnNhanVien));
         btnDonHang.addActionListener(e -> navigate(mainCards, DON_HANG, btnDonHang));
         btnKho.addActionListener(e -> navigate(mainCards, KHO, btnKho));
+        btnNhapXuat.addActionListener(e -> navigate(mainCards, NHAP_XUAT, btnNhapXuat));
         btnKhuyenMai.addActionListener(e -> navigate(mainCards, KHUYEN_MAI, btnKhuyenMai));
         btnUser.addActionListener(e -> navigate(mainCards, USER, btnUser));
 

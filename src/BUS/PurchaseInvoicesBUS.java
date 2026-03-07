@@ -8,10 +8,12 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PurchaseInvoicesBUS {
     private PurchaseInvoicesDAO purchaseInvoicesDAO;
+    private final ProductBUS productBUS = new ProductBUS();
 
     public PurchaseInvoicesBUS() {
         purchaseInvoicesDAO = new PurchaseInvoicesDAO();
@@ -60,7 +62,16 @@ public class PurchaseInvoicesBUS {
         // Calculate totals if not set
         calculateTotals(invoice);
 
-        return purchaseInvoicesDAO.addPurchaseInvoice(invoice);
+        boolean saved = purchaseInvoicesDAO.addPurchaseInvoice(invoice);
+        if (saved) {
+            // Tăng tồn kho cho từng sản phẩm
+            for (PurchaseInvoiceItemsDTO item : invoice.getItems()) {
+                if (item.getProductId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                    productBUS.updateStock(item.getProductId(), item.getQuantity());
+                }
+            }
+        }
+        return saved;
     }
 
     public boolean updatePurchaseInvoice(PurchaseInvoicesDTO invoice) {

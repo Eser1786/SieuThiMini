@@ -26,6 +26,11 @@ public class ProductBUS {
         return dao.addProduct(p);
     }
 
+    /** delta > 0 nhập kho, delta < 0 xuất kho */
+    public boolean updateStock(long productId, long delta) {
+        return dao.updateStock(productId, delta);
+    }
+
     private String generateProductCode() {
         // Logic tạo code: 'NV' + số tăng dần (tìm max code từ DB + 1)
         String sql = "SELECT MAX(product_code) FROM products WHERE product_code LIKE 'SP%'";

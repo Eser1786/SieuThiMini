@@ -14,6 +14,11 @@ public class SupplierBUS {
     public SupplierBUS() {
         supplierDAO = new SupplierDAO();
     }
+
+    public java.util.ArrayList<SupplierDTO> getAllSuppliers() {
+        return supplierDAO.getAllSuppliers();
+    }
+
     public boolean addSupplier(SupplierDTO supplier) {
         if(supplier.getName() == null || supplier.getName().isEmpty()){
             System.out.println("Tên nhà cung cấp không được để trống.");

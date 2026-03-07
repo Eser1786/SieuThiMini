@@ -72,4 +72,26 @@ public class SupplierDAO {
         }
         return false;
     }
+
+    public java.util.ArrayList<DTO.SupplierDTO> getAllSuppliers() {
+        java.util.ArrayList<DTO.SupplierDTO> list = new java.util.ArrayList<>();
+        if (openConnection()) {
+            try {
+                String sql = "SELECT supplier_id, name FROM suppliers ORDER BY name";
+                Statement stmt = con.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                while (rs.next()) {
+                    DTO.SupplierDTO s = new DTO.SupplierDTO();
+                    s.setID(rs.getInt("supplier_id"));
+                    s.setName(rs.getString("name"));
+                    list.add(s);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return list;
+    }
 }
