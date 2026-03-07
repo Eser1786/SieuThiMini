@@ -1,8 +1,10 @@
 package DTO;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 import DTO.enums.DiscountEnum.DiscountType;
 import DTO.enums.DiscountEnum.DiscountStatus;
@@ -19,8 +21,22 @@ public class DiscountDTO {
     private Boolean isAutoApply;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    
+public DiscountDTO() {
+    }
+public DiscountDTO(int id, String name, DiscountType discountType, BigDecimal value, BigDecimal minOrderAmount, LocalDate startDate, LocalDate endDate, String description, DiscountStatus status, Boolean isAutoApply, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
+        this.name = name;
+        this.discountType = discountType;
+        this.value = value;
+        this.minOrderAmount = minOrderAmount;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.description = description;
+        this.status = status;
+        this.isAutoApply = isAutoApply;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }    
 
     // Getters & Setters
 
@@ -119,6 +135,16 @@ public class DiscountDTO {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+    public String getFormattedValue() {
+    if (value == null) return "";
+
+    if (discountType == DTO.enums.DiscountEnum.DiscountType.PERCENT) {
+        return value + " %";
+    } else {
+        NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
+        return nf.format(value) + " VND";
+    }
+}
     @Override
     public String toString() {
         return "DiscountDTO{" +

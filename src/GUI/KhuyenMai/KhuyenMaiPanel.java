@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import BUS.DiscountBUS;
 import DTO.DiscountDTO;
@@ -22,13 +22,14 @@ public class KhuyenMaiPanel extends JPanel {
     private JLabel lbValue;
     private JLabel lbType;
     private JLabel lbMinOrder;
+    private JLabel lbStatus;
     private static final Color PAGE_BG   = new Color(0xF8F7FF);
     private static final Color RIGHT_BG  = new Color(0x5C4A7F);
     private static final Color CARD_LEFT = new Color(0xD1C4E9);
     private static final Color TBL_HDR   = new Color(0x3D2F5C);
     private static final Color BTN_ADD   = new Color(0x3D2F5C);
     
-    private DefaultTableModel voucherModel;
+
     private DefaultTableModel discountModel;
 
     public KhuyenMaiPanel() {
@@ -36,24 +37,23 @@ public class KhuyenMaiPanel extends JPanel {
         setBackground(PAGE_BG);
         add(buildPageHeader(), BorderLayout.NORTH);
         
-        JPanel body = new JPanel(new GridBagLayout());
-        body.setBackground(PAGE_BG);
-        body.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
-
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.gridy = 0; gc.weighty = 1.0; gc.fill = GridBagConstraints.BOTH;
-        
         JScrollPane leftScroll = new JScrollPane(buildLeftColumn());
-        leftScroll.setBorder(null);
-        leftScroll.getVerticalScrollBar().setUnitIncrement(16);
-        gc.gridx = 0; gc.weightx = 0.75; gc.insets = new Insets(0, 0, 0, 14);
-        body.add(leftScroll, gc);
+leftScroll.setBorder(null);
+leftScroll.getVerticalScrollBar().setUnitIncrement(16);
 
-        JPanel rightCol = buildRightColumn();
-        gc.gridx = 1; gc.weightx = 0.25; gc.insets = new Insets(0, 0, 0, 0);
-        body.add(rightCol, gc);
+JPanel rightCol = buildRightColumn();
 
-        add(body, BorderLayout.CENTER);
+JSplitPane split = new JSplitPane(
+        JSplitPane.HORIZONTAL_SPLIT,
+        leftScroll,
+        rightCol
+);
+
+split.setResizeWeight(0.65); // 65% - 35%
+split.setDividerSize(6);
+split.setBorder(null);
+
+add(split, BorderLayout.CENTER);
          loadDiscountTables(); // load database
     }
 
@@ -92,7 +92,8 @@ public class KhuyenMaiPanel extends JPanel {
                 "   Ngày kết thúc:", //end_date
                 "   Giá trị giảm:", //value
                 "   Loại giảm:", //discount_type
-                "   Tổng giá trị tối thiểu để áp dụng: " //min_order_amount
+                "   Tổng giá trị tối thiểu để áp dụng: ", //min_order_amount
+                "   Trạng thái:" //status
             }
     ));
     col.add(Box.createVerticalStrut(20));
@@ -161,32 +162,30 @@ left.add(taDesc);
 
     // ===== RIGHT PANEL =====
     JPanel right = new JPanel(new GridLayout(fields.length,2,10,10));
-    right.setBackground(Color.WHITE);
+right.setBackground(Color.WHITE);
 
-    lbId = new JLabel("...");
+lbId = new JLabel("...");
 lbStart = new JLabel("...");
 lbEnd = new JLabel("...");
 lbValue = new JLabel("...");
 lbType = new JLabel("...");
 lbMinOrder = new JLabel("...");
+lbStatus = new JLabel("...");
 
-right.add(new JLabel("Mã giảm:"));
-right.add(lbId);
+JLabel[] valueLabels = {
+    lbId,
+    lbStart,
+    lbEnd,
+    lbValue,
+    lbType,
+    lbMinOrder,
+    lbStatus
+};
 
-right.add(new JLabel("Ngày bắt đầu:"));
-right.add(lbStart);
-
-right.add(new JLabel("Ngày kết thúc:"));
-right.add(lbEnd);
-
-right.add(new JLabel("Giá trị giảm:"));
-right.add(lbValue);
-
-right.add(new JLabel("Loại giảm:"));
-right.add(lbType);
-
-right.add(new JLabel("Tổng giá trị tối thiểu để áp dụng:"));
-right.add(lbMinOrder);
+for(int i = 0; i < fields.length; i++){
+    right.add(new JLabel(fields[i]));
+    right.add(valueLabels[i]);
+}
 
     // LEFT width 40%
     gbc.gridx = 0;
@@ -199,6 +198,74 @@ right.add(lbMinOrder);
     content.add(right, gbc);
 
     card.add(content, BorderLayout.CENTER);
+content.add(right, gbc);
+
+
+/* ===== THÊM ĐOẠN NÀY ===== */
+
+JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+JButton btnEdit = new JButton("SỬA");
+JButton btnDelete = new JButton("XÓA");
+
+btnPanel.add(btnEdit);
+btnPanel.add(btnDelete);
+
+card.add(btnPanel, BorderLayout.SOUTH);
+
+/* ===== ACTION SỬA ===== */
+
+btnEdit.addActionListener(e -> {
+
+    if(lbId.getText().equals("...")){
+        JOptionPane.showMessageDialog(this,"Chọn khuyến mãi trước");
+        return;
+    }
+
+    int id = Integer.parseInt(lbId.getText());
+
+    DiscountDTO d = discountBUS.getDiscountById(id);
+
+    if(d != null){
+        showEditDiscountDialog(d);
+    }
+
+});
+
+/* ===== ACTION XÓA ===== */
+
+btnDelete.addActionListener(e -> {
+
+    if(lbId.getText().equals("...")){
+        JOptionPane.showMessageDialog(this,"Chọn khuyến mãi trước");
+        return;
+    }
+
+    int confirm = JOptionPane.showConfirmDialog(
+            this,
+            "Xóa khuyến mãi này?",
+            "Confirm",
+            JOptionPane.YES_NO_OPTION
+    );
+
+    if(confirm == JOptionPane.YES_OPTION){
+
+        int id = Integer.parseInt(lbId.getText());
+
+        String result = discountBUS.deleteDiscount(id);
+
+        if(result.equals("SUCCESS")){
+            JOptionPane.showMessageDialog(this,"Đã xóa khuyến mãi");
+                clearDetailCard();
+            loadDiscountTables();
+        }else{
+            JOptionPane.showMessageDialog(this,result);
+        }
+    }
+
+});
+
+/* ===== HẾT PHẦN THÊM ===== */
 
     return card;
 }
@@ -212,7 +279,7 @@ right.add(lbMinOrder);
     col.setBorder(BorderFactory.createEmptyBorder(16,16,16,16));
 
     discountModel = new DefaultTableModel(
-        new String[]{"ID", "Tên khuyến mãi", "Giá trị", "Loại giảm"},0
+        new String[]{"ID", "Tên khuyến mãi", "Giá trị", "Loại giảm","Trạng thái"},0
     ){
         @Override
         public boolean isCellEditable(int r,int c){
@@ -249,7 +316,9 @@ right.add(lbMinOrder);
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         btnRow.setBackground(RIGHT_BG);
         btnRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnRow.add(listBtn("Refresh", new Color(0x388E3C)));
+        JButton btnRefresh = listBtn("Refresh", new Color(0x388E3C));
+        btnRefresh.addActionListener(e -> loadDiscountTables());
+        btnRow.add(btnRefresh);
         JButton btnAdd = listBtn(addLabel, BTN_ADD);
         btnAdd.addActionListener(e -> onAdd.run());
         btnRow.add(btnAdd);
@@ -269,7 +338,68 @@ right.add(lbMinOrder);
         top.add(Box.createVerticalStrut(8));
 
         section.add(top, BorderLayout.NORTH);
+        JPanel filterRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+filterRow.setBackground(RIGHT_BG);
+filterRow.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        JComboBox<String> cbType = new JComboBox<>(new String[]{
+            "ALL TYPE",
+            "PERCENT",
+            "FIXED"
+        });
+
+        JComboBox<String> cbStatus = new JComboBox<>(new String[]{
+            "ALL STATUS",
+            "ACTIVE",
+            "EXPIRED"
+        });
+
+        filterRow.add(new JLabel("Type:"));
+        filterRow.add(cbType);
+
+        filterRow.add(new JLabel("Status:"));
+        filterRow.add(cbStatus);
+
+        top.add(filterRow);
+        top.add(Box.createVerticalStrut(8));
+        btnSearch.addActionListener(e -> {
+
+    String keyword = tfSearch.getText().trim().toLowerCase();
+    String type = cbType.getSelectedItem().toString();
+    String status = cbStatus.getSelectedItem().toString();
+
+    ArrayList<DiscountDTO> list = discountBUS.getAllDiscounts();
+
+    discountModel.setRowCount(0);
+
+    for(DiscountDTO d : list){
+
+        boolean matchName =
+                keyword.isEmpty() ||
+                d.getName().toLowerCase().contains(keyword);
+
+        boolean matchType =
+                type.equals("ALL TYPE") ||
+                d.getDiscountType().name().equals(type);
+
+        boolean matchStatus =
+                status.equals("ALL STATUS") ||
+                d.getStatus().name().equals(status);
+
+        if(matchName && matchType && matchStatus){
+
+            discountModel.addRow(new Object[]{
+                d.getId(),
+                d.getName(),
+                d.getValue(),
+                d.getDiscountType().name(),
+                d.getStatus().name()
+            });
+
+        }
+    }
+
+});
         // Table
         JTable table = new JTable(model);
         table.setFont(new Font("Arial", Font.PLAIN, 13));
@@ -316,6 +446,7 @@ right.add(lbMinOrder);
                 lbValue.setText(String.valueOf(d.getValue()));
                 lbType.setText(d.getDiscountType().name());
                 lbMinOrder.setText(String.valueOf(d.getMinOrderAmount()));
+                lbStatus.setText(d.getStatus().name());
 
             }
         }
@@ -350,7 +481,7 @@ right.add(lbMinOrder);
 
     dlg.setLayout(new BorderLayout());
 
-    JPanel form = new JPanel(new GridLayout(7,2,10,10));
+    JPanel form = new JPanel(new GridLayout(8,2,10,10));
     form.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
 
     JTextField tfName = new JTextField();
@@ -362,7 +493,10 @@ right.add(lbMinOrder);
     JComboBox<String> cbType = new JComboBox<>(
             new String[]{"PERCENT","FIXED"}
     );
-
+    // ===== Combobox status =====
+    JComboBox<String> cbStatus = new JComboBox<>(
+        new String[]{"ACTIVE","EXPIRED"}
+    );
     // ===== Date chooser =====
     JDateChooser dcStart = new JDateChooser();
     JDateChooser dcEnd = new JDateChooser();
@@ -370,18 +504,22 @@ right.add(lbMinOrder);
     dcStart.setDateFormatString("dd/MM/yyyy");
     dcEnd.setDateFormatString("dd/MM/yyyy");
 
-    form.add(new JLabel("Tên khuyến mãi:"));
+    form.add(new JLabel("   Tên khuyến mãi:"));
     form.add(tfName);
 
-    form.add(new JLabel("Mô tả:"));
+    form.add(new JLabel("   Mô tả:"));
     form.add(tfDesc);
 
     form.add(new JLabel("Giá trị giảm:"));
     form.add(tfValue);
 
+
     form.add(new JLabel("Loại giảm:"));
     form.add(cbType);
-
+    
+    form.add(new JLabel("Trạng thái:"));
+    form.add(cbStatus);
+    
     form.add(new JLabel("Ngày bắt đầu:"));
     form.add(dcStart);
 
@@ -432,6 +570,7 @@ right.add(lbMinOrder);
                 tfDesc.getText().trim(),
                 tfValue.getText().trim(),
                 cbType.getSelectedItem().toString(),
+                cbStatus.getSelectedItem().toString(), // thêm dòng này
                 start,
                 end,
                 tfMinOrder.getText().trim()
@@ -481,14 +620,116 @@ right.add(lbMinOrder);
 
     for(DiscountDTO d : list){
 
+    if(!d.getStatus().name().equals("INACTIVE")){
+
         discountModel.addRow(new Object[]{
             d.getId(),
             d.getName(),
             d.getValue(),
-            d.getDiscountType().name()
+            d.getDiscountType().name(),
+            d.getStatus().name()
         });
 
     }
+
+}
+}
+private void showEditDiscountDialog(DiscountDTO d){
+
+    JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Sửa khuyến mãi", true);
+    dialog.setSize(400,450);
+    dialog.setLocationRelativeTo(this);
+    dialog.setLayout(new GridLayout(9,2,10,10));
+
+    JTextField tfName = new JTextField(d.getName());
+    JTextField tfDesc = new JTextField(d.getDescription());
+    JTextField tfValue = new JTextField(String.valueOf(d.getValue()));
+    JTextField tfMinOrder = new JTextField(String.valueOf(d.getMinOrderAmount()));
+
+    JComboBox<String> cbType = new JComboBox<>(new String[]{"PERCENT","FIXED"});
+    cbType.setSelectedItem(d.getDiscountType().name());
+
+    JComboBox<String> cbStatus = new JComboBox<>(new String[]{"ACTIVE","EXPIRED"});
+    cbStatus.setSelectedItem(d.getStatus().name());
+
+    JDateChooser dcStart = new JDateChooser();
+    JDateChooser dcEnd = new JDateChooser();
+
+    dcStart.setDate(java.sql.Date.valueOf(d.getStartDate()));
+dcEnd.setDate(java.sql.Date.valueOf(d.getEndDate()));
+    JButton btnSave = new JButton("Cập nhật");
+
+    dialog.add(new JLabel("Tên"));
+    dialog.add(tfName);
+
+    dialog.add(new JLabel("Mô tả"));
+    dialog.add(tfDesc);
+
+    dialog.add(new JLabel("Giá trị"));
+    dialog.add(tfValue);
+
+    dialog.add(new JLabel("Loại"));
+    dialog.add(cbType);
+
+    dialog.add(new JLabel("Min order"));
+    dialog.add(tfMinOrder);
+
+    dialog.add(new JLabel("Trạng thái"));
+    dialog.add(cbStatus);
+
+    dialog.add(new JLabel("Ngày bắt đầu"));
+    dialog.add(dcStart);
+
+    dialog.add(new JLabel("Ngày kết thúc"));
+    dialog.add(dcEnd);
+
+    dialog.add(new JLabel(""));
+    dialog.add(btnSave);
+
+    btnSave.addActionListener(e ->{
+
+        String start = new SimpleDateFormat("yyyy-MM-dd").format(dcStart.getDate());
+        String end = new SimpleDateFormat("yyyy-MM-dd").format(dcEnd.getDate());
+
+        boolean result = discountBUS.updateDiscount(
+
+        d.getId(),
+        tfName.getText().trim(),
+        tfDesc.getText().trim(),
+        Double.parseDouble(tfValue.getText().trim()),
+        cbType.getSelectedItem().toString(),
+        start,
+        end,
+        Double.parseDouble(tfMinOrder.getText().trim()),
+        cbStatus.getSelectedItem().toString()
+
+);
+
+        if(result){
+            JOptionPane.showMessageDialog(dialog,"Cập nhật thành công");
+            loadDiscountTables();
+            dialog.dispose();
+        }else{
+            JOptionPane.showMessageDialog(dialog,"Cập nhật thất bại");
+        }
+
+    });
+
+    dialog.setVisible(true);
+}
+private void clearDetailCard(){
+
+    lbName.setText("Tên khuyến mãi");
+    taDesc.setText("");
+
+    lbId.setText("...");
+    lbStart.setText("...");
+    lbEnd.setText("...");
+    lbValue.setText("...");
+    lbType.setText("...");
+    lbMinOrder.setText("...");
+    lbStatus.setText("...");
+
 }
 }
 

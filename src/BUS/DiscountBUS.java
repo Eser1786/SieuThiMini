@@ -5,8 +5,9 @@ import DAO.DiscountDAO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-
+import DTO.enums.DiscountEnum.DiscountStatus;
 import DTO.enums.DiscountEnum.DiscountType;
 
 public class DiscountBUS {
@@ -26,6 +27,7 @@ public class DiscountBUS {
         String desc,
         String value,
         String type,
+        String status, // thêm tham số trạng thái
         String start,
         String end,
         String minOrder
@@ -61,7 +63,13 @@ public class DiscountBUS {
         return "Loại giảm chỉ được là PERCENT hoặc FIXED";
     }
 
+    DiscountStatus discountStatus;
 
+try{
+    discountStatus = DiscountStatus.valueOf(status.toUpperCase());
+}catch(Exception e){
+    return "Trạng thái chỉ được là ACTIVE hoặc EXPIRED";
+}
     // ===== DATE =====
 
     LocalDate startDate;
@@ -101,11 +109,13 @@ public class DiscountBUS {
     d.setDescription(desc);
     d.setValue(val);
     d.setDiscountType(discountType);
+    d.setStatus(discountStatus);
     d.setStartDate(startDate);
     d.setEndDate(endDate);
     d.setMinOrderAmount(min);
-
-
+    d.setIsAutoApply(false);
+    d.setCreatedAt(LocalDateTime.now());
+d.setUpdatedAt(LocalDateTime.now());
     boolean result = discountDAO.addDiscount(d);
 
     if(result)
@@ -125,4 +135,32 @@ public class DiscountBUS {
 
         return null;
     }
+    public String deleteDiscount(int id){
+
+    if(id <= 0)
+        return "ID không hợp lệ";
+
+    boolean result = discountDAO.deleteDiscount(id);
+
+    if(result)
+        return "SUCCESS";
+
+    return "Không thể xóa khuyến mãi";
+}
+public boolean updateDiscount(
+        int id,
+        String name,
+        String description,
+        double value,
+        String type,
+        String startDate,
+        String endDate,
+        double minOrder,
+        String status
+
+){
+    return discountDAO.updateDiscount(
+            id,name,description,value,type,startDate,endDate,minOrder,status
+    );
+}
 }

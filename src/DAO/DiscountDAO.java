@@ -125,6 +125,38 @@ public class DiscountDAO {
         }
         return result;
     }
+    public boolean deleteDiscount(int id){
+
+    boolean result = false;
+
+    if(openConnection()){
+
+        try{
+
+            String sql = "UPDATE discounts SET status = 'INACTIVE', updated_at = NOW() WHERE discount_id = ?";
+
+            PreparedStatement pstmt = con.prepareStatement(sql);
+
+            pstmt.setInt(1, id);
+
+            int rowsAffected = pstmt.executeUpdate();
+
+            result = rowsAffected > 0;
+
+        }catch(SQLException e){
+
+            System.out.println("Không thể xóa discount (soft delete)");
+            e.printStackTrace();
+
+        }finally{
+            closeConnection();
+        }
+
+    }
+
+    return result;
+}
+
     public boolean hasDiscountID(int id){
         boolean result = false;
         if(openConnection()){
@@ -142,4 +174,51 @@ public class DiscountDAO {
         }
         return result;
     }
+    public boolean updateDiscount(
+        int id,
+        String name,
+        String description,
+        double value,
+        String type,
+        String startDate,
+        String endDate,
+        double minOrder,
+        String status
+){
+
+    String sql = """
+        UPDATE discounts
+        SET name = ?,
+            description = ?,
+            value = ?,
+            discount_type = ?,
+            start_date = ?,
+            end_date = ?,
+            min_order_amount = ?,
+            status = ?
+        WHERE discount_id = ?
+    """;
+
+    try(Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)){
+
+        ps.setString(1, name);
+        ps.setString(2, description);
+        ps.setDouble(3, value);
+        ps.setString(4, type);
+        ps.setString(5, startDate);
+        ps.setString(6, endDate);
+        ps.setDouble(7, minOrder);
+        ps.setString(8, status);
+        ps.setInt(9, id);
+
+        return ps.executeUpdate() > 0;
+
+    }catch(Exception e){
+
+        e.printStackTrace();
+        return false;
+
+    }
+}
 }
