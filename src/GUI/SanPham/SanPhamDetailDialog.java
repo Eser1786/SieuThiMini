@@ -53,11 +53,11 @@ class SanPhamDetailDialog {
         footer.setBackground(new Color(0xF0EFF8));
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
 
-        JButton btnSua = new JButton("✏ Sửa");
+        JButton btnSua = new JButton("Sửa");
         styleBtn(btnSua, new Color(0x6677C8), 110, 40);
         btnSua.addActionListener(e -> { detail.dispose(); showEdit(parent, modelRow, model, bang); });
 
-        JButton btnXoa = new JButton("🗑 Xóa");
+        JButton btnXoa = new JButton("Xóa");
         styleBtn(btnXoa, new Color(0xB83434), 110, 40);
         btnXoa.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(detail,
@@ -66,7 +66,11 @@ class SanPhamDetailDialog {
             if (confirm == JOptionPane.YES_OPTION) { model.removeRow(modelRow); detail.dispose(); }
         });
 
-        footer.add(btnSua); footer.add(btnXoa);
+        JButton btnDong = new JButton("Đóng");
+        styleBtn(btnDong, new Color(0x9B8EA8), 110, 40);
+        btnDong.addActionListener(e -> detail.dispose());
+
+        footer.add(btnSua); footer.add(btnXoa); footer.add(btnDong);
         detail.add(footer, BorderLayout.SOUTH);
         detail.setVisible(true);
     }

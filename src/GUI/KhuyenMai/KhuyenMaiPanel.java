@@ -12,6 +12,7 @@ import BUS.DiscountBUS;
 import DTO.DiscountDTO;
 import GUI.ExportUtils;
 import GUI.UIUtils;
+import GUI.WrapLayout;
 
 public class KhuyenMaiPanel extends JPanel {
 
@@ -51,14 +52,11 @@ public class KhuyenMaiPanel extends JPanel {
         header.add(hdrTitle);
 
         // ── Toolbar ───────────────────────────────────────────────────────────
-        JPanel toolbar = new JPanel(new BorderLayout());
+        JPanel toolbar = new JPanel(new WrapLayout(FlowLayout.LEFT, 8, 4));
         toolbar.setBackground(PAGE_BG);
         toolbar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)));
-
-        JPanel tbLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
-        tbLeft.setBackground(PAGE_BG);
 
         String[] loaiGiam = { "Tất cả", "PERCENT", "FIXED" };
         JComboBox<String> cbLoc = new JComboBox<>(loaiGiam);
@@ -100,14 +98,9 @@ public class KhuyenMaiPanel extends JPanel {
         JLabel lbTT  = new JLabel("Trạng thái:"); lbTT.setFont(new Font("Arial", Font.PLAIN, 13));
         JLabel lbTim = new JLabel("Tìm kiếm:");   lbTim.setFont(new Font("Arial", Font.PLAIN, 13));
 
-        tbLeft.add(lbLoc); tbLeft.add(cbLoc);
-        tbLeft.add(Box.createHorizontalStrut(4));
-        tbLeft.add(lbTT);  tbLeft.add(cbTrangThai);
-        tbLeft.add(Box.createHorizontalStrut(6));
-        tbLeft.add(lbTim); tbLeft.add(timPanel);
-
-        JPanel tbRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
-        tbRight.setBackground(PAGE_BG);
+        JPanel pLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pLoc.setOpaque(false); pLoc.add(lbLoc); pLoc.add(cbLoc);
+        JPanel pTT  = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTT.setOpaque(false);  pTT.add(lbTT);  pTT.add(cbTrangThai);
+        JPanel pTim = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTim.setOpaque(false); pTim.add(lbTim); pTim.add(timPanel);
 
         JButton btnThem = new JButton("+ Thêm khuyến mãi");
         btnThem.setFont(new Font("Arial", Font.BOLD, 13));
@@ -132,9 +125,8 @@ public class KhuyenMaiPanel extends JPanel {
             for (String[] r : rows) { if (r.length < 7) continue; tableModel.addRow((Object[]) r); }
         });
 
-        tbRight.add(btnThem); tbRight.add(btnPDF); tbRight.add(btnExcel); tbRight.add(btnImport);
-        toolbar.add(tbLeft, BorderLayout.WEST);
-        toolbar.add(tbRight, BorderLayout.EAST);
+        toolbar.add(pLoc); toolbar.add(pTT); toolbar.add(pTim);
+        toolbar.add(btnThem); toolbar.add(btnPDF); toolbar.add(btnExcel); toolbar.add(btnImport);
 
         JPanel north = new JPanel();
         north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));

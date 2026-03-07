@@ -39,16 +39,13 @@ class DonHangTableCard extends JPanel {
         };
 
         // Single-row: filters LEFT, buttons RIGHT
-        JPanel top = new JPanel(new BorderLayout());
+        JPanel top = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)));
 
-        // Left: filter combo + search field
-        JPanel dhLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
-        dhLeft.setBackground(new Color(0xF8F7FF));
-
+        // Left: filter combo + search field — each pair added directly to top
         JComboBox<String> cbLoc = new JComboBox<>(trangThais);
         cbLoc.setPreferredSize(new Dimension(200, 36));
         UIUtils.styleComboBox(cbLoc);
@@ -86,16 +83,10 @@ class DonHangTableCard extends JPanel {
         JLabel lbTim = new JLabel("T\u00ecm ki\u1ebfm:");
         lbTim.setFont(new Font("Arial", Font.PLAIN, 13));
 
-        dhLeft.add(lbLoc);
-        dhLeft.add(cbLoc);
-        dhLeft.add(Box.createHorizontalStrut(6));
-        dhLeft.add(lbTim);
-        dhLeft.add(timPanel);
+        JPanel pLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pLoc.setOpaque(false); pLoc.add(lbLoc); pLoc.add(cbLoc);
+        JPanel pTim = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTim.setOpaque(false); pTim.add(lbTim); pTim.add(timPanel);
 
-        // Right: Tạo + export buttons
-        JPanel dhRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
-        dhRight.setBackground(new Color(0xF8F7FF));
-
+        // Right: Tạo + export buttons added directly to top
         JButton btnTao = new JButton("+ T\u1ea1o \u0111\u01a1n h\u00e0ng");
         btnTao.setFocusPainted(false);
         btnTao.setBackground(new Color(0xD9D9D9));
@@ -123,13 +114,12 @@ class DonHangTableCard extends JPanel {
             for (String[] r : rows) { if (r.length < 6) continue; parent.tableModel.addRow((Object[])r); }
         });
 
-        dhRight.add(btnTao);
-        dhRight.add(btnPDF);
-        dhRight.add(btnExcel);
-        dhRight.add(btnImport);
-
-        top.add(dhLeft, BorderLayout.WEST);
-        top.add(dhRight, BorderLayout.EAST);
+        top.add(pLoc);
+        top.add(pTim);
+        top.add(btnTao);
+        top.add(btnPDF);
+        top.add(btnExcel);
+        top.add(btnImport);
 
         /* Bảng */
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(parent.tableModel);
@@ -251,10 +241,7 @@ class DonHangTableCard extends JPanel {
 
         List<SaleDTO> sales = salesBUS.getAllSales();
 
-        if (sales == null || sales.isEmpty()) {
-            addMockSales();
-            return;
-        }
+        if (sales == null || sales.isEmpty()) return;
 
         for (SaleDTO s : sales) {
 
@@ -292,16 +279,9 @@ class DonHangTableCard extends JPanel {
         }
 
     } catch (Exception e) {
-        addMockSales();
+        e.printStackTrace();
     }
 }
-
-    private void addMockSales() {
-        parent.tableModel.addRow(new Object[]{"DH001", "Lê Thị Hương", 4, "-15.000đ", "215.000đ", "Đã giao", ""});
-        parent.tableModel.addRow(new Object[]{"DH002", "Phạm Minh Quân", 2, "-", "82.000đ", "Chờ xác nhận", ""});
-        parent.tableModel.addRow(new Object[]{"DH003", "Nguyễn Hà Linh", 6, "-25.000đ", "345.000đ", "Đã giao", ""});
-        parent.tableModel.addRow(new Object[]{"DH004", "Trần Gia Bảo", 1, "-", "36.000đ", "Đã hủy", ""});
-    }
     private String mapStatus(SaleStatus status) {
         if (status == null) return "";
         return switch (status) {

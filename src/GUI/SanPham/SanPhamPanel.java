@@ -6,10 +6,14 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
+import BUS.ProductBUS;
+import DTO.ProductDTO;
 import GUI.ExportUtils;
 import GUI.UIUtils;
 
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +30,7 @@ import java.util.List;
  */
 public class SanPhamPanel extends JPanel {
     private CardLayout innerCard;
+    DefaultTableModel model;
 
     public static final String CARD_TABLE = "TABLE";
     public static final String CARD_THEM  = "THEM";
@@ -43,35 +48,10 @@ public class SanPhamPanel extends JPanel {
             "Tồn kho tối thiểu", "Xuất xứ", "Ngày sản xuất",
             "Vị trí", "Đơn vị", "Trạng thái"
         };
-        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+        model = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int col) { return col == 8; }
         };
-        // Sample data — hidden cols default "-"
-        model.addRow(new Object[]{
-            "MD01", "", "Nước F trái K", "25.000đ", 7, "Còn hàng", "26/10/2026", "-2.000đ", "",
-            "Nước giải khát hương trái cây", "Công ty ABC", "Đồ uống",
-            "20.000đ", 10, "Việt Nam", "01/01/2026", "Kệ A1", "Chai", "Đang bán"
-        });
-        model.addRow(new Object[]{
-            "MD02", "", "Thịt mèo cháy", "17.000đ", 7, "Còn hàng", "10/11/2026", "-7.000đ", "",
-            "Thịt mèo vị cháy", "Công ty XYZ", "Thực phẩm",
-            "12.000đ", 5, "Thái Lan", "15/03/2026", "Kệ B2", "Gói", "Đang bán"
-        });
-        model.addRow(new Object[]{
-            "SP003", "", "Mì Ý sốt kem", "36.000đ", 12, "Còn hàng", "20/12/2026", "-5.000đ", "",
-            "Mì Ý sốt kem phô mai", "FreshFood", "Thực phẩm",
-            "28.000đ", 8, "Việt Nam", "02/02/2026", "Kệ C1", "Hộp", "Đang bán"
-        });
-        model.addRow(new Object[]{
-            "SP004", "", "Pepsi không calo", "10.000đ", 0, "Hết hàng", "15/09/2026", "-", "",
-            "Nước ngọt không đường", "PepsiCo", "Đồ uống",
-            "8.000đ", 10, "Việt Nam", "10/01/2026", "Kệ A2", "Lon", "Tạm ngưng"
-        });
-        model.addRow(new Object[]{
-            "SP005", "", "Bánh quy bơ", "22.000đ", 4, "Còn hàng", "07/07/2026", "-2.000đ", "",
-            "Bánh quy vị bơ", "SweetHome", "Bánh kẹo",
-            "17.000đ", 6, "Malaysia", "01/12/2025", "Kệ D3", "Gói", "Đang bán"
-        });
+        loadProducts();
 
         // ---- Table card ----
         JPanel tableCard = new JPanel(new BorderLayout());
@@ -89,7 +69,7 @@ public class SanPhamPanel extends JPanel {
         }
 
         // ── TOP PANEL: filters LEFT, buttons RIGHT (single row) ──────────
-        JPanel top = new JPanel(new BorderLayout());
+        JPanel top = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
@@ -97,9 +77,6 @@ public class SanPhamPanel extends JPanel {
         ));
 
         // Left: filter combo + search
-        JPanel topRow1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
-        topRow1.setBackground(new Color(0xF8F7FF));
-
         String[] boloc = { "Tất cả", "Còn hàng", "Hết hàng", "Có khuyến mãi", "Cận date" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
         cbLoc.setPreferredSize(new Dimension(200, 36));
@@ -137,16 +114,10 @@ public class SanPhamPanel extends JPanel {
         JLabel lbTim = new JLabel("T\u00ecm ki\u1ebfm:");
         lbTim.setFont(new Font("Arial", Font.PLAIN, 13));
 
-        topRow1.add(lbLoc);
-        topRow1.add(cbLoc);
-        topRow1.add(Box.createHorizontalStrut(6));
-        topRow1.add(lbTim);
-        topRow1.add(timkiem);
+        JPanel pLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pLoc.setOpaque(false); pLoc.add(lbLoc); pLoc.add(cbLoc);
+        JPanel pTim = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTim.setOpaque(false); pTim.add(lbTim); pTim.add(timkiem);
 
         // Right: Thêm + export/import buttons
-        JPanel topRow2 = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
-        topRow2.setBackground(new Color(0xF8F7FF));
-
         JButton them = new JButton("+ Thêm sản phẩm");
         them.setFocusPainted(false);
         them.setBackground(new Color(0xD9D9D9));
@@ -218,13 +189,12 @@ public class SanPhamPanel extends JPanel {
             }
         });
 
-        topRow2.add(them);
-        topRow2.add(btnPDF);
-        topRow2.add(btnExcel);
-        topRow2.add(btnImport);
-
-        top.add(topRow1, BorderLayout.WEST);
-        top.add(topRow2, BorderLayout.EAST);
+        top.add(pLoc);
+        top.add(pTim);
+        top.add(them);
+        top.add(btnPDF);
+        top.add(btnExcel);
+        top.add(btnImport);
 
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(new Color(0xF8F7FF));
@@ -340,5 +310,39 @@ public class SanPhamPanel extends JPanel {
     }
 
     // Dialog methods moved to SanPhamAddDialog and SanPhamDetailDialog
+
+    private void loadProducts() {
+        model.setRowCount(0);
+        try {
+            ArrayList<ProductDTO> list = new ProductBUS().getAllProducts();
+            if (list == null) return;
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            for (ProductDTO p : list) {
+                String giaBan  = p.getSellingPrice() != null ? String.format("%,.0fđ", p.getSellingPrice()) : "-";
+                long qty = p.getTotalQuantity();
+                String kho = qty == 0 ? "Hết hàng" : (qty < p.getMinStockLevel() ? "Gần hết" : "Còn hàng");
+                String ngayHH  = p.getExpireDate() != null ? p.getExpireDate().format(fmt) : "-";
+                String ncc     = p.getSupplier()  != null ? p.getSupplier().getName()  : "-";
+                String dm      = p.getCategory()  != null ? p.getCategory().getName()  : "-";
+                String giaVon  = p.getCostPrice() != null ? String.format("%,.0fđ", p.getCostPrice()) : "-";
+                String ngaySX  = p.getProductionDate() != null ? p.getProductionDate().format(fmt) : "-";
+                model.addRow(new Object[]{
+                    p.getCode(),
+                    p.getImagePath() != null ? p.getImagePath() : "",
+                    p.getName(), giaBan, qty, kho, ngayHH, "-", "",
+                    p.getDescription() != null ? p.getDescription() : "-",
+                    ncc, dm, giaVon,
+                    p.getMinStockLevel(),
+                    p.getMadeIn() != null ? p.getMadeIn() : "-",
+                    ngaySX,
+                    p.getPosition() != null ? p.getPosition() : "-",
+                    p.getUnit()   != null ? p.getUnit()   : "-",
+                    p.getStatus() != null ? p.getStatus() : "-"
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
 

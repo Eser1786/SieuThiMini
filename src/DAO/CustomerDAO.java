@@ -207,6 +207,47 @@ public class CustomerDAO {
         return customer;
     }
 
+    public boolean updateCustomer(CustomerDTO customer) {
+        boolean result = false;
+        if (openConnection()) {
+            try {
+                String sql = "UPDATE customers SET full_name=?, phone=?, email=?, address=?, customer_type=?, status=? WHERE customer_id=?";
+                PreparedStatement pstm = con.prepareStatement(sql);
+                pstm.setString(1, customer.getFullName());
+                pstm.setString(2, customer.getPhone());
+                pstm.setString(3, customer.getEmail());
+                pstm.setString(4, customer.getAddress());
+                pstm.setString(5, customer.getType() != null ? customer.getType().getValue() : null);
+                pstm.setString(6, customer.getStatus() != null ? customer.getStatus().getValue() : null);
+                pstm.setInt(7, customer.getId());
+                result = pstm.executeUpdate() >= 1;
+            } catch (SQLException e) {
+                System.out.println("Kh\u00f4ng th\u1ec3 c\u1eadp nh\u1eadt kh\u00e1ch h\u00e0ng! CustomerDAO - updateCustomer");
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return result;
+    }
+
+    public boolean deleteCustomer(int id) {
+        boolean result = false;
+        if (openConnection()) {
+            try {
+                PreparedStatement pstm = con.prepareStatement("DELETE FROM customers WHERE customer_id=?");
+                pstm.setInt(1, id);
+                result = pstm.executeUpdate() >= 1;
+            } catch (SQLException e) {
+                System.out.println("Kh\u00f4ng th\u1ec3 x\u00f3a kh\u00e1ch h\u00e0ng! CustomerDAO - deleteCustomer");
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return result;
+    }
+
     /** Fix UTF-8 data that was stored/returned as ISO-8859-1 (mojibake).
      *  Skip if string already contains proper Unicode chars (> U+00FF). */
     private static String fixEncoding(String s) {

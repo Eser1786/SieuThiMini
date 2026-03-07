@@ -55,5 +55,12 @@ public class CustomerBUS {
         }
         return "default";  // Default nếu lỗi
     }
-    
+
+    public boolean updateCustomer(CustomerDTO customer) {
+        return customerDAO.updateCustomer(customer);
+    }
+
+    public boolean deleteCustomer(int id) {
+        return customerDAO.deleteCustomer(id);
+    }
 }

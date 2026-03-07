@@ -286,14 +286,11 @@ public class NhanVienPanel extends JPanel {
         section.setBackground(PAGE_BG);
 
         // Toolbar: filters LEFT, actions RIGHT (same pattern as SanPham)
-        JPanel toolbar = new JPanel(new BorderLayout());
+        JPanel toolbar = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         toolbar.setBackground(PAGE_BG);
         toolbar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)));
-
-        JPanel tbLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
-        tbLeft.setBackground(PAGE_BG);
 
         String[] roleFilters = {"Tất cả", "Quản lý", "Nhân viên"};
         JComboBox<String> cbRoleFilter = new JComboBox<>(roleFilters);
@@ -331,14 +328,9 @@ public class NhanVienPanel extends JPanel {
         JLabel lbSearch = new JLabel("Tìm kiếm:");
         lbSearch.setFont(new Font("Arial", Font.PLAIN, 13));
 
-        tbLeft.add(lbRoleFilter);
-        tbLeft.add(cbRoleFilter);
-        tbLeft.add(Box.createHorizontalStrut(6));
-        tbLeft.add(lbSearch);
-        tbLeft.add(timPanel);
+        JPanel pRole   = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pRole.setOpaque(false); pRole.add(lbRoleFilter); pRole.add(cbRoleFilter);
+        JPanel pSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pSearch.setOpaque(false); pSearch.add(lbSearch); pSearch.add(timPanel);
 
-        JPanel tbRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
-        tbRight.setBackground(PAGE_BG);
         JButton btnThem    = makeAppBtn("+ TH\u00caM nh\u00e2n vi\u00ean");
         JButton btnRefresh = makeAppBtn("L\u00e0m m\u1edbi");
         btnRefresh.setIcon(UIUtils.iconRefresh(14, new Color(0x388E3C)));
@@ -351,14 +343,14 @@ public class NhanVienPanel extends JPanel {
         for (JButton b : new JButton[]{btnPDF, btnExcel, btnImport}) {
             b.setFont(btnFont);
         }
-        tbRight.add(btnThem);
-        tbRight.add(btnRefresh);
-        tbRight.add(btnPDF);
-        tbRight.add(btnExcel);
-        tbRight.add(btnImport);
 
-        toolbar.add(tbLeft, BorderLayout.WEST);
-        toolbar.add(tbRight, BorderLayout.EAST);
+        toolbar.add(pRole);
+        toolbar.add(pSearch);
+        toolbar.add(btnThem);
+        toolbar.add(btnRefresh);
+        toolbar.add(btnPDF);
+        toolbar.add(btnExcel);
+        toolbar.add(btnImport);
 
         String[] cols = {"M\u00e3 NV", "T\u00ean nh\u00e2n vi\u00ean", "Ch\u1ee9c v\u1ee5",
                          "S\u0110T", "Email", "Ng\u00e0y tham gia", "M\u1eadt kh\u1ea9u"};
@@ -529,10 +521,7 @@ public class NhanVienPanel extends JPanel {
         revealedRows.clear();
         try {
             List<EmployeeDTO> list = empBUS.getAllEmployees();
-            if (list == null || list.isEmpty()) {
-                loadMockEmployees();
-                return;
-            }
+            if (list == null || list.isEmpty()) return;
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             for (EmployeeDTO e : list) {
                 String ngay = e.getHireDate() != null ? e.getHireDate().format(fmt) : "";
@@ -543,16 +532,8 @@ public class NhanVienPanel extends JPanel {
                 });
             }
         } catch (Exception ignored) {
-            loadMockEmployees();
+            ignored.printStackTrace();
         }
-    }
-
-    private void loadMockEmployees() {
-        tableModel.addRow(new Object[]{"NV001", "Nguyễn Minh Khôi", "Quản lý", "0901234567", "khoi.nguyen@stmini.vn", "01/01/2024", "Khoi2024"});
-        tableModel.addRow(new Object[]{"NV002", "Trần Gia Hân", "Nhân viên", "0914567890", "han.tran@stmini.vn", "15/03/2024", "Han4567"});
-        tableModel.addRow(new Object[]{"NV003", "Lê Tuấn Đạt", "Nhân viên", "0932211455", "dat.le@stmini.vn", "21/05/2024", "Dat9988"});
-        tableModel.addRow(new Object[]{"NV004", "Phạm Ngọc Anh", "Nhân viên", "0977886655", "anh.pham@stmini.vn", "10/08/2024", "Anh2025"});
-        tableModel.addRow(new Object[]{"NV005", "Hoàng Bảo Linh", "Quản lý", "0988112233", "linh.hoang@stmini.vn", "12/12/2024", "Linh4455"});
     }
 
     void fillDetail(int modelRow) {

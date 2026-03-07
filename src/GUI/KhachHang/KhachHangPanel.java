@@ -1,9 +1,15 @@
 package GUI.KhachHang;
 
+import BUS.CustomerBUS;
+import DTO.CustomerDTO;
+import DTO.enums.CustomerEnum.CustomerStatus;
+import DTO.enums.CustomerEnum.CustomerType;
 import GUI.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class KhachHangPanel extends JPanel {
 
@@ -16,6 +22,13 @@ public class KhachHangPanel extends JPanel {
 
     public static final String CARD_TABLE = "TABLE";
     public static final String CARD_THEM  = "THEM";
+
+    // Hidden column indices
+    static final int COL_DIEM       = 8;
+    static final int COL_TGDK       = 9;
+    static final int COL_LANCUOIMUA = 10;
+    static final int COL_TONGTIEN   = 11;
+    static final int COL_ID         = 12;
 
     public KhachHangPanel() {
         innerCard = new CardLayout();
@@ -35,21 +48,76 @@ public class KhachHangPanel extends JPanel {
 
         String[] columns = {
                 "Mã KH", "Tên", "Số điện thoại", "Email",
-                "Địa chỉ", "Hạng", "Trạng thái", "Thao tác"
+                "Địa chỉ", "Hạng", "Trạng thái", "Thao tác",
+                "Điểm", "TgDK", "LanCuoiMua", "TongTien", "ID"
         };
         tableModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int column) { return column == 7; }
         };
-        tableModel.addRow(new Object[]{"KH001", "Lê Đỗ Thái Anh",    "098754321",  "anhdo@gmail.com",    "213LDTA",         "Bạc",       "Hoạt động",         ""});
-        tableModel.addRow(new Object[]{"KH002", "Lý Nguyễn",          "0915987654", "nguyenly@gmail.com", "456 Nguyễn Trãi", "Vàng",      "Hoạt động",         ""});
-        tableModel.addRow(new Object[]{"KH003", "Nguyễn Hoàng Sang",  "0933777888", "sangnguyen@gmail.com","789KTX",         "Đồng",      "Không hoạt động",   ""});
-        tableModel.addRow(new Object[]{"KH004", "Trân dơ hầy",        "0977111222", "tranbado@gmail.com", "Bụi chúi",        "Kim cương", "Hoạt động",         ""});
-        tableModel.addRow(new Object[]{"KH005", "Phạm Quang Vinh",    "0903123456", "vinh.pham@gmail.com", "12 Lê Lợi",       "Vàng",      "Hoạt động",         ""});
-        tableModel.addRow(new Object[]{"KH006", "Đặng Mỹ Linh",       "0988123987", "linh.dang@gmail.com", "88 Pasteur",      "Bạc",       "Hoạt động",         ""});
+        loadCustomers();
 
         add(new KhachHangTableCard(this), CARD_TABLE);
         add(new KhachHangFormCard(this),  CARD_THEM);
         innerCard.show(this, CARD_TABLE);
+    }
+
+    void loadCustomers() {
+        tableModel.setRowCount(0);
+        try {
+            ArrayList<CustomerDTO> list = new CustomerBUS().getAllCustomers();
+            if (list == null) return;
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            for (CustomerDTO c : list) {
+                String hang     = typeToVN(c.getType());
+                String tt       = statusToVN(c.getStatus());
+                String diem     = String.valueOf(c.getLoyaltyPoints());
+                String tgDK     = c.getCreatedAt() != null ? c.getCreatedAt().format(fmt) : "";
+                String lanCuoi  = c.getLastPurchaseAt() != null ? c.getLastPurchaseAt().format(fmt) : "";
+                String tongTien = c.getTotalSpent() != null
+                                  ? String.format("%,.0f\u0111", c.getTotalSpent()) : "0\u0111";
+                tableModel.addRow(new Object[]{
+                    c.getCode(), c.getFullName(), c.getPhone(), c.getEmail(),
+                    c.getAddress(), hang, tt, "",
+                    diem, tgDK, lanCuoi, tongTien, c.getId()
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static String typeToVN(CustomerType t) {
+        if (t == null) return "Đồng";
+        return switch (t) {
+            case REGULAR -> "Đồng";
+            case SILVER  -> "Bạc";
+            case GOLD    -> "Vàng";
+            case DIAMOND -> "Kim cương";
+        };
+    }
+
+    static String statusToVN(CustomerStatus s) {
+        if (s == null) return "Hoạt động";
+        return switch (s) {
+            case ACTIVE   -> "Hoạt động";
+            case INACTIVE -> "Không hoạt động";
+            case BLOCKED  -> "Bị chặn";
+        };
+    }
+
+    static CustomerType vnToType(String s) {
+        return switch (s) {
+            case "Bạc"       -> CustomerType.SILVER;
+            case "Vàng"      -> CustomerType.GOLD;
+            case "Kim cương" -> CustomerType.DIAMOND;
+            default          -> CustomerType.REGULAR;
+        };
+    }
+
+    static CustomerStatus vnToStatus(String s) {
+        if ("Không hoạt động".equals(s)) return CustomerStatus.INACTIVE;
+        if ("Bị chặn".equals(s))         return CustomerStatus.BLOCKED;
+        return CustomerStatus.ACTIVE;
     }
 
     void clearForm() {
@@ -73,11 +141,10 @@ public class KhachHangPanel extends JPanel {
         tfDiaChi.setText(tableModel.getValueAt(row, 4).toString());
         tfHang.setText(tableModel.getValueAt(row, 5).toString());
         tfTrangThai.setText(tableModel.getValueAt(row, 6).toString());
-        String maKH = tableModel.getValueAt(row, 0).toString();
-        tfDiem.setText(getDiemFromData(maKH));
-        tfTgDK.setText(getTgDKFromData(maKH));
-        tfLanCuoiMua.setText(getLanCuoiMuaFromData(maKH));
-        tfTongTien.setText(getTongTienFromData(maKH));
+        tfDiem.setText(tableModel.getValueAt(row, COL_DIEM).toString());
+        tfTgDK.setText(tableModel.getValueAt(row, COL_TGDK).toString());
+        tfLanCuoiMua.setText(tableModel.getValueAt(row, COL_LANCUOIMUA).toString());
+        tfTongTien.setText(tableModel.getValueAt(row, COL_TONGTIEN).toString());
     }
 
     void saveNewCustomer() {
@@ -89,7 +156,8 @@ public class KhachHangPanel extends JPanel {
         }
         tableModel.addRow(new Object[]{
             tfMaKH.getText(), tfTen.getText(), tfSdt.getText(), tfEmail.getText(),
-            tfDiaChi.getText(), tfHang.getText(), tfTrangThai.getText(), ""
+            tfDiaChi.getText(), tfHang.getText(), tfTrangThai.getText(), "",
+            "0", "", "", "0đ", 0
         });
         clearForm();
         innerCard.show(this, CARD_TABLE);
@@ -97,12 +165,12 @@ public class KhachHangPanel extends JPanel {
 
     void updateCustomer() {
         if (editingRow >= 0 && editingRow < tableModel.getRowCount()) {
-            tableModel.setValueAt(tfMaKH.getText(),    editingRow, 0);
-            tableModel.setValueAt(tfTen.getText(),     editingRow, 1);
-            tableModel.setValueAt(tfSdt.getText(),     editingRow, 2);
-            tableModel.setValueAt(tfEmail.getText(),   editingRow, 3);
-            tableModel.setValueAt(tfDiaChi.getText(),  editingRow, 4);
-            tableModel.setValueAt(tfHang.getText(),    editingRow, 5);
+            tableModel.setValueAt(tfMaKH.getText(),      editingRow, 0);
+            tableModel.setValueAt(tfTen.getText(),       editingRow, 1);
+            tableModel.setValueAt(tfSdt.getText(),       editingRow, 2);
+            tableModel.setValueAt(tfEmail.getText(),     editingRow, 3);
+            tableModel.setValueAt(tfDiaChi.getText(),    editingRow, 4);
+            tableModel.setValueAt(tfHang.getText(),      editingRow, 5);
             tableModel.setValueAt(tfTrangThai.getText(), editingRow, 6);
             clearForm();
             enableFormFields(true);
@@ -110,40 +178,9 @@ public class KhachHangPanel extends JPanel {
         }
     }
 
-    String getDiemFromData(String maKH) {
-        return switch (maKH) {
-            case "KH001" -> "36"; case "KH002" -> "580";
-            case "KH003" -> "120"; case "KH004" -> "950";
-            default -> "0";
-        };
-    }
-
-    String getTgDKFromData(String maKH) {
-        return switch (maKH) {
-            case "KH001" -> "01/01/2026"; case "KH002" -> "15/03/2023";
-            case "KH003" -> "20/06/2023"; case "KH004" -> "10/10/2023";
-            default -> "01/01/2024";
-        };
-    }
-
-    String getLanCuoiMuaFromData(String maKH) {
-        return switch (maKH) {
-            case "KH001" -> "15/03/2026"; case "KH002" -> "20/03/2024";
-            case "KH003" -> "10/02/2024"; case "KH004" -> "11/03/2024";
-            default -> "01/01/2024";
-        };
-    }
-
-    String getTongTienFromData(String maKH) {
-        return switch (maKH) {
-            case "KH001" -> "3.600.000đ"; case "KH002" -> "12.070.000đ";
-            case "KH003" -> "1.012.000đ"; case "KH004" -> "27.000.000đ";
-            default -> "0đ";
-        };
-    }
-
     /** Used by DonHangCreateCard to navigate directly to the add form. */
     public void showCard(String card) {
         innerCard.show(this, card);
     }
 }
+

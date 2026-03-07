@@ -3,6 +3,7 @@ package GUI.Kho;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 
 import BUS.ProductBUS;
 import DTO.ProductDTO;
@@ -43,16 +44,13 @@ class KhoTableCard extends JPanel {
         header.add(hdrTitle);
 
         // ── TOP TOOLBAR (single row: filters LEFT, buttons RIGHT) ───────────
-        JPanel topPanel = new JPanel(new BorderLayout());
+        JPanel topPanel = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         topPanel.setBackground(new Color(0xF8F7FF));
         topPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xCCCCCC)),
                 BorderFactory.createEmptyBorder(8, 16, 8, 16)));
 
-        // Left: search + filters
-        JPanel khoRow1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
-        khoRow1.setBackground(new Color(0xF8F7FF));
-
+        // Left: search + filters — each pair added directly to topPanel
         JLabel lbSearch = new JLabel("Tìm kiếm:");
         lbSearch.setFont(new Font("Arial", Font.PLAIN, 13));
         txtSearch = new JTextField();
@@ -74,16 +72,11 @@ class KhoTableCard extends JPanel {
         cbStatus.setPreferredSize(new Dimension(140, 36));
         UIUtils.styleComboBox(cbStatus);
 
-        khoRow1.add(lbSearch); khoRow1.add(txtSearch);
-        khoRow1.add(Box.createHorizontalStrut(6));
-        khoRow1.add(lbNCC); khoRow1.add(cbSupplier);
-        khoRow1.add(Box.createHorizontalStrut(6));
-        khoRow1.add(lbStatus); khoRow1.add(cbStatus);
+        JPanel pSearch  = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pSearch.setOpaque(false);  pSearch.add(lbSearch);  pSearch.add(txtSearch);
+        JPanel pNCC     = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pNCC.setOpaque(false);     pNCC.add(lbNCC);        pNCC.add(cbSupplier);
+        JPanel pStatus  = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pStatus.setOpaque(false);   pStatus.add(lbStatus);  pStatus.add(cbStatus);
 
-        // Right: export buttons
-        JPanel khoRow2 = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
-        khoRow2.setBackground(new Color(0xF8F7FF));
-
+        // Right: action buttons added directly to topPanel
         JButton btnThem = new JButton("+ Nhập hàng");
         btnThem.setFont(new Font("Arial", Font.BOLD, 13));
         btnThem.setBackground(new Color(0xD9D9D9));
@@ -108,10 +101,8 @@ class KhoTableCard extends JPanel {
             if (rows == null) return;
             for (String[] r : rows) { if (r.length < 7) continue; model.addRow((Object[])r); }
         });
-        khoRow2.add(btnThem); khoRow2.add(btnPDF); khoRow2.add(btnExcel); khoRow2.add(btnImport);
-
-        topPanel.add(khoRow1, BorderLayout.WEST);
-        topPanel.add(khoRow2, BorderLayout.EAST);
+        topPanel.add(pSearch); topPanel.add(pNCC); topPanel.add(pStatus);
+        topPanel.add(btnThem); topPanel.add(btnPDF); topPanel.add(btnExcel); topPanel.add(btnImport);
 
         // Stack header + toolbar in NORTH
         JPanel northArea = new JPanel();
@@ -127,8 +118,13 @@ class KhoTableCard extends JPanel {
                 if (columnIndex == 0) return ImageIcon.class;
                 return Object.class;
             }
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         table = new JTable(model);
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+        sorter.setSortable(0, false); // image column: no sort
+        table.setRowSorter(sorter);
         table.setRowHeight(55);
 
         // renderer for image column
@@ -183,6 +179,7 @@ class KhoTableCard extends JPanel {
         table.getTableHeader().setBackground(new Color(0xAF9FCB));
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setPreferredSize(new Dimension(100, 40));
+        table.getTableHeader().setReorderingAllowed(false);
 
         // Zebra row renderer
         table.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
@@ -223,10 +220,7 @@ class KhoTableCard extends JPanel {
     private void loadData() {
         ProductBUS bus = new ProductBUS();
         ArrayList<ProductDTO> list = bus.getAllProducts();
-        if (list == null || list.isEmpty()) {
-            loadMockData();
-            return;
-        }
+        if (list == null || list.isEmpty()) return;
         String keyword = txtSearch.getText().trim().toLowerCase();
         String selectedSupplier = cbSupplier.getSelectedItem().toString();
         String selectedStatus = (cbStatus.getSelectedItem() != null) ? cbStatus.getSelectedItem().toString() : "Tất cả";
@@ -247,28 +241,6 @@ class KhoTableCard extends JPanel {
         }
     }
 
-    private void loadMockData() {
-        String keyword = txtSearch.getText().trim().toLowerCase();
-        String selectedSupplier = cbSupplier.getSelectedItem() != null ? cbSupplier.getSelectedItem().toString() : "Tất cả";
-        String selectedStatus = cbStatus.getSelectedItem() != null ? cbStatus.getSelectedItem().toString() : "Tất cả";
-        Object[][] mocks = {
-            {"SP001", "Nước F trái K", 20L, "Công ty ABC", "Còn hàng"},
-            {"SP002", "Thịt mèo cháy", 3L, "Công ty XYZ", "Gần hết"},
-            {"SP003", "Mì Ý sốt kem", 0L, "FreshFood", "Hết hàng"},
-            {"SP004", "Pepsi không calo", 15L, "PepsiCo", "Còn hàng"}
-        };
-        model.setRowCount(0);
-        int stt = 1;
-        for (Object[] m : mocks) {
-            String ten = m[1].toString().toLowerCase();
-            String ncc = m[3].toString();
-            String tt = m[4].toString();
-            if (!ten.contains(keyword)) continue;
-            if (!"Tất cả".equals(selectedSupplier) && !selectedSupplier.equals(ncc)) continue;
-            if (!"Tất cả".equals(selectedStatus) && !selectedStatus.equals(tt)) continue;
-            model.addRow(new Object[]{null, stt++, m[0], m[1], m[2], m[3], m[4]});
-        }
-    }
 
     private ImageIcon loadProductIcon(String path) {
         if (path == null || path.isEmpty()) return null;

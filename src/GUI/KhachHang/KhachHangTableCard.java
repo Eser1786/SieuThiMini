@@ -1,5 +1,7 @@
 package GUI.KhachHang;
 
+import BUS.CustomerBUS;
+import DTO.CustomerDTO;
 import GUI.ExportUtils;
 import GUI.UIUtils;
 import javax.swing.*;
@@ -22,16 +24,13 @@ class KhachHangTableCard extends JPanel {
         bang.setRowSorter(sorter);
 
         // ── TOP TOOLBAR ─────────────────────────────────────────────────────
-        JPanel top = new JPanel(new BorderLayout());
+        JPanel top = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)));
 
-        // Left: filter + search
-        JPanel leftRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
-        leftRow.setBackground(new Color(0xF8F7FF));
-
+        // Left: filter + search — each pair added directly to top
         String[] boloc = { "Tất cả", "Đồng", "Bạc", "Vàng", "Kim cương", "Hoạt động", "Không hoạt động" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
         cbLoc.setPreferredSize(new Dimension(200, 36));
@@ -69,16 +68,10 @@ class KhachHangTableCard extends JPanel {
         JLabel lbTim = new JLabel("Tìm kiếm:");
         lbTim.setFont(new Font("Arial", Font.PLAIN, 13));
 
-        leftRow.add(lbLoc);
-        leftRow.add(cbLoc);
-        leftRow.add(Box.createHorizontalStrut(6));
-        leftRow.add(lbTim);
-        leftRow.add(timkiem);
+        JPanel pLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pLoc.setOpaque(false); pLoc.add(lbLoc); pLoc.add(cbLoc);
+        JPanel pTim = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTim.setOpaque(false); pTim.add(lbTim); pTim.add(timkiem);
 
         // Right: Thêm + export buttons
-        JPanel rightRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
-        rightRow.setBackground(new Color(0xF8F7FF));
-
         JButton them = new JButton("+ Thêm khách hàng");
         them.setFocusPainted(false);
         them.setBackground(new Color(0xD9D9D9));
@@ -140,13 +133,12 @@ class KhachHangTableCard extends JPanel {
             for (String[] r : rows) { if (r.length < 8) continue; parent.tableModel.addRow((Object[]) r); }
         });
 
-        rightRow.add(them);
-        rightRow.add(btnPDF);
-        rightRow.add(btnExcel);
-        rightRow.add(btnImport);
-
-        top.add(leftRow, BorderLayout.WEST);
-        top.add(rightRow, BorderLayout.EAST);
+        top.add(pLoc);
+        top.add(pTim);
+        top.add(them);
+        top.add(btnPDF);
+        top.add(btnExcel);
+        top.add(btnImport);
 
         // ── TABLE STYLING ────────────────────────────────────────────────────
         bang.setRowHeight(52);
@@ -168,6 +160,13 @@ class KhachHangTableCard extends JPanel {
         bang.getColumnModel().getColumn(5).setPreferredWidth(80);
         bang.getColumnModel().getColumn(6).setPreferredWidth(100);
         bang.getColumnModel().getColumn(7).setPreferredWidth(100);
+        // Hide metadata columns
+        for (int i = 8; i <= 12; i++) {
+            bang.getColumnModel().getColumn(i).setMinWidth(0);
+            bang.getColumnModel().getColumn(i).setMaxWidth(0);
+            bang.getColumnModel().getColumn(i).setWidth(0);
+            bang.getColumnModel().getColumn(i).setPreferredWidth(0);
+        }
 
         DefaultTableCellRenderer altRenderer = new DefaultTableCellRenderer() {
             @Override
@@ -197,8 +196,10 @@ class KhachHangTableCard extends JPanel {
                 return c;
             }
         };
-        for (int i = 0; i < bang.getColumnCount() - 1; i++)
-            bang.getColumnModel().getColumn(i).setCellRenderer(altRenderer);
+        for (int i = 0; i < bang.getColumnCount() - 1; i++) {
+            if (bang.getColumnModel().getColumn(i).getMaxWidth() > 0)
+                bang.getColumnModel().getColumn(i).setCellRenderer(altRenderer);
+        }
 
         bang.getColumnModel().getColumn(7).setCellRenderer(new TableCellRenderer() {
             @Override
@@ -282,17 +283,19 @@ class KhachHangTableCard extends JPanel {
         header.add(lblTitle);
         detail.add(header, BorderLayout.NORTH);
 
-        String maKH     = parent.tableModel.getValueAt(modelRow, 0).toString();
-        String ten      = parent.tableModel.getValueAt(modelRow, 1).toString();
-        String sdt      = parent.tableModel.getValueAt(modelRow, 2).toString();
-        String email    = parent.tableModel.getValueAt(modelRow, 3).toString();
-        String diaChi   = parent.tableModel.getValueAt(modelRow, 4).toString();
-        String hang     = parent.tableModel.getValueAt(modelRow, 5).toString();
-        String trangThai= parent.tableModel.getValueAt(modelRow, 6).toString();
-        String diem       = parent.getDiemFromData(maKH);
-        String tgDK       = parent.getTgDKFromData(maKH);
-        String lanCuoiMua = parent.getLanCuoiMuaFromData(maKH);
-        String tongTien   = parent.getTongTienFromData(maKH);
+        String maKH      = parent.tableModel.getValueAt(modelRow, 0).toString();
+        String ten       = parent.tableModel.getValueAt(modelRow, 1).toString();
+        String sdt       = parent.tableModel.getValueAt(modelRow, 2).toString();
+        String email     = parent.tableModel.getValueAt(modelRow, 3).toString();
+        String diaChi    = parent.tableModel.getValueAt(modelRow, 4).toString();
+        String hang      = parent.tableModel.getValueAt(modelRow, 5).toString();
+        String trangThai = parent.tableModel.getValueAt(modelRow, 6).toString();
+        String diem       = parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_DIEM).toString();
+        String tgDK       = parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_TGDK).toString();
+        String lanCuoiMua = parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_LANCUOIMUA).toString();
+        String tongTien   = parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_TONGTIEN).toString();
+        Object idObj      = parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_ID);
+        int customerId    = (idObj instanceof Integer) ? (Integer) idObj : 0;
 
         String[] labels = {
             "Mã KH:", "Tên khách hàng:", "Số điện thoại:", "Email:",
@@ -331,33 +334,24 @@ class KhachHangTableCard extends JPanel {
         footer.setBackground(new Color(0xF0EFF8));
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
 
-        JButton btnSuaDlg = new JButton("✏ Sửa");
+        JButton btnSuaDlg = new JButton("Sửa");
         styleButton(btnSuaDlg, new Color(0x6677C8), 100, 40);
         btnSuaDlg.addActionListener(e -> {
             detail.dispose();
-            parent.editingRow = modelRow;
-            parent.tfMaKH.setText(maKH);
-            parent.tfTen.setText(ten);
-            parent.tfSdt.setText(sdt);
-            parent.tfEmail.setText(email);
-            parent.tfDiaChi.setText(diaChi);
-            parent.tfDiem.setText(diem);
-            parent.tfTgDK.setText(tgDK);
-            parent.tfLanCuoiMua.setText(lanCuoiMua);
-            parent.tfTongTien.setText(tongTien);
-            parent.tfHang.setText(hang);
-            parent.tfTrangThai.setText(trangThai);
-            parent.enableFormFields(true);
-            parent.innerCard.show(parent, KhachHangPanel.CARD_THEM);
+            showEditDialog(modelRow, maKH, ten, sdt, email, diaChi, hang, trangThai, customerId);
         });
 
-        JButton btnXoaDlg = new JButton("🗑 Xóa");
+        JButton btnXoaDlg = new JButton("Xóa");
         styleButton(btnXoaDlg, new Color(0xB83434), 100, 40);
         btnXoaDlg.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(detail,
                 "Bạn có chắc muốn xóa khách hàng \"" + ten + "\"?",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (confirm == JOptionPane.YES_OPTION) {
+                if (customerId > 0) {
+                    try { new CustomerBUS().deleteCustomer(customerId); }
+                    catch (Exception ex) { ex.printStackTrace(); }
+                }
                 parent.tableModel.removeRow(modelRow);
                 detail.dispose();
             }
@@ -470,10 +464,25 @@ class KhachHangTableCard extends JPanel {
                     "Vui lòng nhập Mã KH, Tên và Số điện thoại!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                 return;
             }
+            CustomerDTO dto = new CustomerDTO();
+            dto.setCode(fMaKH.getText().trim());
+            dto.setFullName(fTen.getText().trim());
+            dto.setPhone(fSdt.getText().trim());
+            dto.setEmail(fEmail.getText().trim());
+            dto.setAddress(fDiaChi.getText().trim());
+            dto.setType(KhachHangPanel.vnToType(cbHang.getSelectedItem().toString()));
+            dto.setStatus(KhachHangPanel.vnToStatus(cbTT.getSelectedItem().toString()));
+            dto.setLoyaltyPoints(0);
+            dto.setTotalSpent(java.math.BigDecimal.ZERO);
+            dto.setCreatedAt(java.time.LocalDateTime.now());
+            try { new CustomerBUS().AddCustomer(dto); } catch (Exception ex) { ex.printStackTrace(); }
+            String today = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             parent.tableModel.addRow(new Object[]{
-                fMaKH.getText().trim(), fTen.getText().trim(), fSdt.getText().trim(),
-                fEmail.getText().trim(), fDiaChi.getText().trim(),
-                cbHang.getSelectedItem().toString(), cbTT.getSelectedItem().toString(), ""
+                dto.getCode(), dto.getFullName(), dto.getPhone(), dto.getEmail(),
+                dto.getAddress(), cbHang.getSelectedItem().toString(),
+                cbTT.getSelectedItem().toString(), "",
+                "0", today, "", "0đ", dto.getId()
             });
             dlg.dispose();
         });
@@ -481,6 +490,106 @@ class KhachHangTableCard extends JPanel {
         footer.add(btnHuy);
         dlg.add(footer, BorderLayout.SOUTH);
 
+        dlg.pack();
+        dlg.setMinimumSize(new Dimension(640, dlg.getPreferredSize().height));
+        dlg.setLocationRelativeTo(parent);
+        dlg.setVisible(true);
+    }
+
+    private void showEditDialog(int modelRow, String maKH, String ten, String sdt,
+            String email, String diaChi, String hang, String trangThai, int customerId) {
+        Window owner = SwingUtilities.getWindowAncestor(parent);
+        JDialog dlg = new JDialog(owner, "Sửa khách hàng", Dialog.ModalityType.APPLICATION_MODAL);
+        dlg.setResizable(false);
+        dlg.setLayout(new BorderLayout());
+
+        JPanel hdr = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
+        hdr.setBackground(new Color(0xAF9FCB));
+        JLabel hdrLbl = new JLabel("Sửa thông tin khách hàng");
+        hdrLbl.setFont(new Font("Arial", Font.BOLD, 18));
+        hdrLbl.setForeground(Color.WHITE);
+        hdr.add(hdrLbl);
+        dlg.add(hdr, BorderLayout.NORTH);
+
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(new Color(0xF0EFF8));
+        form.setBorder(BorderFactory.createEmptyBorder(18, 28, 18, 28));
+        GridBagConstraints g = new GridBagConstraints();
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.insets = new Insets(7, 6, 7, 6);
+        Font lf = new Font("Arial", Font.BOLD, 13);
+        Dimension fd = new Dimension(200, 32);
+
+        JTextField fMaKH2  = UIUtils.makeField(); fMaKH2.setPreferredSize(fd);  fMaKH2.setText(maKH);   fMaKH2.setEditable(false);
+        JTextField fTen    = UIUtils.makeField(); fTen.setPreferredSize(fd);    fTen.setText(ten);
+        JTextField fSdt    = UIUtils.makeField(); fSdt.setPreferredSize(fd);    fSdt.setText(sdt);
+        JTextField fEmail  = UIUtils.makeField(); fEmail.setPreferredSize(fd);  fEmail.setText(email);
+        JTextField fDiaChi = UIUtils.makeField(); fDiaChi.setPreferredSize(fd); fDiaChi.setText(diaChi);
+        JComboBox<String> cbHang = new JComboBox<>(new String[]{"Đồng", "Bạc", "Vàng", "Kim cương"});
+        cbHang.setPreferredSize(fd); UIUtils.styleComboBox(cbHang); cbHang.setSelectedItem(hang);
+        JComboBox<String> cbTT = new JComboBox<>(new String[]{"Hoạt động", "Không hoạt động"});
+        cbTT.setPreferredSize(fd); UIUtils.styleComboBox(cbTT); cbTT.setSelectedItem(trangThai);
+
+        Object[][] rows = {
+            { "Mã KH:",         fMaKH2, "Tên khách hàng:", fTen    },
+            { "Số điện thoại:", fSdt,   "Email:",           fEmail  },
+            { "Hạng:",          cbHang, "Trạng thái:",      cbTT    },
+        };
+        for (int i = 0; i < rows.length; i++) {
+            g.gridy = i; g.gridx = 0; g.weightx = 0;
+            JLabel l0 = new JLabel((String) rows[i][0]); l0.setFont(lf); form.add(l0, g);
+            g.gridx = 1; g.weightx = 1; form.add((Component) rows[i][1], g);
+            g.gridx = 2; g.weightx = 0;
+            JLabel l1 = new JLabel((String) rows[i][2]); l1.setFont(lf); form.add(l1, g);
+            g.gridx = 3; g.weightx = 1; form.add((Component) rows[i][3], g);
+        }
+        g.gridy = rows.length; g.gridx = 0; g.weightx = 0; g.gridwidth = 1;
+        JLabel lbDC = new JLabel("Địa chỉ:"); lbDC.setFont(lf); form.add(lbDC, g);
+        g.gridx = 1; g.weightx = 1; g.gridwidth = 3; form.add(fDiaChi, g); g.gridwidth = 1;
+        dlg.add(form, BorderLayout.CENTER);
+
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
+        footer.setBackground(new Color(0xF0EFF8));
+        footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
+        JButton btnLuu = new JButton("Lưu");
+        btnLuu.setFont(new Font("Arial", Font.BOLD, 13));
+        btnLuu.setBackground(new Color(0x5C4A7F)); btnLuu.setForeground(Color.WHITE);
+        btnLuu.setBorder(BorderFactory.createEmptyBorder(9, 22, 9, 22));
+        btnLuu.setOpaque(true); btnLuu.setBorderPainted(false); btnLuu.setFocusPainted(false);
+        btnLuu.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnHuy = new JButton("Hủy");
+        btnHuy.setFont(new Font("Arial", Font.BOLD, 13));
+        btnHuy.setBackground(new Color(0x9B8EA8)); btnHuy.setForeground(Color.WHITE);
+        btnHuy.setBorder(BorderFactory.createEmptyBorder(9, 22, 9, 22));
+        btnHuy.setOpaque(true); btnHuy.setBorderPainted(false); btnHuy.setFocusPainted(false);
+        btnHuy.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnHuy.addActionListener(e -> dlg.dispose());
+        btnLuu.addActionListener(e -> {
+            if (fTen.getText().trim().isEmpty() || fSdt.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(dlg, "Vui lòng nhập Tên và Số điện thoại!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            parent.tableModel.setValueAt(fTen.getText().trim(),   modelRow, 1);
+            parent.tableModel.setValueAt(fSdt.getText().trim(),   modelRow, 2);
+            parent.tableModel.setValueAt(fEmail.getText().trim(), modelRow, 3);
+            parent.tableModel.setValueAt(fDiaChi.getText().trim(), modelRow, 4);
+            parent.tableModel.setValueAt(cbHang.getSelectedItem().toString(), modelRow, 5);
+            parent.tableModel.setValueAt(cbTT.getSelectedItem().toString(), modelRow, 6);
+            if (customerId > 0) {
+                try {
+                    CustomerDTO dto = new CustomerDTO();
+                    dto.setId(customerId); dto.setCode(maKH);
+                    dto.setFullName(fTen.getText().trim()); dto.setPhone(fSdt.getText().trim());
+                    dto.setEmail(fEmail.getText().trim());  dto.setAddress(fDiaChi.getText().trim());
+                    dto.setType(KhachHangPanel.vnToType(cbHang.getSelectedItem().toString()));
+                    dto.setStatus(KhachHangPanel.vnToStatus(cbTT.getSelectedItem().toString()));
+                    new CustomerBUS().updateCustomer(dto);
+                } catch (Exception ex) { ex.printStackTrace(); }
+            }
+            dlg.dispose();
+        });
+        footer.add(btnLuu); footer.add(btnHuy);
+        dlg.add(footer, BorderLayout.SOUTH);
         dlg.pack();
         dlg.setMinimumSize(new Dimension(640, dlg.getPreferredSize().height));
         dlg.setLocationRelativeTo(parent);
