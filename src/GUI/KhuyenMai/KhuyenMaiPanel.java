@@ -1,13 +1,18 @@
 package GUI.KhuyenMai;
 import com.toedter.calendar.JDateChooser;
+
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 
 import java.util.ArrayList;
+import java.util.Locale;
+
 import BUS.DiscountBUS;
 import DTO.DiscountDTO;
+import GUI.ExportUtils;
 
 
 public class KhuyenMaiPanel extends JPanel {
@@ -15,7 +20,8 @@ public class KhuyenMaiPanel extends JPanel {
     // ===== Detail fields =====
     private JLabel lbName;
     private JTextArea taDesc;
-
+    JButton btnExcel;
+    JButton btnPDF; 
     private JLabel lbId;
     private JLabel lbStart;
     private JLabel lbEnd;
@@ -52,28 +58,140 @@ JSplitPane split = new JSplitPane(
 split.setResizeWeight(0.65); // 65% - 35%
 split.setDividerSize(6);
 split.setBorder(null);
+btnExcel.addActionListener(e -> {
 
+    ArrayList<DiscountDTO> list = discountBUS.getAllDiscounts();
+
+    DefaultTableModel exportModel = new DefaultTableModel(
+        new String[]{
+            "ID",
+            "Tên khuyến mãi",
+            "Loại giảm",
+            "Giá trị",
+            "Đơn tối thiểu",
+            "Ngày bắt đầu",
+            "Ngày kết thúc",
+            "Trạng thái",
+            "Tự động áp dụng",
+            "Mô tả"
+        }, 0
+    );
+
+    for (DiscountDTO d : list) {
+
+        exportModel.addRow(new Object[]{
+            d.getId(),
+            d.getName(),
+            d.getDiscountType(),
+            d.getFormattedValue(),
+            d.getMinOrderAmount(),
+            d.getStartDate(),
+            d.getEndDate(),
+            d.getStatus(),
+            d.getIsAutoApply(),
+            d.getDescription()
+        });
+
+    }
+
+    ExportUtils.xuatCSV(this, exportModel, "DanhSachKhuyenMai");
+
+});
+
+btnPDF.addActionListener(e -> {
+
+    ArrayList<DiscountDTO> list = discountBUS.getAllDiscounts();
+
+    DefaultTableModel exportModel = new DefaultTableModel(
+        new String[]{
+            "ID",
+            "Tên khuyến mãi",
+            "Loại",
+            "Giá trị",
+            "Đơn tối thiểu",
+            "Ngày bắt đầu",
+            "Ngày kết thúc",
+            "Trạng thái",
+            "Tự động",
+            "Mô tả"
+        }, 0
+    );
+
+    NumberFormat nf = NumberFormat.getInstance(new Locale("vi","VN"));
+
+    for (DiscountDTO d : list) {
+
+        exportModel.addRow(new Object[]{
+            d.getId(),
+            d.getName(),
+            d.getDiscountType(),
+            d.getFormattedValue(),
+            nf.format(d.getMinOrderAmount()) + " VND",
+            d.getStartDate(),
+            d.getEndDate(),
+            d.getStatus(),
+            d.getIsAutoApply() ? "Có" : "Không",
+            d.getDescription()
+        });
+
+    }
+
+    ExportUtils.xuatPDF(this, exportModel, "DanhSachKhuyenMai");
+
+});
 add(split, BorderLayout.CENTER);
          loadDiscountTables(); // load database
     }
 
     // ── Page header ──────────────────────────────────────────────────────────
-    private JPanel buildPageHeader() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
-        p.setBackground(PAGE_BG);
-        p.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xDDDDDD)),
-                BorderFactory.createEmptyBorder(0, 20, 0, 20)));
-        JPanel bar = new JPanel();
-        bar.setPreferredSize(new Dimension(5, 26));
-        bar.setBackground(RIGHT_BG);
-        p.add(bar);
-        p.add(Box.createHorizontalStrut(12));
-        JLabel lbl = new JLabel("QUẢN LÝ KHUYẾN MÃI");
-        lbl.setFont(new Font("Arial", Font.BOLD, 20));
-        p.add(lbl);
-        return p;
-    }
+   private JPanel buildPageHeader() {
+
+    JPanel p = new JPanel(new BorderLayout());
+    p.setBackground(PAGE_BG);
+    p.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xDDDDDD)),
+            BorderFactory.createEmptyBorder(10, 20, 10, 20)));
+
+    /* ===== LEFT SIDE (TITLE) ===== */
+
+    JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+    left.setBackground(PAGE_BG);
+
+    JPanel bar = new JPanel();
+    bar.setPreferredSize(new Dimension(5, 26));
+    bar.setBackground(RIGHT_BG);
+
+    JLabel lbl = new JLabel("QUẢN LÝ KHUYẾN MÃI");
+    lbl.setFont(new Font("Arial", Font.BOLD, 20));
+
+    left.add(bar);
+    left.add(lbl);
+
+    /* ===== RIGHT SIDE (EXPORT BUTTON) ===== */
+
+    JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
+    right.setBackground(PAGE_BG);
+
+    btnExcel = ExportUtils.makeExportButton(
+            "Export Excel",
+            new Color(0x1976D2)
+    );
+
+    btnPDF = ExportUtils.makeExportButton(
+            "Export PDF",
+            new Color(0xD32F2F)
+    );
+
+    right.add(btnExcel);
+    right.add(btnPDF);
+
+    /* ===== ADD TO HEADER ===== */
+
+    p.add(left, BorderLayout.WEST);
+    p.add(right, BorderLayout.EAST);
+
+    return p;
+}
 
     // ── Left column (2 detail cards stacked) ─────────────────────────────────
     private JPanel buildLeftColumn() {
@@ -277,7 +395,7 @@ btnDelete.addActionListener(e -> {
     col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
     col.setBackground(RIGHT_BG);
     col.setBorder(BorderFactory.createEmptyBorder(16,16,16,16));
-
+            
     discountModel = new DefaultTableModel(
         new String[]{"ID", "Tên khuyến mãi", "Giá trị", "Loại giảm","Trạng thái"},0
     ){
@@ -354,16 +472,18 @@ filterRow.setAlignmentX(Component.LEFT_ALIGNMENT);
             "EXPIRED"
         });
 
-        filterRow.add(new JLabel("Type:"));
+        filterRow.add(new JLabel("Type:"){{setForeground(Color.WHITE);}});
         filterRow.add(cbType);
 
-        filterRow.add(new JLabel("Status:"));
+        filterRow.add(new JLabel("Status:"){{setForeground(Color.WHITE);}});
         filterRow.add(cbStatus);
 
         top.add(filterRow);
         top.add(Box.createVerticalStrut(8));
+        
+                   
         btnSearch.addActionListener(e -> {
-
+            
     String keyword = tfSearch.getText().trim().toLowerCase();
     String type = cbType.getSelectedItem().toString();
     String status = cbStatus.getSelectedItem().toString();
@@ -423,7 +543,7 @@ filterRow.setAlignmentX(Component.LEFT_ALIGNMENT);
                 return comp;
             }
         });
-        table.getSelectionModel().addListSelectionListener(e -> {
+       table.getSelectionModel().addListSelectionListener(e -> {
 
     if(!e.getValueIsAdjusting()){
 
@@ -443,15 +563,26 @@ filterRow.setAlignmentX(Component.LEFT_ALIGNMENT);
                 lbId.setText(String.valueOf(d.getId()));
                 lbStart.setText(String.valueOf(d.getStartDate()));
                 lbEnd.setText(String.valueOf(d.getEndDate()));
-                lbValue.setText(String.valueOf(d.getValue()));
-                lbType.setText(d.getDiscountType().name());
-                lbMinOrder.setText(String.valueOf(d.getMinOrderAmount()));
-                lbStatus.setText(d.getStatus().name());
 
+                /* ===== FORMAT VALUE ===== */
+
+                if(d.getDiscountType().name().equals("PERCENT")){
+                    lbValue.setText(d.getValue() + " %");
+                }else{
+                    lbValue.setText(d.getValue() + " VND");
+                }
+
+                lbType.setText(d.getDiscountType().name());
+
+                /* ===== MIN ORDER LUÔN VND ===== */
+
+                NumberFormat nf = NumberFormat.getInstance(new Locale("vi","VN"));
+                lbMinOrder.setText(nf.format(d.getMinOrderAmount()) + " VND");
+
+                lbStatus.setText(d.getStatus().name());
             }
         }
     }
-
 });
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createLineBorder(TBL_HDR));
