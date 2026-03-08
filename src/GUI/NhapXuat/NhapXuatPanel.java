@@ -3,41 +3,33 @@ package GUI.NhapXuat;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Panel chính của tab Nhập Xuất Kho.
- * Dùng CardLayout để chuyển giữa bảng lịch sử (TABLE) và form tạo phiếu (FORM).
- */
+/** Panel chính của tab Nhập Kho. */
 public class NhapXuatPanel extends JPanel {
 
-    public static final String CARD_TABLE = "TABLE";
-    public static final String CARD_FORM  = "FORM";
-
-    private final CardLayout innerCard = new CardLayout();
-    private final JPanel cards = new JPanel(innerCard);
-
     private final NhapXuatTableCard tableCard;
-    private NhapXuatFormCard formCard;
 
     public NhapXuatPanel() {
         setLayout(new BorderLayout());
         tableCard = new NhapXuatTableCard(this);
-        cards.add(tableCard, CARD_TABLE);
-        add(cards, BorderLayout.CENTER);
-        innerCard.show(cards, CARD_TABLE);
+        add(tableCard, BorderLayout.CENTER);
     }
 
-    /** Chuyển sang form tạo phiếu mới */
-    public void showForm() {
-        // Tạo lại form mỗi lần để load dữ liệu mới nhất
-        if (formCard != null) cards.remove(formCard);
-        formCard = new NhapXuatFormCard(this);
-        cards.add(formCard, CARD_FORM);
-        innerCard.show(cards, CARD_FORM);
+    /** Mở popup tạo phiếu nhập kho mới */
+    public void openCreatePopup(Window owner) {
+        JDialog dlg = new JDialog(owner, "Tạo phiếu nhập kho", Dialog.ModalityType.APPLICATION_MODAL);
+        NhapXuatFormCard form = new NhapXuatFormCard(dlg);
+        dlg.setContentPane(form);
+        dlg.setSize(1200, 750);
+        dlg.setMinimumSize(new Dimension(900, 600));
+        dlg.setLocationRelativeTo(owner);
+        dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dlg.setVisible(true);
+        // Refresh table after dialog closes
+        tableCard.refresh();
     }
 
-    /** Quay lại bảng lịch sử và refresh dữ liệu */
+    /** Refresh bảng lịch sử */
     public void showTable() {
         tableCard.refresh();
-        innerCard.show(cards, CARD_TABLE);
     }
 }

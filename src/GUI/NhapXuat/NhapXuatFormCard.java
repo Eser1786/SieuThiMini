@@ -1,9 +1,8 @@
-package GUI.NhapXuat;
+﻿package GUI.NhapXuat;
 
 import BUS.EmployeeBUS;
 import BUS.ProductBUS;
 import BUS.PurchaseInvoicesBUS;
-import BUS.StockExportBUS;
 import BUS.SupplierBUS;
 import DTO.*;
 
@@ -16,71 +15,54 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Form tạo phiếu Nhập / Xuất kho.
- *
- * Layout:
- *   [Header info]
- *   [Bảng sản phẩm]
- *   [Phần điều kiện: nhập → nhà cung cấp; xuất → lý do xuất]
- *   [Tổng kết]
- *   [Buttons]
- */
+/** Form tao phieu nhap kho - dung trong JDialog popup. */
 class NhapXuatFormCard extends JPanel {
 
     private static final Color CLR_BG      = new Color(0xFAF9FF);
     private static final Color CLR_SECTION = new Color(0xEDE7F6);
     private static final Color CLR_ACCENT  = new Color(0x5C4A7F);
 
-    private final NhapXuatPanel parent;
-
     // Data
-    private List<ProductDTO> allProducts = new ArrayList<>();
+    private List<ProductDTO>  allProducts  = new ArrayList<>();
     private List<EmployeeDTO> allEmployees = new ArrayList<>();
     private List<SupplierDTO> allSuppliers = new ArrayList<>();
 
     // Form items list
     private final List<FormItem> items = new ArrayList<>();
 
-    // ── Section 1 ───────────────────────────────────────────────
-    private JTextField txtCode;
-    private JComboBox<String> cbLoai;
-    private JLabel lblDate;
+    // Section 1
+    private JLabel            lblDate;
     private JComboBox<String> cbEmployee;
-    private JTextField txtNote;
+    private JTextField        txtNote;
 
-    // ── Section 2 (table) ───────────────────────────────────────
+    // Section 2 (product table)
     private DefaultTableModel tableModel;
 
-    // ── Section 3 conditional ───────────────────────────────────
-    private JPanel conditionalPanel;
-    private CardLayout conditionalCard;
+    // Section 3 (supplier)
     private JComboBox<String> cbSupplier;
-    private JTextField txtInvoiceRef;
-    private JComboBox<String> cbReason;
+    private JTextField        txtInvoiceRef;
 
-    // ── Section 4 summary ───────────────────────────────────────
+    // Section 4 summary
     private JLabel lblTotalItems;
     private JLabel lblTotalQty;
     private JLabel lblTotalMoney;
 
-    // ── Inner data holder ────────────────────────────────────────
+    // Inner data holder
     private static class FormItem {
-        long productId;
-        String productCode;
-        String productName;
-        long quantity;
+        long       productId;
+        String     productCode;
+        String     productName;
+        long       quantity;
         BigDecimal unitPrice;
         BigDecimal subtotal;
     }
 
-    NhapXuatFormCard(NhapXuatPanel parent) {
-        this.parent = parent;
+    NhapXuatFormCard(Window dialogOwner) {
         setBackground(CLR_BG);
         setLayout(new BorderLayout(0, 0));
 
         // Load data
-        try { allProducts = new ProductBUS().getAllProducts(); } catch (Exception ignored) {}
+        try { allProducts  = new ProductBUS().getAllProducts();  } catch (Exception ignored) {}
         try { allEmployees = new EmployeeBUS().getAllEmployees(); } catch (Exception ignored) {}
         try { allSuppliers = new SupplierBUS().getAllSuppliers(); } catch (Exception ignored) {}
 
@@ -89,8 +71,6 @@ class NhapXuatFormCard extends JPanel {
         content.setBackground(CLR_BG);
         content.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
 
-        content.add(buildHeaderBar());
-        content.add(Box.createVerticalStrut(12));
         content.add(buildSection1());
         content.add(Box.createVerticalStrut(12));
         content.add(buildSection2());
@@ -98,116 +78,77 @@ class NhapXuatFormCard extends JPanel {
         content.add(buildSection3());
         content.add(Box.createVerticalStrut(12));
         content.add(buildSection4());
-        content.add(Box.createVerticalStrut(12));
-        content.add(buildSection5());
 
         JScrollPane scroll = new JScrollPane(content);
-        scroll.setBorder(null);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getVerticalScrollBar().setUnitIncrement(16);
+
         add(scroll, BorderLayout.CENTER);
-
-        // Initial conditional visibility
-        updateConditional();
+        add(buildSection5(), BorderLayout.SOUTH);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Section builders
-    // ─────────────────────────────────────────────────────────────
+    // ----- Section builders -------------------------------------------------
 
-    private JPanel buildHeaderBar() {
-        JPanel p = new JPanel(new BorderLayout());
-        p.setOpaque(false);
-        JLabel lbl = new JLabel("Tạo phiếu Nhập / Xuất kho");
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        lbl.setForeground(CLR_ACCENT);
-        JButton btnBack = makeBtn("← Quay lại", new Color(0x78909C));
-        btnBack.addActionListener(e -> parent.showTable());
-        p.add(lbl, BorderLayout.WEST);
-        p.add(btnBack, BorderLayout.EAST);
-        return p;
-    }
-
-    /** Section 1 — Thông tin chung */
     private JPanel buildSection1() {
-        JPanel wrap = sectionWrap("1. Thông tin chung");
+        JPanel wrap = sectionWrap("1. Thong tin chung");
         JPanel grid = new JPanel(new GridBagLayout());
         grid.setOpaque(false);
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(5, 8, 5, 8);
         gc.anchor = GridBagConstraints.WEST;
-        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.fill   = GridBagConstraints.HORIZONTAL;
 
-        // Mã phiếu (auto — read-only placeholder)
-        txtCode = new JTextField("(Tự động sinh sau khi lưu)", 20);
-        txtCode.setEditable(false);
-        txtCode.setForeground(Color.GRAY);
-
-        // Loại phiếu
-        cbLoai = new JComboBox<>(new String[]{"Nhập kho", "Xuất kho"});
-        cbLoai.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cbLoai.addActionListener(e -> updateConditional());
-
-        // Ngày tạo
         lblDate = new JLabel(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         lblDate.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        // Nhân viên
         cbEmployee = new JComboBox<>();
         cbEmployee.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cbEmployee.addItem("-- Chọn nhân viên --");
+        cbEmployee.addItem("-- Chon nhan vien --");
         for (EmployeeDTO e : allEmployees) cbEmployee.addItem(e.getFullName());
 
-        // Ghi chú
         txtNote = new JTextField(30);
         txtNote.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         int row = 0;
-        addFormRow(grid, gc, row++, "Mã phiếu:", txtCode);
-        addFormRow(grid, gc, row++, "Loại phiếu:", cbLoai);
-        addFormRow(grid, gc, row++, "Ngày tạo:", lblDate);
-        addFormRow(grid, gc, row++, "Nhân viên:", cbEmployee);
-        addFormRow(grid, gc, row,   "Ghi chú:", txtNote);
+        addFormRow(grid, gc, row++, "Ngay tao:", lblDate);
+        addFormRow(grid, gc, row++, "Nhan vien:", cbEmployee);
+        addFormRow(grid, gc, row,   "Ghi chu:",   txtNote);
 
         wrap.add(grid, BorderLayout.CENTER);
         return wrap;
     }
 
-    /** Section 2 — Danh sách sản phẩm */
     private JPanel buildSection2() {
-        JPanel wrap = sectionWrap("2. Danh sách sản phẩm");
+        JPanel wrap = sectionWrap("2. Danh sach san pham");
 
-        // Search + add button
         JTextField txtSearch = new JTextField(20);
         txtSearch.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        txtSearch.putClientProperty("JTextField.placeholderText", "Tìm sản phẩm...");
-        JButton btnAdd = makeBtn("+ Thêm", new Color(0x388E3C));
+        JButton btnAdd = makeBtn("+ Them", new Color(0x388E3C));
         btnAdd.addActionListener(e -> showProductPicker(txtSearch.getText().trim()));
 
         JPanel addBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         addBar.setOpaque(false);
-        addBar.add(new JLabel("Tìm SP:"));
+        addBar.add(new JLabel("Tim SP:"));
         addBar.add(txtSearch);
         addBar.add(btnAdd);
 
-        // Table
-        String[] cols = {"Sản phẩm", "SKU / Mã SP", "Số lượng", "Giá nhập (đ)", "Thành tiền (đ)"};
+        String[] cols = {"San pham", "SKU / Ma SP", "So luong", "Gia nhap (d)", "Thanh tien (d)"};
         tableModel = new DefaultTableModel(cols, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return c == 2; } // only qty editable
+            @Override public boolean isCellEditable(int r, int c) { return c == 2; }
             @Override public Class<?> getColumnClass(int c) { return c == 2 ? Long.class : String.class; }
         };
         tableModel.addTableModelListener(e -> {
-            int row = e.getFirstRow();
-            int col = e.getColumn();
-            if (col == 2 && row >= 0 && row < items.size()) {
+            int r = e.getFirstRow();
+            int c = e.getColumn();
+            if (c == 2 && r >= 0 && r < items.size()) {
                 try {
-                    Object val = tableModel.getValueAt(row, 2);
-                    long qty = Long.parseLong(val.toString());
+                    long qty = Long.parseLong(tableModel.getValueAt(r, 2).toString());
                     if (qty <= 0) qty = 1;
-                    FormItem fi = items.get(row);
+                    FormItem fi = items.get(r);
                     fi.quantity = qty;
                     fi.subtotal = fi.unitPrice.multiply(BigDecimal.valueOf(qty));
-                    tableModel.setValueAt(qty, row, 2);
-                    tableModel.setValueAt(formatMoney(fi.subtotal), row, 4);
+                    tableModel.setValueAt(qty, r, 2);
+                    tableModel.setValueAt(formatMoney(fi.subtotal), r, 4);
                     updateSummary();
                 } catch (NumberFormatException ignored) {}
             }
@@ -220,11 +161,10 @@ class NhapXuatFormCard extends JPanel {
         table.getTableHeader().setBackground(new Color(0xD1C4E9));
         table.setGridColor(new Color(0xE0E0E0));
         table.setSelectionBackground(new Color(0xEDE7F6));
-        int[] widths2 = {200, 110, 80, 130, 130};
-        for (int i = 0; i < widths2.length; i++)
-            table.getColumnModel().getColumn(i).setPreferredWidth(widths2[i]);
+        int[] w = {200, 110, 80, 130, 130};
+        for (int i = 0; i < w.length; i++) table.getColumnModel().getColumn(i).setPreferredWidth(w[i]);
 
-        JButton btnDel = makeBtn("Xóa dòng đã chọn", new Color(0xC62828));
+        JButton btnDel = makeBtn("Xoa dong da chon", new Color(0xC62828));
         btnDel.addActionListener(e -> {
             int sel = table.getSelectedRow();
             if (sel >= 0 && sel < items.size()) {
@@ -250,87 +190,62 @@ class NhapXuatFormCard extends JPanel {
         return wrap;
     }
 
-    /** Section 3 — Thông tin nguồn / đích (conditional) */
     private JPanel buildSection3() {
-        JPanel wrap = sectionWrap("3. Thông tin nguồn / đích");
-
-        conditionalCard = new CardLayout();
-        conditionalPanel = new JPanel(conditionalCard);
-        conditionalPanel.setOpaque(false);
-
-        // ── Nhập kho card ────────────────────────────────────────
-        JPanel nhap = new JPanel(new GridBagLayout());
-        nhap.setOpaque(false);
+        JPanel wrap = sectionWrap("3. Nha cung cap");
+        JPanel grid = new JPanel(new GridBagLayout());
+        grid.setOpaque(false);
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(5, 8, 5, 8);
         gc.anchor = GridBagConstraints.WEST;
-        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.fill   = GridBagConstraints.HORIZONTAL;
 
         cbSupplier = new JComboBox<>();
         cbSupplier.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cbSupplier.addItem("-- Chọn nhà cung cấp --");
+        cbSupplier.addItem("-- Chon nha cung cap --");
         for (SupplierDTO s : allSuppliers) cbSupplier.addItem(s.getName());
 
         txtInvoiceRef = new JTextField(20);
         txtInvoiceRef.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        txtInvoiceRef.putClientProperty("JTextField.placeholderText", "Số hóa đơn nhập (tùy chọn)");
 
-        addFormRow(nhap, gc, 0, "Nhà cung cấp:", cbSupplier);
-        addFormRow(nhap, gc, 1, "Số hóa đơn nhập:", txtInvoiceRef);
+        addFormRow(grid, gc, 0, "Nha cung cap:", cbSupplier);
+        addFormRow(grid, gc, 1, "So hoa don nhap:", txtInvoiceRef);
 
-        // ── Xuất kho card ────────────────────────────────────────
-        JPanel xuat = new JPanel(new GridBagLayout());
-        xuat.setOpaque(false);
-        GridBagConstraints gc2 = new GridBagConstraints();
-        gc2.insets = new Insets(5, 8, 5, 8);
-        gc2.anchor = GridBagConstraints.WEST;
-        gc2.fill = GridBagConstraints.HORIZONTAL;
-
-        cbReason = new JComboBox<>(new String[]{"Bán hàng", "Hủy hàng", "Chuyển kho", "Thất thoát"});
-        cbReason.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        addFormRow(xuat, gc2, 0, "Lý do xuất:", cbReason);
-
-        conditionalPanel.add(nhap, "NHAP");
-        conditionalPanel.add(xuat, "XUAT");
-
-        wrap.add(conditionalPanel, BorderLayout.CENTER);
+        wrap.add(grid, BorderLayout.CENTER);
         return wrap;
     }
 
-    /** Section 4 — Tổng kết */
     private JPanel buildSection4() {
-        JPanel wrap = sectionWrap("4. Tổng kết phiếu");
+        JPanel wrap = sectionWrap("4. Tong ket phieu");
         JPanel inner = new JPanel(new GridLayout(3, 2, 10, 5));
         inner.setOpaque(false);
         inner.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 
         lblTotalItems = new JLabel("0");
         lblTotalQty   = new JLabel("0");
-        lblTotalMoney = new JLabel("0 đ");
+        lblTotalMoney = new JLabel("0 d");
         for (JLabel l : new JLabel[]{lblTotalItems, lblTotalQty, lblTotalMoney}) {
             l.setFont(new Font("Segoe UI", Font.BOLD, 15));
             l.setForeground(CLR_ACCENT);
         }
 
-        inner.add(boldLabel("Tổng số sản phẩm:")); inner.add(lblTotalItems);
-        inner.add(boldLabel("Tổng số lượng:"));    inner.add(lblTotalQty);
-        inner.add(boldLabel("Tổng tiền:"));         inner.add(lblTotalMoney);
+        inner.add(boldLabel("Tong so san pham:")); inner.add(lblTotalItems);
+        inner.add(boldLabel("Tong so luong:"));    inner.add(lblTotalQty);
+        inner.add(boldLabel("Tong tien:"));         inner.add(lblTotalMoney);
 
         wrap.add(inner, BorderLayout.CENTER);
         return wrap;
     }
 
-    /** Section 5 — Buttons */
     private JPanel buildSection5() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
         p.setOpaque(false);
+        p.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xDDD8EE)));
 
-        JButton btnCancel = makeBtn("Hủy", new Color(0x78909C));
-        JButton btnPrint  = makeBtn("In phiếu", new Color(0x1565C0));
-        JButton btnSave   = makeBtn("Lưu phiếu", CLR_ACCENT);
+        JButton btnCancel = makeBtn("Huy", new Color(0x78909C));
+        JButton btnPrint  = makeBtn("In phieu", new Color(0x1565C0));
+        JButton btnSave   = makeBtn("Luu phieu", CLR_ACCENT);
 
-        btnCancel.addActionListener(e -> parent.showTable());
+        btnCancel.addActionListener(e -> closeDialog());
         btnPrint.addActionListener(e -> showPrintDialog());
         btnSave.addActionListener(e -> handleSave());
 
@@ -340,62 +255,63 @@ class NhapXuatFormCard extends JPanel {
         return p;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Product picker dialog
-    // ─────────────────────────────────────────────────────────────
+    // ----- Product picker ---------------------------------------------------
+
     private void showProductPicker(String keyword) {
-        JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(this), "Chọn sản phẩm", Dialog.ModalityType.APPLICATION_MODAL);
+        JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(this),
+                "Chon san pham", Dialog.ModalityType.APPLICATION_MODAL);
         dlg.setSize(600, 400);
         dlg.setLocationRelativeTo(this);
 
         JTextField search = new JTextField(keyword, 20);
         search.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        String[] cols = {"Mã SP", "Tên sản phẩm", "Tồn kho", "Giá nhập (đ)"};
-        DefaultTableModel pickModel = new DefaultTableModel(cols, 0) {
+        String[] cols = {"Ma SP", "Ten san pham", "Ton kho", "Gia nhap (d)"};
+        DefaultTableModel pm = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        JTable pickTable = new JTable(pickModel);
+        JTable pickTable = new JTable(pm);
         pickTable.setRowHeight(30);
         pickTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         pickTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         pickTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        Runnable fillTable = () -> {
-            pickModel.setRowCount(0);
+        Runnable fill = () -> {
+            pm.setRowCount(0);
             String kw = search.getText().trim().toLowerCase();
             for (ProductDTO p : allProducts) {
                 if (!kw.isEmpty() && !p.getName().toLowerCase().contains(kw)
                         && !p.getCode().toLowerCase().contains(kw)) continue;
-                pickModel.addRow(new Object[]{
+                pm.addRow(new Object[]{
                         p.getCode(), p.getName(), p.getTotalQuantity(),
                         p.getCostPrice() != null ? formatMoney(p.getCostPrice()) : "0"
                 });
             }
         };
-        fillTable.run();
+        fill.run();
         search.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { fillTable.run(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { fillTable.run(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { fillTable.run(); }
+            public void insertUpdate (javax.swing.event.DocumentEvent e) { fill.run(); }
+            public void removeUpdate (javax.swing.event.DocumentEvent e) { fill.run(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { fill.run(); }
         });
 
-        JButton btnOk = makeBtn("Chọn", CLR_ACCENT);
+        JButton btnOk = makeBtn("Chon", CLR_ACCENT);
         btnOk.addActionListener(e -> {
             int sel = pickTable.getSelectedRow();
-            if (sel < 0) { JOptionPane.showMessageDialog(dlg, "Vui lòng chọn một sản phẩm."); return; }
-            String code = (String) pickModel.getValueAt(sel, 0);
+            if (sel < 0) { JOptionPane.showMessageDialog(dlg, "Vui long chon mot san pham."); return; }
+            String code = (String) pm.getValueAt(sel, 0);
             allProducts.stream().filter(p -> p.getCode().equals(code)).findFirst().ifPresent(p -> {
-                // Check duplicate
-                boolean dup = items.stream().anyMatch(fi -> fi.productId == p.getId());
-                if (dup) { JOptionPane.showMessageDialog(dlg, "Sản phẩm đã có trong phiếu."); return; }
+                if (items.stream().anyMatch(fi -> fi.productId == p.getId())) {
+                    JOptionPane.showMessageDialog(dlg, "San pham da co trong phieu.");
+                    return;
+                }
                 FormItem fi = new FormItem();
-                fi.productId = p.getId();
+                fi.productId   = p.getId();
                 fi.productCode = p.getCode();
                 fi.productName = p.getName();
-                fi.quantity = 1;
-                fi.unitPrice = p.getCostPrice() != null ? p.getCostPrice() : BigDecimal.ZERO;
-                fi.subtotal = fi.unitPrice;
+                fi.quantity    = 1;
+                fi.unitPrice   = p.getCostPrice() != null ? p.getCostPrice() : BigDecimal.ZERO;
+                fi.subtotal    = fi.unitPrice;
                 items.add(fi);
                 tableModel.addRow(new Object[]{fi.productName, fi.productCode, fi.quantity,
                         formatMoney(fi.unitPrice), formatMoney(fi.subtotal)});
@@ -410,7 +326,7 @@ class NhapXuatFormCard extends JPanel {
         });
 
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
-        top.add(new JLabel("Tìm kiếm:"));
+        top.add(new JLabel("Tim kiem:"));
         top.add(search);
         top.add(btnOk);
 
@@ -419,54 +335,46 @@ class NhapXuatFormCard extends JPanel {
         dlg.setVisible(true);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Save handler
-    // ─────────────────────────────────────────────────────────────
+    // ----- Save handler -----------------------------------------------------
+
     private void handleSave() {
-        // Validate employee
         int empIdx = cbEmployee.getSelectedIndex();
         if (empIdx <= 0 || empIdx > allEmployees.size()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên thực hiện.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui long chon nhan vien thuc hien.",
+                    "Loi", JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (items.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng thêm ít nhất một sản phẩm.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui long them it nhat mot san pham.",
+                    "Loi", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         EmployeeDTO emp = allEmployees.get(empIdx - 1);
-        boolean isNhap = "Nhập kho".equals(cbLoai.getSelectedItem());
-
         try {
-            List<String> warnings;
-            if (isNhap) {
-                warnings = saveNhapKho(emp);
-            } else {
-                warnings = saveXuatKho(emp);
-            }
-
-            String msg = isNhap ? "Lưu phiếu nhập thành công!" : "Lưu phiếu xuất thành công!";
+            List<String> warnings = saveNhapKho(emp);
+            String msg = "Luu phieu nhap thanh cong!";
             if (!warnings.isEmpty()) {
-                msg += "\n\n⚠ Sản phẩm sắp hết hàng:\n• " + String.join("\n• ", warnings);
-                JOptionPane.showMessageDialog(this, msg, "Cảnh báo tồn kho", JOptionPane.WARNING_MESSAGE);
+                msg += "\n\nSan pham sap het hang:\n- " + String.join("\n- ", warnings);
+                JOptionPane.showMessageDialog(this, msg, "Canh bao ton kho", JOptionPane.WARNING_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(this, msg, "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, msg, "Thanh cong", JOptionPane.INFORMATION_MESSAGE);
             }
-            parent.showTable();
-
+            closeDialog();
         } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi xác thực", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Loi xac thuc", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi khi lưu phiếu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Loi khi luu phieu: " + ex.getMessage(),
+                    "Loi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private List<String> saveNhapKho(EmployeeDTO emp) throws Exception {
         int supIdx = cbSupplier.getSelectedIndex();
-        if (supIdx <= 0 || supIdx > allSuppliers.size()) {
-            throw new IllegalArgumentException("Vui lòng chọn nhà cung cấp.");
-        }
+        if (supIdx <= 0 || supIdx > allSuppliers.size())
+            throw new IllegalArgumentException("Vui long chon nha cung cap.");
+
         SupplierDTO sup = allSuppliers.get(supIdx - 1);
 
         PurchaseInvoicesDTO inv = new PurchaseInvoicesDTO();
@@ -497,88 +405,48 @@ class NhapXuatFormCard extends JPanel {
         inv.setTotalAmount(total);
 
         boolean ok = new PurchaseInvoicesBUS().addPurchaseInvoice(inv);
-        if (!ok) throw new RuntimeException("Lưu phiếu nhập thất bại.");
+        if (!ok) throw new RuntimeException("Luu phieu nhap that bai.");
 
-        // Check min stock after update (re-read products)
+        // Check min stock warnings
         List<String> warnings = new ArrayList<>();
-        List<ProductDTO> fresh = new ProductBUS().getAllProducts();
-        for (FormItem fi : items) {
-            final long pid = fi.productId;
-            final long qty = fi.quantity;
-            fresh.stream().filter(p -> (long) p.getId() == pid).findFirst().ifPresent(p -> {
-                long newQty = p.getTotalQuantity() + qty; // already updated in DB; re-read would reflect it
-                // Use DB value directly
-                if (p.getTotalQuantity() < p.getMinStockLevel()) {
-                    warnings.add(p.getName());
-                }
-            });
+        for (ProductDTO fresh : new ProductBUS().getAllProducts()) {
+            final long id = fresh.getId();
+            if (items.stream().anyMatch(fi -> fi.productId == id)
+                    && fresh.getTotalQuantity() < fresh.getMinStockLevel()) {
+                warnings.add(fresh.getName());
+            }
         }
         return warnings;
     }
 
-    private List<String> saveXuatKho(EmployeeDTO emp) {
-        String reasonDisplay = (String) cbReason.getSelectedItem();
-        String reason = switch (reasonDisplay) {
-            case "Bán hàng"   -> "SALE";
-            case "Hủy hàng"   -> "CANCEL";
-            case "Chuyển kho" -> "TRANSFER";
-            default           -> "LOSS";
-        };
+    // ----- Print dialog -----------------------------------------------------
 
-        StockExportDTO dto = new StockExportDTO();
-        dto.setEmployeeId((long) emp.getId());
-        dto.setEmployeeName(emp.getFullName());
-        dto.setReason(reason);
-        dto.setNotes(txtNote.getText().trim());
-
-        List<StockExportItemDTO> expItems = new ArrayList<>();
-        for (FormItem fi : items) {
-            StockExportItemDTO it = new StockExportItemDTO();
-            it.setProductId(fi.productId);
-            it.setProductCode(fi.productCode);
-            it.setProductName(fi.productName);
-            it.setQuantity(fi.quantity);
-            it.setUnitPrice(fi.unitPrice);
-            expItems.add(it);
-        }
-        dto.setItems(expItems);
-
-        return new StockExportBUS().addExport(dto);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // Print dialog
-    // ─────────────────────────────────────────────────────────────
     private void showPrintDialog() {
-        boolean isNhap = "Nhập kho".equals(cbLoai.getSelectedItem());
         StringBuilder sb = new StringBuilder();
-        sb.append("Phiếu: ").append(isNhap ? "NK..." : "XK...").append("\n");
-        sb.append("Loại : ").append(isNhap ? "Nhập kho" : "Xuất kho").append("\n");
-        sb.append("Ngày : ").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
+        sb.append("Phieu: NK...\n");
+        sb.append("Loai : Nhap kho\n");
+        sb.append("Ngay : ").append(
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
         int empIdx = cbEmployee.getSelectedIndex();
-        sb.append("NV   : ").append(empIdx > 0 && empIdx <= allEmployees.size() ? allEmployees.get(empIdx - 1).getFullName() : "--").append("\n");
-        if (isNhap) {
-            int supIdx = cbSupplier.getSelectedIndex();
-            sb.append("NCC  : ").append(supIdx > 0 && supIdx <= allSuppliers.size() ? allSuppliers.get(supIdx - 1).getName() : "--").append("\n");
-        } else {
-            sb.append("Lý do: ").append(cbReason.getSelectedItem()).append("\n");
-        }
+        sb.append("NV   : ").append(
+                empIdx > 0 && empIdx <= allEmployees.size()
+                        ? allEmployees.get(empIdx - 1).getFullName() : "--").append("\n");
+        int supIdx = cbSupplier.getSelectedIndex();
+        sb.append("NCC  : ").append(
+                supIdx > 0 && supIdx <= allSuppliers.size()
+                        ? allSuppliers.get(supIdx - 1).getName() : "--").append("\n");
         sb.append("\n");
-        sb.append(String.format("%-25s %5s %12s %12s%n", "Sản phẩm", "SL", "Giá nhập", "Thành tiền"));
+        sb.append(String.format("%-25s %5s %12s %12s%n", "San pham", "SL", "Gia nhap", "Thanh tien"));
         sb.append("-".repeat(58)).append("\n");
         for (FormItem fi : items) {
+            String name = fi.productName.length() > 24 ? fi.productName.substring(0, 24) : fi.productName;
             sb.append(String.format("%-25s %5d %12s %12s%n",
-                    fi.productName.length() > 24 ? fi.productName.substring(0, 24) : fi.productName,
-                    fi.quantity,
-                    formatMoney(fi.unitPrice),
-                    formatMoney(fi.subtotal)));
+                    name, fi.quantity, formatMoney(fi.unitPrice), formatMoney(fi.subtotal)));
         }
         sb.append("-".repeat(58)).append("\n");
-        sb.append("Tổng số lượng: ").append(items.stream().mapToLong(fi -> fi.quantity).sum()).append("\n");
-        if (isNhap) {
-            BigDecimal total = items.stream().map(fi -> fi.subtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
-            sb.append("Tổng tiền    : ").append(formatMoney(total)).append(" đ\n");
-        }
+        sb.append("Tong so luong: ").append(items.stream().mapToLong(fi -> fi.quantity).sum()).append("\n");
+        BigDecimal total = items.stream().map(fi -> fi.subtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+        sb.append("Tong tien    : ").append(formatMoney(total)).append(" d\n");
 
         JTextArea area = new JTextArea(sb.toString());
         area.setFont(new Font("Monospaced", Font.PLAIN, 13));
@@ -587,12 +455,13 @@ class NhapXuatFormCard extends JPanel {
         area.setForeground(Color.WHITE);
         area.setBorder(BorderFactory.createEmptyBorder(12, 14, 12, 14));
 
-        JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(this), "In phiếu", Dialog.ModalityType.APPLICATION_MODAL);
+        JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(this),
+                "In phieu", Dialog.ModalityType.APPLICATION_MODAL);
         dlg.setSize(560, 420);
         dlg.setLocationRelativeTo(this);
         dlg.add(new JScrollPane(area), BorderLayout.CENTER);
 
-        JButton btnClose = makeBtn("Đóng", new Color(0x607D8B));
+        JButton btnClose = makeBtn("Dong", new Color(0x607D8B));
         btnClose.addActionListener(e -> dlg.dispose());
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btns.add(btnClose);
@@ -600,22 +469,18 @@ class NhapXuatFormCard extends JPanel {
         dlg.setVisible(true);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Helpers
-    // ─────────────────────────────────────────────────────────────
-    private void updateConditional() {
-        if (conditionalCard == null) return;
-        boolean isNhap = "Nhập kho".equals(cbLoai.getSelectedItem());
-        conditionalCard.show(conditionalPanel, isNhap ? "NHAP" : "XUAT");
+    // ----- Helpers ----------------------------------------------------------
+
+    private void closeDialog() {
+        Window w = SwingUtilities.getWindowAncestor(this);
+        if (w != null) w.dispose();
     }
 
     private void updateSummary() {
-        long totalItems = items.size();
-        long totalQty   = items.stream().mapToLong(fi -> fi.quantity).sum();
-        BigDecimal totalMoney = items.stream().map(fi -> fi.subtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
-        lblTotalItems.setText(String.valueOf(totalItems));
-        lblTotalQty.setText(String.valueOf(totalQty));
-        lblTotalMoney.setText(formatMoney(totalMoney) + " đ");
+        lblTotalItems.setText(String.valueOf(items.size()));
+        lblTotalQty.setText(String.valueOf(items.stream().mapToLong(fi -> fi.quantity).sum()));
+        BigDecimal total = items.stream().map(fi -> fi.subtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+        lblTotalMoney.setText(formatMoney(total) + " d");
     }
 
     private JPanel sectionWrap(String title) {

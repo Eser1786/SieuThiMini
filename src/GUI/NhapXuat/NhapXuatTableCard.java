@@ -1,211 +1,241 @@
 package GUI.NhapXuat;
 
 import BUS.PurchaseInvoicesBUS;
-import BUS.StockExportBUS;
 import DTO.PurchaseInvoicesDTO;
-import DTO.StockExportDTO;
+import GUI.UIUtils;
+import GUI.WrapLayout;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
-/**
- * Bảng lịch sử tất cả phiếu Nhập + Xuất kho, sorted theo ngày mới nhất.
- */
+/** B\u1ea3ng l\u1ecbch s\u1eed phi\u1ebfu nh\u1eadp kho, ki\u1ec3u d\u00e1ng gi\u1ed1ng \u0110\u01a1n H\u00e0ng. */
 class NhapXuatTableCard extends JPanel {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final Color HDR_BG  = new Color(0xAF9FCB);
+    private static final Color ROW_ALT = new Color(0xF3F0FA);
 
     private final NhapXuatPanel parent;
     private final DefaultTableModel model;
     private JTextField txtSearch;
-    private JComboBox<String> cbLoai;
-
-    // Raw merged rows for filtering
-    private final List<Object[]> allRows = new ArrayList<>();
+    private JComboBox<String> cbStatus;
+    private TableRowSorter<DefaultTableModel> sorter;
 
     NhapXuatTableCard(NhapXuatPanel parent) {
         this.parent = parent;
         setLayout(new BorderLayout(0, 0));
-        setBackground(Color.WHITE);
+        setBackground(new Color(0xF8F7FF));
 
-        // ── Top bar ─────────────────────────────────────────────
-        JPanel topBar = new JPanel(new BorderLayout(10, 0));
-        topBar.setBackground(new Color(0xF3EFF8));
-        topBar.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
-
-        JLabel title = new JLabel("Nhập Xuất Kho");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        title.setForeground(new Color(0x3D3057));
-
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        filterPanel.setOpaque(false);
-
-        txtSearch = new JTextField(18);
-        txtSearch.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        txtSearch.putClientProperty("JTextField.placeholderText", "Tìm mã phiếu / nhân viên...");
-
-        cbLoai = new JComboBox<>(new String[]{"Tất cả", "Nhập kho", "Xuất kho"});
-        cbLoai.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        JButton btnNew = makeBtn("+ Tạo phiếu mới", new Color(0x5C4A7F));
-        btnNew.addActionListener(e -> parent.showForm());
-
-        JButton btnRefresh = makeBtn("↻ Làm mới", new Color(0x607D8B));
-        btnRefresh.addActionListener(e -> refresh());
-
-        filterPanel.add(new JLabel("Loại:"));
-        filterPanel.add(cbLoai);
-        filterPanel.add(txtSearch);
-        filterPanel.add(btnRefresh);
-        filterPanel.add(btnNew);
-
-        topBar.add(title, BorderLayout.WEST);
-        topBar.add(filterPanel, BorderLayout.EAST);
-        add(topBar, BorderLayout.NORTH);
-
-        // ── Table ────────────────────────────────────────────────
-        String[] cols = {"Mã phiếu", "Loại", "Ngày tạo", "Nhân viên", "Tổng tiền (đ)", "Trạng thái"};
+        // ─── Column model ─────────────────────────────────────────
+        String[] cols = {"Mã phiếu", "Ngày nhập", "Nhà cung cấp", "Nhân viên", "Tổng tiền (đ)", "TT Thanh toán", "Trạng thái"};
         model = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
+        // ─── Table ────────────────────────────────────────────────
         JTable table = new JTable(model);
-        table.setRowHeight(36);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        table.getTableHeader().setBackground(new Color(0xD1C4E9));
-        table.setSelectionBackground(new Color(0xEDE7F6));
-        table.setGridColor(new Color(0xE0E0E0));
+        sorter = new TableRowSorter<>(model);
+        table.setRowSorter(sorter);
+        table.setRowHeight(52);
+        table.setFont(new Font("Arial", Font.PLAIN, 16));
         table.setShowHorizontalLines(true);
         table.setShowVerticalLines(false);
-        table.setIntercellSpacing(new Dimension(0, 1));
+        table.setIntercellSpacing(new Dimension(0, 0));
+        table.setSelectionBackground(new Color(0xEDE7F6));
+        table.setSelectionForeground(Color.BLACK);
 
-        // Center-align all except Mã phiếu and Nhân viên
-        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
-        center.setHorizontalAlignment(SwingConstants.CENTER);
-        for (int i = 1; i < cols.length; i++) table.getColumnModel().getColumn(i).setCellRenderer(center);
+        // Header style
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+        table.getTableHeader().setBackground(HDR_BG);
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setPreferredSize(new Dimension(0, 44));
 
-        // Colour-code Loại column
-        table.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+        // Alternating row renderer
+        DefaultTableCellRenderer altRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean foc, int row, int col) {
                 super.getTableCellRendererComponent(t, val, sel, foc, row, col);
-                setHorizontalAlignment(CENTER);
-                if ("Nhập kho".equals(val)) {
-                    setForeground(new Color(0x2E7D32)); setFont(getFont().deriveFont(Font.BOLD));
-                } else {
-                    setForeground(new Color(0xC62828)); setFont(getFont().deriveFont(Font.BOLD));
+                if (!sel) setBackground(row % 2 == 0 ? Color.WHITE : ROW_ALT);
+                setFont(new Font("Arial", Font.PLAIN, 15));
+                setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+                return this;
+            }
+        };
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean foc, int row, int col) {
+                super.getTableCellRendererComponent(t, val, sel, foc, row, col);
+                if (!sel) setBackground(row % 2 == 0 ? Color.WHITE : ROW_ALT);
+                setFont(new Font("Arial", Font.PLAIN, 15));
+                setHorizontalAlignment(SwingConstants.CENTER);
+                return this;
+            }
+        };
+        DefaultTableCellRenderer payRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean foc, int row, int col) {
+                super.getTableCellRendererComponent(t, val, sel, foc, row, col);
+                if (!sel) setBackground(row % 2 == 0 ? Color.WHITE : ROW_ALT);
+                setHorizontalAlignment(SwingConstants.CENTER);
+                setFont(new Font("Arial", Font.BOLD, 14));
+                String v = val == null ? "" : val.toString();
+                if ("Đã thanh toán".equals(v))  setForeground(new Color(0x2E7D32));
+                else                            setForeground(new Color(0xE65100));
+                if (sel) setForeground(Color.WHITE);
+                return this;
+            }
+        };
+        DefaultTableCellRenderer statusRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean foc, int row, int col) {
+                super.getTableCellRendererComponent(t, val, sel, foc, row, col);
+                if (!sel) setBackground(row % 2 == 0 ? Color.WHITE : ROW_ALT);
+                setHorizontalAlignment(SwingConstants.CENTER);
+                setFont(new Font("Arial", Font.BOLD, 14));
+                String v = val == null ? "" : val.toString();
+                switch (v) {
+                    case "Đã nhập"   -> setForeground(new Color(0x2E7D32));
+                    case "Đã hủy"    -> setForeground(new Color(0xC62828));
+                    default          -> setForeground(new Color(0x37474F));
                 }
                 if (sel) setForeground(Color.WHITE);
                 return this;
             }
-        });
+        };
 
-        // Column widths
-        int[] widths = {130, 90, 140, 150, 130, 110};
+        for (int i = 0; i < cols.length; i++) {
+            if (i == 1 || i == 3) table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            else if (i == 5)      table.getColumnModel().getColumn(i).setCellRenderer(payRenderer);
+            else if (i == 6)      table.getColumnModel().getColumn(i).setCellRenderer(statusRenderer);
+            else                  table.getColumnModel().getColumn(i).setCellRenderer(altRenderer);
+        }
+
+        int[] widths = {120, 130, 180, 150, 130, 130, 110};
         for (int i = 0; i < widths.length; i++)
             table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
 
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
 
-        // ── Listeners ────────────────────────────────────────────
+        // ─── Toolbar (WrapLayout) ─────────────────────────────────
+        JPanel top = new JPanel(new WrapLayout(FlowLayout.LEFT, 10, 8));
+        top.setBackground(new Color(0xF8F7FF));
+        top.setBorder(BorderFactory.createEmptyBorder(4, 16, 4, 16));
+
+        txtSearch = new JTextField(18);
+        txtSearch.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtSearch.setToolTipText("Tìm kiếm mã phiếu, nhà cung cấp, nhân viên...");
+
+        cbStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đã nhập", "Đã hủy", "Chưa thanh toán", "Đã thanh toán"});
+        UIUtils.styleComboBox(cbStatus);
+
+        JButton btnTim     = UIUtils.makeActionButton("Tim kiem",         new Color(0x5C4A7F));
+        JButton btnRefresh = UIUtils.makeActionButton("Lam moi",          new Color(0x607D8B));
+        JButton btnNew     = UIUtils.makeActionButton("+ Tao phieu nhap", new Color(0x5C4A7F));
+
         txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { applyFilter(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { applyFilter(); }
+            public void insertUpdate (javax.swing.event.DocumentEvent e) { applyFilter(); }
+            public void removeUpdate (javax.swing.event.DocumentEvent e) { applyFilter(); }
             public void changedUpdate(javax.swing.event.DocumentEvent e) { applyFilter(); }
         });
-        cbLoai.addActionListener(e -> applyFilter());
+        cbStatus.addActionListener(e -> applyFilter());
+        btnTim.addActionListener(e -> applyFilter());
+        btnRefresh.addActionListener(e -> refresh());
+        btnNew.addActionListener(e -> parent.openCreatePopup(SwingUtilities.getWindowAncestor(this)));
+
+        top.add(new JLabel("Tim:"));
+        top.add(txtSearch);
+        top.add(btnTim);
+        top.add(cbStatus);
+        top.add(btnRefresh);
+        top.add(btnNew);
+
+        // ─── Page header ──────────────────────────────────────────
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
+        header.setBackground(new Color(0xF8F7FF));
+        header.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xDDDDDD)),
+                BorderFactory.createEmptyBorder(0, 20, 0, 20)));
+        JPanel bar = new JPanel();
+        bar.setPreferredSize(new Dimension(5, 26));
+        bar.setBackground(new Color(0x5C4A7F));
+        JLabel titleLbl = new JLabel("QUẢN LÝ NHẬP KHO");
+        titleLbl.setFont(new Font("Arial", Font.BOLD, 20));
+        header.add(bar);
+        header.add(Box.createHorizontalStrut(12));
+        header.add(titleLbl);
+
+        JPanel north = new JPanel();
+        north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
+        north.add(header);
+        north.add(top);
+
+        add(north, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
 
         refresh();
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Data helpers
+    // Data
     // ─────────────────────────────────────────────────────────────
-
     void refresh() {
-        allRows.clear();
-
-        // Load phiếu nhập
+        model.setRowCount(0);
         try {
             List<PurchaseInvoicesDTO> invoices = new PurchaseInvoicesBUS().getAllPurchaseInvoices();
-            if (invoices != null) {
-                for (PurchaseInvoicesDTO inv : invoices) {
-                    String date = inv.getDateIn() != null ? inv.getDateIn().format(FMT) : "";
-                    String total = inv.getTotalAmount() != null
-                            ? String.format("%,.0f", inv.getTotalAmount()) : "0";
-                    allRows.add(new Object[]{
-                            inv.getInvoiceCode(), "Nhập kho", date,
-                            inv.getEmployeeName() != null ? inv.getEmployeeName() : "",
-                            total,
-                            inv.getStatus() != null ? inv.getStatus() : "RECEIVED"
-                    });
-                }
+            if (invoices == null) return;
+            for (PurchaseInvoicesDTO inv : invoices) {
+                String date  = inv.getDateIn() != null ? inv.getDateIn().format(FMT) : "";
+                String total = inv.getTotalAmount() != null
+                        ? String.format("%,.0fđ", inv.getTotalAmount()) : "0đ";
+                String pay   = mapPayment(inv.getPaymentStatus());
+                String stat  = mapStatus(inv.getStatus());
+                model.addRow(new Object[]{
+                        inv.getInvoiceCode(),
+                        date,
+                        inv.getSupplierName()  != null ? inv.getSupplierName()  : "",
+                        inv.getEmployeeName()  != null ? inv.getEmployeeName()  : "",
+                        total, pay, stat
+                });
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-
-        // Load phiếu xuất
-        try {
-            List<StockExportDTO> exports = new StockExportBUS().getAllExports();
-            if (exports != null) {
-                for (StockExportDTO exp : exports) {
-                    String date = exp.getExportDate() != null ? exp.getExportDate().format(FMT) : "";
-                    String total = exp.getTotalAmount() != null
-                            ? String.format("%,.0f", exp.getTotalAmount()) : "0";
-                    allRows.add(new Object[]{
-                            exp.getExportCode(), "Xuất kho", date,
-                            exp.getEmployeeName() != null ? exp.getEmployeeName() : "",
-                            total,
-                            exp.getStatus() != null ? exp.getStatus() : "DONE"
-                    });
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         applyFilter();
     }
 
     private void applyFilter() {
-        String kw = txtSearch.getText().trim().toLowerCase();
-        String loai = (String) cbLoai.getSelectedItem();
+        String kw = txtSearch == null ? "" : txtSearch.getText().trim().toLowerCase();
+        String st = cbStatus == null ? "Tất cả trạng thái" : (String) cbStatus.getSelectedItem();
 
-        model.setRowCount(0);
-        for (Object[] row : allRows) {
-            String type = (String) row[1];
-            if (!"Tất cả".equals(loai) && !loai.equals(type)) continue;
-            if (!kw.isEmpty()) {
-                boolean match = false;
-                for (Object cell : row) {
-                    if (cell != null && cell.toString().toLowerCase().contains(kw)) { match = true; break; }
-                }
-                if (!match) continue;
-            }
-            model.addRow(row);
-        }
+        List<RowFilter<Object, Object>> filters = new java.util.ArrayList<>();
+        if (!kw.isEmpty())
+            filters.add(RowFilter.regexFilter("(?i)" + java.util.regex.Pattern.quote(kw)));
+        if (st != null && !"Tất cả trạng thái".equals(st))
+            filters.add(RowFilter.regexFilter("(?i)" + java.util.regex.Pattern.quote(st)));
+        sorter.setRowFilter(filters.isEmpty() ? null : RowFilter.andFilter(filters));
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Button factory
-    // ─────────────────────────────────────────────────────────────
-    private JButton makeBtn(String text, Color bg) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setBackground(bg);
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 14));
-        return btn;
+    private static String mapPayment(String s) {
+        if (s == null) return "Chưa thanh toán";
+        return switch (s) {
+            case "PAID"    -> "Đã thanh toán";
+            case "PARTIAL" -> "Thanh toán một phần";
+            default        -> "Chưa thanh toán";
+        };
+    }
+
+    private static String mapStatus(String s) {
+        if (s == null) return "Đã nhập";
+        return switch (s) {
+            case "RECEIVED"  -> "Đã nhập";
+            case "CANCELLED" -> "Đã hủy";
+            default          -> s;
+        };
     }
 }
