@@ -1,8 +1,11 @@
 USE sieuthiminiv2;
-SET NAMES utf8mb4;
-SET CHARACTER SET utf8mb4;
 
--- 1. categories
+SET
+    NAMES utf8mb4;
+
+SET
+    CHARACTER SET utf8mb4;
+
 INSERT
     IGNORE INTO categories (name, description)
 VALUES
@@ -21,9 +24,24 @@ VALUES
     (
         'Đồ dùng hàng ngày',
         'Xà phòng, giấy vệ sinh, bột giặt, nước rửa chén'
+    ),
+    (
+        'Thực phẩm chế biến sẵn',
+        'Chả, pate, xúc xích, cơm hộp, cơm nấm'
+    ),
+    (
+        'Hóa mỹ phẩm và hóa chất',
+        'Mỹ phẩm, nước tẩy trang, nước lau sàn, nước xả vải'
+    ),
+    (
+        'Đồ gia dụng nhỏ',
+        'Pin, băng keo,...'
+    ),
+    (
+        'Đồ dùng học tập',
+        'Vở, bút, gôm, thước,...'
     );
 
--- 2. suppliers
 INSERT
     IGNORE INTO suppliers (
         supplier_code,
@@ -57,9 +75,48 @@ VALUES
         '02838212345',
         'acecook@vn.com',
         'Chị Hương'
+    ),
+    (
+        'NCC004',
+        'Masan Consumer',
+        'Quận 1, TP.HCM',
+        '19001002',
+        'masan@vn.com',
+        'Anh Hoàng'
+    ),
+    (
+        'NCC005',
+        'CP Foods Việt Nam',
+        'Bình Dương',
+        '19001003',
+        'cpfoods@vn.com',
+        'Chị Mai'
+    ),
+    (
+        'NCC006',
+        'Mondelez Kinh Đô',
+        'TP.HCM',
+        '02838256789',
+        'kinhdo@vn.com',
+        'Anh Danh'
+    ),
+    (
+        'NCC007',
+        'P&G Việt Nam',
+        'TP.HCM',
+        '18001567',
+        'pg@vn.com',
+        'Chị Cúc'
+    ),
+    (
+        'NCC008',
+        'Nestlé Việt Nam',
+        'Đồng Nai',
+        '19001004',
+        'nestle@vn.com',
+        'Chị Thoa'
     );
 
--- 3. products
 INSERT
     IGNORE INTO products (
         product_code,
@@ -82,7 +139,7 @@ VALUES
     (
         'SP001',
         '7 Up',
-        'img\7up.png',
+        'img\\7up.png',
         3,
         1,
         22000.00,
@@ -99,7 +156,7 @@ VALUES
     (
         'SP002',
         'Mì Hảo Hảo tôm chua cay',
-        'img\mitrontrung.png',
+        'img\\mitrontrung.png',
         2,
         3,
         3500.00,
@@ -116,7 +173,7 @@ VALUES
     (
         'SP003',
         'Fanta Việt Quất',
-        'img\Fanta Viet Quat.png',
+        'img\\Fanta Viet Quat.png',
         1,
         1,
         4000.00,
@@ -131,7 +188,6 @@ VALUES
         1
     );
 
--- 4. customers
 INSERT
     IGNORE INTO customers (
         customer_code,
@@ -161,31 +217,85 @@ VALUES
         'Trần Thị Bình',
         '0909123456',
         NULL,
-        NULL,
+        'Quận 4',
         320,
         980000.00,
         'SILVER',
         'ACTIVE'
+    ),
+    (
+        'KH003',
+        'Đoàn Văn Sáng',
+        '0123456789',
+        'Sanggay@gmail.com',
+        'Thủ đức',
+        150,
+        1200000.00,
+        'SILVER',
+        'ACTIVE'
+    ),
+    (
+        'KH004',
+        'Gao đỏ',
+        '0123456789',
+        'Gaooooo@gmail.com',
+        'Sao hỏa',
+        1920,
+        20000000.00,
+        'DIAMOND',
+        'ACTIVE'
+    ),
+    (
+        'KH005',
+        'Bát man',
+        '0132456798',
+        'noparents@gmail.com',
+        'hang dơi',
+        200,
+        900000.00,
+        'REGULAR',
+        'ACTIVE'
     );
 
--- 5. roles
 INSERT
     IGNORE INTO roles (role_name, description)
 VALUES
     ('ADMIN', 'Quản trị toàn hệ thống'),
-    ('CASHIER', 'Thu ngân bán hàng'),
-    ('WAREHOUSE', 'Nhân viên kho');
+    ('MANAGER', 'Quản lý nhân viên, quản lý sản phẩm'),
+    ('CASHIER', 'Thu ngân, tạo hóa đơn, thanh toán'),
+    (
+        'WAREHOUSE',
+        'Nhân viên kho, nhập hàng, cập nhật tồn kho'
+    ),
+    ('SUPPORT', 'Xem thông tin khách hàng');
 
--- 6. permissions
 INSERT
     IGNORE INTO permissions (permission_name, description)
 VALUES
-    ('PRODUCT_VIEW', 'Xem danh sách sản phẩm'),
+    ('DASHBOARD_VIEW', 'Xem trang tổng quan'),
+    (
+        'REPORT_VIEW',
+        'Xem báo cáo doanh thu, tồn kho, bán hàng'
+    ),
+    ('REPORT_EXPORT', 'Xuất báo cáo ra pdf, excel'),
+    ('CATEGORY_VIEW', 'Xem danh mục sản phẩm'),
+    ('CATEGORY_ADD', 'Thêm danh mục'),
+    ('SUPPLIER_VIEW', 'Xem các nhà cung cấp'),
+    ('SUPPLIER_ADD', 'Thêm nhà cung cấp'),
+    ('PRODUCT_VIEW', 'Xem sản phẩm'),
     ('PRODUCT_ADD', 'Thêm sản phẩm'),
-    ('INVOICE_CREATE', 'Tạo hóa đơn bán'),
-    ('REPORT_SALES', 'Xem báo cáo doanh thu');
+    ('CUSTOMER_VIEW', 'Xem khách hàng'),
+    ('CUSTOMER_ADD', 'Thêm khách hàng'),
+    ('EMPLOYEE_VIEW', 'Xem nhân viên'),
+    ('EMPLOYEE_ADD', 'Thêm khách hàng'),
+    ('EMPLOYEE_ROLE', 'Phân quyền cho nhân viên'),
+    ('SALE_VIEW', 'Xem đơn hàng'),
+    ('SALE_CREATE', 'Tạo đơn hàng'),
+    ('PURCHASE_VIEW', 'Xem nhập hàng'),
+    ('PURCHASE_CREATE', 'Tạo đơn nhập'),
+    ('DISCOUNT_VIEW', 'Xem khuyến mãi'),
+    ('DISCOUNT_ADD', 'Tạo khuyến mãi');
 
--- 7. role_permissions
 INSERT
     IGNORE INTO role_permissions (role_id, permission_id)
 VALUES
@@ -193,11 +303,65 @@ VALUES
     (1, 2),
     (1, 3),
     (1, 4),
+    (1, 5),
+    (1, 6),
+    (1, 7),
+    (1, 8),
+    (1, 9),
+    (1, 10),
+    (1, 11),
+    (1, 12),
+    (1, 13),
+    (1, 14),
+    (1, 15),
+    (1, 16),
+    (1, 17),
+    (1, 18),
+    (1, 19),
+    (1, 20),
     (2, 1),
+    (2, 2),
     (2, 3),
-    (3, 1);
+    (2, 4),
+    (2, 5),
+    (2, 6),
+    (2, 7),
+    (2, 8),
+    (2, 9),
+    (2, 10),
+    (2, 11),
+    (2, 12),
+    (2, 13),
+    (2, 15),
+    (2, 16),
+    (2, 17),
+    (2, 18),
+    (2, 19),
+    (2, 20),
+    (3, 1),
+    (3, 2),
+    (3, 8),
+    (3, 10),
+    (3, 11),
+    (3, 15),
+    (3, 16),
+    (3, 19),
+    (3, 20),
+    (4, 1),
+    (4, 2),
+    (4, 4),
+    (4, 6),
+    (4, 8),
+    (4, 9),
+    (4, 17),
+    (4, 18),
+    (5, 1),
+    (5, 2),
+    (5, 8),
+    (5, 10),
+    (5, 11),
+    (5, 15);
 
--- 8. employees (sau khi roles có dữ liệu)
 INSERT
     IGNORE INTO employees (
         employee_code,
@@ -213,10 +377,10 @@ INSERT
 VALUES
     (
         'NV001',
-        'Nguyễn Thị Thu Hương',
+        'Admin',
         'admin',
         '123456',
-        '0912345678',
+        '0123456789',
         'admin@sieuthi.com',
         '2025-01-15',
         12000000,
@@ -224,28 +388,71 @@ VALUES
     ),
     (
         'NV002',
-        'Trần Văn Hải',
-        'thu_ngan1',
+        'Lê Đỗ Thái Anh',
+        'eser',
         '123456',
-        '0987654321',
-        'hai@sieuthi.com',
+        '0906649246',
+        'thaianu2006@gmail.com',
         '2025-06-01',
         6500000,
         2
     ),
     (
         'NV003',
-        'Lê Thị Ngọc Lan',
-        'kho_vien',
+        'Nhan Thị Ngọc Trân',
+        'ToRan',
         '123456',
-        '0978123456',
+        '0345435108',
         'ngoc@sieuthi.com',
         '2025-09-10',
         7500000,
         3
+    ),
+    (
+        'NV004',
+        'Nguyễn Thái Thảo',
+        'MeoLanhManh',
+        '123456',
+        '0123456789',
+        'NhuyenThao@gmail.com',
+        '2025-10-01',
+        5000000,
+        4
+    ),
+    (
+        'NV005',
+        'Nguyễn Hoàng Sang',
+        'KhungLong',
+        '123456',
+        '0123456789',
+        'Loptruongkho11@gmail.com',
+        '2025-10-15',
+        7500000,
+        5
+    ),
+    (
+        'NV006',
+        'Diệp Phương Duy',
+        'PhDuy',
+        '123456',
+        '0123456789',
+        'phduy@sieuthi.com',
+        '2025-11-01',
+        8000000,
+        2
+    ),
+    (
+        'NV007',
+        'Lý Nguyễn',
+        'LyNguyen',
+        '123456',
+        '0123456789',
+        'lynguyen@sieuthi.com',
+        '2025-12-01',
+        7500000,
+        3
     );
 
--- 9. sales
 INSERT
     IGNORE INTO sales (
         sale_code,
@@ -282,7 +489,6 @@ VALUES
         'COMPLETED'
     );
 
--- 10. sales_invoices
 INSERT
     IGNORE INTO sales_invoices (
         invoice_code,
@@ -322,7 +528,6 @@ VALUES
         'COMPLETED'
     );
 
--- 11. sales_invoice_items
 INSERT
     IGNORE INTO sales_invoice_items (
         invoice_id,
@@ -337,7 +542,6 @@ VALUES
     (1, 3, 1, 7000.00, 7000.00),
     (2, 4, 3, 22000.00, 66000.00);
 
--- 12. discounts
 INSERT
     IGNORE INTO discounts (
         name,
@@ -368,19 +572,16 @@ VALUES
         'ACTIVE'
     );
 
--- 13. discount_products
 INSERT
     IGNORE INTO discount_products (discount_id, product_id)
 VALUES
     (2, 1);
 
--- 14. sale_invoice_discounts
 INSERT
     IGNORE INTO sale_invoice_discounts (discount_id, invoice_id)
 VALUES
     (1, 1);
 
--- 15. purchases
 INSERT
     IGNORE INTO purchases (
         purchase_code,
@@ -406,7 +607,6 @@ VALUES
         'RECEIVED'
     );
 
--- 16. purchase_invoices
 INSERT
     IGNORE INTO purchase_invoices (
         invoice_code,
@@ -436,7 +636,6 @@ VALUES
         'PAID'
     );
 
--- 17. purchase_invoice_items
 INSERT
     IGNORE INTO purchase_invoice_items (
         invoice_id,
@@ -449,7 +648,6 @@ VALUES
     (1, 1, 100, 22000.00, 2200000.00),
     (1, 2, 200, 3500.00, 700000.00);
 
--- 18. supplier_discounts
 INSERT
     IGNORE INTO supplier_discounts (discount_id, supplier_id)
 VALUES

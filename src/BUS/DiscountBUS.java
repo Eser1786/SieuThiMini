@@ -2,7 +2,9 @@ package BUS;
 
 import DTO.DiscountDTO;
 import DAO.DiscountDAO;
-
+import DAO.DiscountProductDAO;
+import DTO.DiscountProductDTO;
+import BUS.DiscountProductBUS;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,7 +32,8 @@ public class DiscountBUS {
         String status, // thêm tham số trạng thái
         String start,
         String end,
-        String minOrder
+        String minOrder,
+        Integer productId
 ){
 
     // ===== VALIDATE =====
@@ -116,13 +119,25 @@ try{
     d.setIsAutoApply(false);
     d.setCreatedAt(LocalDateTime.now());
 d.setUpdatedAt(LocalDateTime.now());
-    boolean result = discountDAO.addDiscount(d);
+    int discountId = discountDAO.addDiscount(d);
 
-    if(result)
-        return "SUCCESS";
-
+if(discountId <= 0)
     return "Không thể thêm khuyến mãi";
+
+if(discountType == DiscountType.FIXED){
+
+    if(productId == null)
+        return "Chưa chọn sản phẩm";
+
+    DiscountProductBUS dp = new DiscountProductBUS();
+    dp.addDiscountProduct(discountId, productId);
 }
+
+return "SUCCESS";
+
+    }
+
+
 
     public DiscountDTO getDiscountById(int id){
 
@@ -146,6 +161,7 @@ d.setUpdatedAt(LocalDateTime.now());
         return "SUCCESS";
 
     return "Không thể xóa khuyến mãi";
+    
 }
 public boolean updateDiscount(
         int id,
@@ -156,11 +172,33 @@ public boolean updateDiscount(
         String startDate,
         String endDate,
         double minOrder,
-        String status
-
+        String status,
+        Integer productId
 ){
-    return discountDAO.updateDiscount(
+    boolean result = discountDAO.updateDiscount(
             id,name,description,value,type,startDate,endDate,minOrder,status
     );
+
+    if(!result) return false;
+
+    if(type.equals("FIXED")){
+
+        DiscountProductDAO dpDAO = new DiscountProductDAO();
+
+        // xóa sản phẩm cũ
+        dpDAO.deleteByDiscountId(id);
+
+        // thêm sản phẩm mới
+        if(productId != null){
+
+            DiscountProductDTO dp = new DiscountProductDTO();
+            dp.setDiscountId(id);
+            dp.setProductId(productId);
+
+            dpDAO.add(dp);
+        }
+    }
+
+    return true;
 }
 }

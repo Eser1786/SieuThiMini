@@ -42,7 +42,7 @@ public class SanPhamPanel extends JPanel {
         // ---- All columns (visible + hidden) ----
         String[] columns = {
             "Mã SP", "Ảnh", "Tên sản phẩm", "Giá bán",
-            "Số lượng", "Kho", "Ngày hết hạn", "Khuyến mãi", "Thao tác",
+            "Số lượng", "Kho", "Ngày hết hạn", "Danh mục", "Thao tác",
             // hidden:
             "Mô tả", "Nhà cung cấp", "Danh mục", "Giá vốn",
             "Tồn kho tối thiểu", "Xuất xứ", "Ngày sản xuất",
@@ -241,19 +241,27 @@ public class SanPhamPanel extends JPanel {
         for (int i = 0; i < 9; i++)
             bang.getColumnModel().getColumn(i).setCellRenderer(altRenderer);
 
-        bang.getColumnModel().getColumn(8).setCellRenderer(new TableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(
-                    JTable table, Object value, boolean isSelected,
-                    boolean hasFocus, int row, int column) {
-                JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
-                p.setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
-                JButton xem = UIUtils.makeActionButton("Xem chi tiết", new Color(0x6677C8));
-                xem.setPreferredSize(new Dimension(100, 32));
-                p.add(xem);
-                return p;
-            }
-        });
+       bang.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+    @Override
+    public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected,
+            boolean hasFocus, int row, int column) {
+
+        JLabel label = new JLabel();
+        label.setHorizontalAlignment(JLabel.CENTER);
+
+        if (value instanceof ImageIcon) {
+            label.setIcon((ImageIcon) value);
+        }
+
+        if (!isSelected) {
+            label.setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
+            label.setOpaque(true);
+        }
+
+        return label;
+    }
+});
 
         bang.getColumnModel().getColumn(8).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
             private final JPanel p    = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
@@ -326,9 +334,15 @@ public class SanPhamPanel extends JPanel {
                 String dm      = p.getCategory()  != null ? p.getCategory().getName()  : "-";
                 String giaVon  = p.getCostPrice() != null ? String.format("%,.0fđ", p.getCostPrice()) : "-";
                 String ngaySX  = p.getProductionDate() != null ? p.getProductionDate().format(fmt) : "-";
+                ImageIcon icon = null;
+if (p.getImagePath() != null && !p.getImagePath().isEmpty()) {
+    ImageIcon img = new ImageIcon(p.getImagePath());
+    Image scaled = img.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
+    icon = new ImageIcon(scaled);
+}
                 model.addRow(new Object[]{
                     p.getCode(),
-                    p.getImagePath() != null ? p.getImagePath() : "",
+                    icon,
                     p.getName(), giaBan, qty, kho, ngayHH, "-", "",
                     p.getDescription() != null ? p.getDescription() : "-",
                     ncc, dm, giaVon,

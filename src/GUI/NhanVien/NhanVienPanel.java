@@ -75,13 +75,25 @@ public class NhanVienPanel extends JPanel {
     private void loadRoles() {
         try {
             List<RoleDTO> r = new RoleBUS().getAllRoles();
+            System.out.println("Loaded roles: " + (r != null ? r.size() : "null"));
             if (r != null) roles = r;
-        } catch (Exception ignored) {}
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         for (RoleDTO r : roles) roleMap.put(r.getId(), r.getName());
+        System.out.println("Role map: " + roleMap);
     }
 
     private String roleName(int id) {
-        return roleMap.getOrDefault(id, "Nh\u00e2n vi\u00ean");
+        String name = roleMap.getOrDefault(id, "Nhân viên");
+        switch (name.toUpperCase()) {
+            case "ADMIN": return "Admin";
+            case "MANAGER": return "Quản lý nhân viên, sản phẩm";
+            case "CASHIER": return "Thu ngân";
+            case "WAREHOUSE": return "Nhập kho";
+            case "SUPPORT": return "Chăm sóc khách hàng";
+            default: return name;
+        }
     }
 
     // Header
@@ -521,7 +533,9 @@ public class NhanVienPanel extends JPanel {
         revealedRows.clear();
         try {
             List<EmployeeDTO> list = empBUS.getAllEmployees();
+            System.out.println("Loaded employees: " + (list != null ? list.size() : "null"));
             if (list == null || list.isEmpty()) return;
+
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             for (EmployeeDTO e : list) {
                 String ngay = e.getHireDate() != null ? e.getHireDate().format(fmt) : "";
@@ -531,8 +545,8 @@ public class NhanVienPanel extends JPanel {
                     e.getPasswordHash() != null ? e.getPasswordHash() : ""
                 });
             }
-        } catch (Exception ignored) {
-            ignored.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 

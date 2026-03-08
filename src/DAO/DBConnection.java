@@ -9,8 +9,9 @@ public class DBConnection {
                                       "?useSSL=false" +
                                       "&allowPublicKeyRetrieval=true" +
                                       "&serverTimezone=UTC" +
-                                      "&useUnicode=true" +
-                                      "&characterEncoding=UTF-8";
+                                      "&useUnicode=true"+
+                                      "&characterEncoding=UTF-8"+
+                                      "&characterSetResults=UTF-8";
 
     private static final String USER = "sieuthimini_user";
     private static final String PASSWORD = "sieuthimini_pass123";
