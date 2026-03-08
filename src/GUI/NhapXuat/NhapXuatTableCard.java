@@ -178,7 +178,7 @@ class NhapXuatTableCard extends JPanel {
         JPanel pTim = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
         pTim.setOpaque(false); pTim.add(lbTim); pTim.add(timPanel);
 
-        JButton btnRefresh = new JButton("Lam moi");
+        JButton btnRefresh = new JButton("Làm mới");
         btnRefresh.setFocusPainted(false);
         btnRefresh.setBackground(new Color(0xD9D9D9));
         btnRefresh.setFont(new Font("Arial", Font.BOLD, 13));
@@ -192,7 +192,7 @@ class NhapXuatTableCard extends JPanel {
         });
         btnRefresh.addActionListener(e -> refresh());
 
-        JButton btnNew = new JButton("+ Tao phieu nhap");
+        JButton btnNew = new JButton("+ Tạo phiếu nhập");
         btnNew.setFocusPainted(false);
         btnNew.setBackground(new Color(0xD9D9D9));
         btnNew.setFont(new Font("Arial", Font.BOLD, 13));
