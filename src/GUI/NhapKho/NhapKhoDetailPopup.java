@@ -1,4 +1,4 @@
-package GUI.NhapXuat;
+﻿package GUI.NhapKho;
 
 import BUS.PurchaseInvoicesBUS;
 import DTO.PurchaseInvoiceItemsDTO;
@@ -10,7 +10,7 @@ import java.awt.*;
 import java.time.format.DateTimeFormatter;
 
 /** Popup xem chi ti\u1ebft phi\u1ebfu nh\u1eadp kho. */
-class NhapXuatDetailPopup extends JDialog {
+class NhapKhoDetailPopup extends JDialog {
 
     private static final DateTimeFormatter FMT       = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final Color             CLR_ACCENT = new Color(0x5C4A7F);
@@ -19,9 +19,9 @@ class NhapXuatDetailPopup extends JDialog {
     private static final Color             CLR_PAGE   = new Color(0xF0EFF8);
 
     private final PurchaseInvoicesDTO invoice;
-    private final NhapXuatPanel       parentPanel;
+    private final NhapKhoPanel       parentPanel;
 
-    NhapXuatDetailPopup(Window owner, PurchaseInvoicesDTO invoice, NhapXuatPanel parentPanel) {
+    NhapKhoDetailPopup(Window owner, PurchaseInvoicesDTO invoice, NhapKhoPanel parentPanel) {
         super(owner, "Chi ti\u1ebft phi\u1ebfu nh\u1eadp kho", ModalityType.APPLICATION_MODAL);
         this.invoice     = invoice;
         this.parentPanel = parentPanel;
@@ -138,7 +138,7 @@ class NhapXuatDetailPopup extends JDialog {
             JButton btnEdit = makeBtn("\u270f S\u1eeda phi\u1ebfu", new Color(0xD9D9D9));
             btnEdit.setForeground(new Color(0x333333));
             btnEdit.addActionListener(e -> {
-                Window owner = NhapXuatDetailPopup.this.getOwner();
+                Window owner = NhapKhoDetailPopup.this.getOwner();
                 dispose();
                 parentPanel.openEditPopup(invoice, owner);
             });

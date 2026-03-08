@@ -5,7 +5,7 @@ import GUI.KhachHang.KhachHangPanel;
 import GUI.Kho.KhoPanel;
 import GUI.KhuyenMai.KhuyenMaiPanel;
 import GUI.NhanVien.NhanVienPanel;
-import GUI.NhapXuat.NhapXuatPanel;
+import GUI.NhapKho.NhapKhoPanel;
 import GUI.SanPham.SanPhamPanel;
 import GUI.TrangChu.TrangChuPanel;
 import GUI.User.UserPanel;
@@ -110,7 +110,7 @@ public class MainPanel extends JPanel {
         mainCards.add(new NhanVienPanel(), NHAN_VIEN);
         mainCards.add(new DonHangPanel(), DON_HANG);
         mainCards.add(new KhoPanel(), KHO);
-        mainCards.add(new NhapXuatPanel(), NHAP_XUAT);
+        mainCards.add(new NhapKhoPanel(), NHAP_XUAT);
         mainCards.add(new KhuyenMaiPanel(), KHUYEN_MAI);
         mainCards.add(new UserPanel(), USER);
         add(mainCards, BorderLayout.CENTER);

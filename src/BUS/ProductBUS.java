@@ -31,6 +31,15 @@ public class ProductBUS {
         return dao.updateStock(productId, delta);
     }
 
+    /**
+     * Lấy tồn kho tính từ giao dịch:
+     * tổng nhập (phiếu RECEIVED) − tổng bán (hóa đơn COMPLETED).
+     * Phối hợp nhập kho và đơn hàng ⇒ tồn kho chính xác.
+     */
+    public long getComputedStock(long productId) {
+        return dao.getComputedStock(productId);
+    }
+
     private String generateProductCode() {
         // Logic tạo code: 'NV' + số tăng dần (tìm max code từ DB + 1)
         String sql = "SELECT MAX(product_code) FROM products WHERE product_code LIKE 'SP%'";

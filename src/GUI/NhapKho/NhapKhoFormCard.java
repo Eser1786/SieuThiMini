@@ -1,4 +1,4 @@
-﻿package GUI.NhapXuat;
+﻿package GUI.NhapKho;
 
 import BUS.EmployeeBUS;
 import BUS.ProductBUS;
@@ -6,6 +6,7 @@ import BUS.PurchaseInvoicesBUS;
 import BUS.SupplierBUS;
 import DTO.*;
 
+import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -18,7 +19,7 @@ import java.util.Date;
 import java.util.List;
 
 /** Form t\u1ea1o / s\u1eefa phi\u1ebfu nh\u1eadp kho. Layout 2 c\u1ed9t gi\u1ed1ng DonHangCreateCard. */
-class NhapXuatFormCard extends JPanel {
+class NhapKhoFormCard extends JPanel {
 
     private static final Color CLR_PAGE   = new Color(0xF0EFF8);
     private static final Color CLR_WHITE  = Color.WHITE;
@@ -33,7 +34,7 @@ class NhapXuatFormCard extends JPanel {
     private final PurchaseInvoicesDTO editInvoice; // null = create mode
 
     // ───────────────────── UI refs ───────────────────────────────────────────
-    private JSpinner            spinDate;
+    private JDateChooser        dateChooser;
     private JComboBox<String>   cbEmployee;
     private final JTextArea     txtNote       = new JTextArea(3, 18);
     private JComboBox<String>   cbSupplier;
@@ -56,11 +57,11 @@ class NhapXuatFormCard extends JPanel {
         BigDecimal subtotal;
     }
 
-    NhapXuatFormCard(Window dialogOwner) {
+    NhapKhoFormCard(Window dialogOwner) {
         this(dialogOwner, null);
     }
 
-    NhapXuatFormCard(Window dialogOwner, PurchaseInvoicesDTO existing) {
+    NhapKhoFormCard(Window dialogOwner, PurchaseInvoicesDTO existing) {
         this.editInvoice = existing;
         setBackground(CLR_PAGE);
         setLayout(new BorderLayout());
@@ -103,7 +104,7 @@ class NhapXuatFormCard extends JPanel {
             if (existing.getDateIn() != null) {
                 Date existingDate = Date.from(existing.getDateIn().atZone(ZoneId.systemDefault()).toInstant());
                 Date today = todayMidnight();
-                spinDate.setValue(existingDate.before(today) ? today : existingDate);
+                dateChooser.setDate(existingDate.before(today) ? today : existingDate);
             }
         }
     }
@@ -327,18 +328,13 @@ class NhapXuatFormCard extends JPanel {
     // ── Right column ──────────────────────────────────────────────────────────
 
     private JPanel buildRightCol() {
-        // Date spinner (min = today, no past dates)
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        Date minDate = cal.getTime();
-        SpinnerDateModel sdm = new SpinnerDateModel(new Date(), minDate, null, Calendar.DAY_OF_MONTH);
-        spinDate = new JSpinner(sdm);
-        JSpinner.DateEditor dateEd = new JSpinner.DateEditor(spinDate, "dd/MM/yyyy");
-        spinDate.setEditor(dateEd);
-        spinDate.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        // Date picker (min = today, no past dates)
+        dateChooser = new JDateChooser();
+        dateChooser.setDateFormatString("dd/MM/yyyy");
+        dateChooser.setDate(new Date());
+        dateChooser.setMinSelectableDate(todayMidnight());
+        dateChooser.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        dateChooser.setPreferredSize(new Dimension(0, 34));
 
         // Card 1: Th\u00f4ng tin chung
         JPanel infoCard = makeRightCard("Th\u00f4ng tin chung");
@@ -354,7 +350,7 @@ class NhapXuatFormCard extends JPanel {
         noteSP.setBorder(BorderFactory.createLineBorder(new Color(0xCCCCCC)));
         noteSP.setPreferredSize(new Dimension(0, 72));
 
-        addFieldToCard(infoCard, "Ng\u00e0y nh\u1eadp:", spinDate);
+        addFieldToCard(infoCard, "Ng\u00e0y nh\u1eadp:", dateChooser);
         addFieldToCard(infoCard, "Nh\u00e2n vi\u00ean:", cbEmployee);
         addFieldToCard(infoCard, "Ghi ch\u00fa:", noteSP);
 
@@ -582,7 +578,7 @@ class NhapXuatFormCard extends JPanel {
 
         SupplierDTO sup = allSuppliers.get(supIdx - 1);
 
-        Date selectedDate = (Date) spinDate.getValue();
+        Date selectedDate = dateChooser.getDate() != null ? dateChooser.getDate() : new Date();
         LocalDateTime dateIn = selectedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
         List<PurchaseInvoiceItemsDTO> invItems = new ArrayList<>();

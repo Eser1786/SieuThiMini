@@ -148,6 +148,10 @@ public class ProductDAO {
      * Cộng/trừ tồn kho. delta > 0 là nhập, delta < 0 là xuất.
      * Dùng atomic UPDATE để tránh race condition.
      */
+    /**
+     * Cộng/trừ tồn kho. delta > 0 là nhập, delta < 0 là xuất.
+     * Dùng atomic UPDATE để tránh race condition.
+     */
     public boolean updateStock(long productId, long delta) {
         String sql = "UPDATE products SET total_quantity = total_quantity + ?, updated_at = NOW() WHERE product_id = ?";
         try (java.sql.Connection conn = DAO.DBConnection.getConnection();
@@ -159,6 +163,34 @@ public class ProductDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Tính tồn kho thực tế từ giao dịch:
+     * Tồn = tổng nhập (phiếu RECEIVED) − tổng bán (hóa đơn COMPLETED).
+     */
+    public long getComputedStock(long productId) {
+        String sql =
+            "SELECT " +
+            "  COALESCE((SELECT SUM(pii.quantity) " +
+            "            FROM purchase_invoice_items pii " +
+            "            JOIN purchase_invoices pi ON pii.invoice_id = pi.invoice_id " +
+            "            WHERE pii.product_id = ? AND pi.status = 'RECEIVED'), 0) " +
+            "- COALESCE((SELECT SUM(sii.quantity) " +
+            "            FROM sales_invoice_items sii " +
+            "            JOIN sales_invoices sinv ON sii.invoice_id = sinv.invoice_id " +
+            "            WHERE sii.product_id = ? AND sinv.status = 'COMPLETED'), 0) " +
+            "AS computed_stock";
+        try (java.sql.Connection conn = DAO.DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            ps.setLong(2, productId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getLong("computed_stock");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0L;
     }
 
 }

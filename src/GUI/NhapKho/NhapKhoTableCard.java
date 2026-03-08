@@ -1,4 +1,4 @@
-package GUI.NhapXuat;
+﻿package GUI.NhapKho;
 
 import BUS.PurchaseInvoicesBUS;
 import DTO.PurchaseInvoicesDTO;
@@ -14,18 +14,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /** B\u1ea3ng l\u1ecbch s\u1eed phi\u1ebfu nh\u1eadp kho, ki\u1ec3u d\u00e1ng gi\u1ed1ng \u0110\u01a1n H\u00e0ng. */
-class NhapXuatTableCard extends JPanel {
+class NhapKhoTableCard extends JPanel {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final Color HDR_BG  = new Color(0xAF9FCB);
     private static final Color ROW_ALT = new Color(0xF3F0FA);
 
-    private final NhapXuatPanel parent;
+    private final NhapKhoPanel parent;
     private final DefaultTableModel model;    private final java.util.List<PurchaseInvoicesDTO> invoiceList = new java.util.ArrayList<>();    private JTextField txtSearch;
     private JComboBox<String> cbStatus;
     private TableRowSorter<DefaultTableModel> sorter;
 
-    NhapXuatTableCard(NhapXuatPanel parent) {
+    NhapKhoTableCard(NhapKhoPanel parent) {
         this.parent = parent;
         setLayout(new BorderLayout(0, 0));
         setBackground(new Color(0xF8F7FF));
@@ -33,7 +33,7 @@ class NhapXuatTableCard extends JPanel {
         // ─── Column model ─────────────────────────────────────────
         String[] cols = {"Mã phiếu", "Ngày nhập", "Nhà cung cấp", "Nhân viên", "Tổng tiền (đ)", "TT Thanh toán", "Trạng thái", "Thao tác"};
         model = new DefaultTableModel(cols, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return c == 7; }
+            @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
         // ─── Table ────────────────────────────────────────────────
@@ -83,9 +83,10 @@ class NhapXuatTableCard extends JPanel {
                 setHorizontalAlignment(SwingConstants.CENTER);
                 setFont(new Font("Arial", Font.BOLD, 14));
                 String v = val == null ? "" : val.toString();
-                if ("Đã thanh toán".equals(v))  setForeground(new Color(0x2E7D32));
-                else                            setForeground(new Color(0xE65100));
-                if (sel) setForeground(Color.WHITE);
+                if (!sel) {
+                    if ("Đã thanh toán".equals(v)) setForeground(new Color(0x2E7D32));
+                    else                           setForeground(new Color(0xE65100));
+                }
                 return this;
             }
         };
@@ -97,12 +98,12 @@ class NhapXuatTableCard extends JPanel {
                 setHorizontalAlignment(SwingConstants.CENTER);
                 setFont(new Font("Arial", Font.BOLD, 14));
                 String v = val == null ? "" : val.toString();
-                switch (v) {
-                    case "Đã nhập"   -> setForeground(new Color(0x2E7D32));
-                    case "Đã hủy"    -> setForeground(new Color(0xC62828));
-                    default          -> setForeground(new Color(0x37474F));
+                if (!sel) switch (v) {
+                    case "Đã nhập"      -> setForeground(new Color(0x2E7D32));
+                    case "Đã hủy"       -> setForeground(new Color(0xC62828));
+                    case "Chờ xác nhận" -> setForeground(new Color(0xE65100));
+                    default             -> setForeground(new Color(0x37474F));
                 }
-                if (sel) setForeground(Color.WHITE);
                 return this;
             }
         };
@@ -144,7 +145,7 @@ class NhapXuatTableCard extends JPanel {
                     int modelRow = table.convertRowIndexToModel(viewRow);
                     if (modelRow < invoiceList.size()) {
                         PurchaseInvoicesDTO inv = invoiceList.get(modelRow);
-                        parent.openDetailPopup(inv, SwingUtilities.getWindowAncestor(NhapXuatTableCard.this));
+                        parent.openDetailPopup(inv, SwingUtilities.getWindowAncestor(NhapKhoTableCard.this));
                     }
                 }
             }

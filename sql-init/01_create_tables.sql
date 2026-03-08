@@ -154,7 +154,7 @@ CREATE TABLE purchase_invoices (
     total_amount DECIMAL(15, 2) NOT NULL,
     payment_method ENUM('CASH', 'CARD', 'TRANSFER', 'DEBT') COLLATE utf8mb4_unicode_ci DEFAULT 'DEBT',
     payment_status ENUM('PENDING', 'PAID', 'CANCELLED') COLLATE utf8mb4_unicode_ci DEFAULT 'PENDING',
-    STATUS ENUM('RECEIVED', 'CANCELLED') COLLATE utf8mb4_unicode_ci DEFAULT 'RECEIVED',
+    STATUS ENUM('PENDING', 'RECEIVED', 'CANCELLED') COLLATE utf8mb4_unicode_ci DEFAULT 'PENDING',
     notes TEXT COLLATE utf8mb4_unicode_ci,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
