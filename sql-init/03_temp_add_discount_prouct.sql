@@ -1,4 +1,4 @@
-CREATE TABLE discount_products (
+CREATE TABLE IF NOT EXISTS discount_products (
     discount_id BIGINT,
     product_id BIGINT,
     PRIMARY KEY (discount_id, product_id),
