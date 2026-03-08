@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Form tao phieu nhap kho - dung trong JDialog popup, layout 2 cot giong DonHangCreateCard. */
+/** Form tạo phiếu nhập kho - dùng trong JDialog popup, layout 2 cột giống DonHangCreateCard. */
 class NhapXuatFormCard extends JPanel {
 
     private static final Color CLR_PAGE   = new Color(0xF0EFF8);
@@ -31,7 +31,7 @@ class NhapXuatFormCard extends JPanel {
     // Form items (backing the dynamic list panel)
     private final List<FormItem> items = new ArrayList<>();
 
-    // UI refs - initialised at field level so build methods can use them safely
+    // UI refs
     private final JLabel            lblDate       = new JLabel();
     private       JComboBox<String> cbEmployee;
     private final JTextArea         txtNote       = new JTextArea(3, 18);
@@ -41,10 +41,10 @@ class NhapXuatFormCard extends JPanel {
     // Summary labels (right card)
     private final JLabel lblTotalItems = new JLabel("0");
     private final JLabel lblTotalQty   = new JLabel("0");
-    private final JLabel lblTotalMoney = new JLabel("0 d");
+    private final JLabel lblTotalMoney = new JLabel("0 \u0111");
 
     // Total label shown in left card footer
-    private final JLabel lblLeftTotal  = new JLabel("0 d");
+    private final JLabel lblLeftTotal  = new JLabel("0 \u0111");
 
     // List UI
     private JPanel      listPanel;
@@ -80,7 +80,7 @@ class NhapXuatFormCard extends JPanel {
         p.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xCCCCCC)),
                 BorderFactory.createEmptyBorder(12, 20, 12, 20)));
-        JLabel lbl = new JLabel("+ Tao phieu nhap kho");
+        JLabel lbl = new JLabel("+ T\u1ea1o phi\u1ebfu nh\u1eadp kho");
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lbl.setForeground(new Color(0x333333));
         p.add(lbl, BorderLayout.WEST);
@@ -115,7 +115,7 @@ class NhapXuatFormCard extends JPanel {
     }
 
     private JPanel buildLeftCard() {
-        // List panel - rows added by rebuildList()
+        // List panel
         listPanel = new JPanel(new GridBagLayout());
         listPanel.setBackground(CLR_WHITE);
 
@@ -125,7 +125,7 @@ class NhapXuatFormCard extends JPanel {
         tableHeader.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
         GridBagConstraints lhg = new GridBagConstraints();
         lhg.gridy = 0; lhg.anchor = GridBagConstraints.WEST; lhg.insets = new Insets(0, 0, 0, 6);
-        String[] hdrTxt = {"Ten san pham", "SKU", "So luong", "Gia nhap (d)", "Thanh tien (d)", ""};
+        String[] hdrTxt = {"T\u00ean s\u1ea3n ph\u1ea9m", "SKU", "S\u1ed1 l\u01b0\u1ee3ng", "Gi\u00e1 nh\u1eadp (\u0111)", "Th\u00e0nh ti\u1ec1n (\u0111)", ""};
         int[]    hdrW   = {0, 100, 80, 120, 120, 36};
         double[] hdrWx  = {1.0, 0, 0, 0, 0, 0};
         for (int i = 0; i < hdrTxt.length; i++) {
@@ -159,7 +159,7 @@ class NhapXuatFormCard extends JPanel {
                 BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
                 BorderFactory.createEmptyBorder(5, 8, 5, 8)));
 
-        JButton btnBrowse = makeBtn("+ Duyet san pham", CLR_ACCENT);
+        JButton btnBrowse = makeBtn("+ Duy\u1ec7t s\u1ea3n ph\u1ea9m", CLR_ACCENT);
         btnBrowse.setPreferredSize(new Dimension(200, 36));
         btnBrowse.addActionListener(e -> openProductPicker());
 
@@ -169,7 +169,7 @@ class NhapXuatFormCard extends JPanel {
         searchRow.add(btnBrowse, BorderLayout.EAST);
 
         // Total row at bottom of left card
-        JLabel lbTotLbl = new JLabel("Tong tien:");
+        JLabel lbTotLbl = new JLabel("T\u1ed5ng ti\u1ec1n:");
         lbTotLbl.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblLeftTotal.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblLeftTotal.setForeground(CLR_ACCENT);
@@ -182,14 +182,14 @@ class NhapXuatFormCard extends JPanel {
         totRow.add(lbTotLbl, BorderLayout.WEST);
         totRow.add(lblLeftTotal, BorderLayout.EAST);
 
-        // Left card content (GridBagLayout)
+        // Left card content
         JPanel leftContent = new JPanel(new GridBagLayout());
         leftContent.setBackground(CLR_WHITE);
         leftContent.setBorder(BorderFactory.createEmptyBorder(18, 22, 18, 22));
         GridBagConstraints lc = new GridBagConstraints();
         lc.gridx = 0; lc.weightx = 1.0; lc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel leftTitle = new JLabel("Chi tiet san pham nhap");
+        JLabel leftTitle = new JLabel("Chi ti\u1ebft s\u1ea3n ph\u1ea9m nh\u1eadp");
         leftTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         leftTitle.setForeground(new Color(0x222222));
 
@@ -239,7 +239,7 @@ class NhapXuatFormCard extends JPanel {
         GridBagConstraints g = new GridBagConstraints();
         g.gridy = 0; g.anchor = GridBagConstraints.WEST; g.insets = new Insets(0, 0, 0, 8);
 
-        // col 0: Ten SP (expands)
+        // col 0: Tên SP (expands)
         JLabel lbName = new JLabel(fi.productName);
         lbName.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         g.gridx = 0; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
@@ -253,21 +253,21 @@ class NhapXuatFormCard extends JPanel {
         g.gridx = 1; g.weightx = 0; g.fill = GridBagConstraints.NONE;
         row.add(lbCode, g);
 
-        // col 3: Don gia (pre-declared before spinner so changeListener can update it)
+        // col 3: Giá nhập (pre-declared before spinner)
         JLabel lbPrice = new JLabel(formatMoney(fi.unitPrice));
         lbPrice.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lbPrice.setForeground(new Color(0x555555));
         lbPrice.setPreferredSize(new Dimension(120, 24));
         lbPrice.setHorizontalAlignment(SwingConstants.RIGHT);
 
-        // col 4: Thanh tien (pre-declared before spinner)
+        // col 4: Thành tiền (pre-declared before spinner)
         JLabel lbSub = new JLabel(formatMoney(fi.subtotal));
         lbSub.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lbSub.setForeground(CLR_ACCENT);
         lbSub.setPreferredSize(new Dimension(120, 24));
         lbSub.setHorizontalAlignment(SwingConstants.RIGHT);
 
-        // col 2: Spinner so luong
+        // col 2: Spinner số lượng
         SpinnerNumberModel mdl = new SpinnerNumberModel((int) Math.min(fi.quantity, 999999L), 1, 999999, 1);
         JSpinner spinner = new JSpinner(mdl);
         spinner.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -306,14 +306,14 @@ class NhapXuatFormCard extends JPanel {
     // ── Right column ─────────────────────────────────────────────────────────
 
     private JPanel buildRightCol() {
-        // Card 1: Thong tin chung
-        JPanel infoCard = makeRightCard("Thong tin chung");
+        // Card 1: Thông tin chung
+        JPanel infoCard = makeRightCard("Th\u00f4ng tin chung");
         lblDate.setText(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         lblDate.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         cbEmployee = new JComboBox<>();
         cbEmployee.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cbEmployee.addItem("-- Chon nhan vien --");
+        cbEmployee.addItem("-- Ch\u1ecdn nh\u00e2n vi\u00ean --");
         for (EmployeeDTO e : allEmployees) cbEmployee.addItem(e.getFullName());
 
         txtNote.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -322,33 +322,33 @@ class NhapXuatFormCard extends JPanel {
         noteSP.setBorder(BorderFactory.createLineBorder(new Color(0xCCCCCC)));
         noteSP.setPreferredSize(new Dimension(0, 72));
 
-        addFieldToCard(infoCard, "Ngay tao:", lblDate);
-        addFieldToCard(infoCard, "Nhan vien:", cbEmployee);
-        addFieldToCard(infoCard, "Ghi chu:", noteSP);
+        addFieldToCard(infoCard, "Ng\u00e0y t\u1ea1o:", lblDate);
+        addFieldToCard(infoCard, "Nh\u00e2n vi\u00ean:", cbEmployee);
+        addFieldToCard(infoCard, "Ghi ch\u00fa:", noteSP);
 
-        // Card 2: Nha cung cap
-        JPanel supplierCard = makeRightCard("Nha cung cap");
+        // Card 2: Nhà cung cấp
+        JPanel supplierCard = makeRightCard("Nh\u00e0 cung c\u1ea5p");
         cbSupplier = new JComboBox<>();
         cbSupplier.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cbSupplier.addItem("-- Chon nha cung cap --");
+        cbSupplier.addItem("-- Ch\u1ecdn nh\u00e0 cung c\u1ea5p --");
         for (SupplierDTO s : allSuppliers) cbSupplier.addItem(s.getName());
 
         txtInvoiceRef.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         txtInvoiceRef.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
                 BorderFactory.createEmptyBorder(5, 8, 5, 8)));
-        addFieldToCard(supplierCard, "Nha cung cap:", cbSupplier);
-        addFieldToCard(supplierCard, "So hoa don nhap:", txtInvoiceRef);
+        addFieldToCard(supplierCard, "Nh\u00e0 cung c\u1ea5p:", cbSupplier);
+        addFieldToCard(supplierCard, "S\u1ed1 h\u00f3a \u0111\u01a1n nh\u1eadp:", txtInvoiceRef);
 
-        // Card 3: Tong ket
-        JPanel summaryCard = makeRightCard("Tong ket phieu");
+        // Card 3: Tổng kết
+        JPanel summaryCard = makeRightCard("T\u1ed5ng k\u1ebft phi\u1ebfu");
         for (JLabel l : new JLabel[]{lblTotalItems, lblTotalQty, lblTotalMoney}) {
             l.setFont(new Font("Segoe UI", Font.BOLD, 14));
             l.setForeground(CLR_ACCENT);
         }
-        addFieldToCard(summaryCard, "So loai SP:", lblTotalItems);
-        addFieldToCard(summaryCard, "Tong so luong:", lblTotalQty);
-        addFieldToCard(summaryCard, "Tong tien:", lblTotalMoney);
+        addFieldToCard(summaryCard, "S\u1ed1 lo\u1ea1i SP:", lblTotalItems);
+        addFieldToCard(summaryCard, "T\u1ed5ng s\u1ed1 l\u01b0\u1ee3ng:", lblTotalQty);
+        addFieldToCard(summaryCard, "T\u1ed5ng ti\u1ec1n:", lblTotalMoney);
 
         JPanel rightCol = new JPanel(new GridBagLayout());
         rightCol.setBackground(CLR_PAGE);
@@ -407,8 +407,8 @@ class NhapXuatFormCard extends JPanel {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
         p.setBackground(CLR_PAGE);
         p.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
-        JButton btnHuy = makeBtn("Huy",       new Color(0xB83434));
-        JButton btnLuu = makeBtn("Luu phieu", CLR_ACCENT);
+        JButton btnHuy = makeBtn("H\u1ee7y",        new Color(0xB83434));
+        JButton btnLuu = makeBtn("L\u01b0u phi\u1ebfu", CLR_ACCENT);
         btnHuy.setPreferredSize(new Dimension(110, 36));
         btnLuu.setPreferredSize(new Dimension(130, 36));
         btnHuy.addActionListener(e -> closeDialog());
@@ -422,7 +422,7 @@ class NhapXuatFormCard extends JPanel {
 
     private void openProductPicker() {
         JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(this),
-                "Chon san pham", Dialog.ModalityType.APPLICATION_MODAL);
+                "Ch\u1ecdn s\u1ea3n ph\u1ea9m", Dialog.ModalityType.APPLICATION_MODAL);
         dlg.setSize(640, 500);
         dlg.setLocationRelativeTo(this);
 
@@ -432,7 +432,7 @@ class NhapXuatFormCard extends JPanel {
                 BorderFactory.createLineBorder(new Color(0xCCCCCC)),
                 BorderFactory.createEmptyBorder(5, 8, 5, 8)));
 
-        String[] cols = {"Ma SP", "Ten san pham", "Ton kho", "Gia nhap (d)"};
+        String[] cols = {"M\u00e3 SP", "T\u00ean s\u1ea3n ph\u1ea9m", "T\u1ed3n kho", "Gi\u00e1 nh\u1eadp (\u0111)"};
         DefaultTableModel pm = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -464,12 +464,12 @@ class NhapXuatFormCard extends JPanel {
             public void changedUpdate(javax.swing.event.DocumentEvent e) { fill.run(); }
         });
 
-        JButton btnAdd = makeBtn("Them vao phieu", CLR_ACCENT);
+        JButton btnAdd = makeBtn("Th\u00eam v\u00e0o phi\u1ebfu", CLR_ACCENT);
         btnAdd.setPreferredSize(new Dimension(170, 36));
         btnAdd.addActionListener(e -> {
             int[] rows = pickTable.getSelectedRows();
             if (rows.length == 0) {
-                JOptionPane.showMessageDialog(dlg, "Vui long chon it nhat mot san pham.");
+                JOptionPane.showMessageDialog(dlg, "Vui l\u00f2ng ch\u1ecdn \u00edt nh\u1ea5t m\u1ed9t s\u1ea3n ph\u1ea9m.");
                 return;
             }
             for (int row : rows) {
@@ -498,15 +498,15 @@ class NhapXuatFormCard extends JPanel {
             }
         });
 
-        JLabel hint = new JLabel("Giu Ctrl hoac Shift de chon nhieu san pham");
+        JLabel hint = new JLabel("Gi\u1eef Ctrl ho\u1eb7c Shift \u0111\u1ec3 ch\u1ecdn nhi\u1ec1u s\u1ea3n ph\u1ea9m");
         hint.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         hint.setForeground(Color.GRAY);
 
-        JButton btnClose = makeBtn("Dong", new Color(0x607D8B));
+        JButton btnClose = makeBtn("\u0110\u00f3ng", new Color(0x607D8B));
         btnClose.addActionListener(e -> dlg.dispose());
 
         JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
-        topRow.add(new JLabel("Tim kiem:")); topRow.add(search);
+        topRow.add(new JLabel("T\u00ecm ki\u1ebfm:")); topRow.add(search);
 
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
         btnRow.add(hint); btnRow.add(btnClose); btnRow.add(btnAdd);
@@ -522,39 +522,39 @@ class NhapXuatFormCard extends JPanel {
     private void handleSave() {
         int empIdx = cbEmployee.getSelectedIndex();
         if (empIdx <= 0 || empIdx > allEmployees.size()) {
-            JOptionPane.showMessageDialog(this, "Vui long chon nhan vien thuc hien.",
-                    "Loi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui l\u00f2ng ch\u1ecdn nh\u00e2n vi\u00ean th\u1ef1c hi\u1ec7n.",
+                    "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (items.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui long them it nhat mot san pham.",
-                    "Loi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui l\u00f2ng th\u00eam \u00edt nh\u1ea5t m\u1ed9t s\u1ea3n ph\u1ea9m.",
+                    "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
             return;
         }
         EmployeeDTO emp = allEmployees.get(empIdx - 1);
         try {
             List<String> warnings = saveNhapKho(emp);
-            String msg = "Luu phieu nhap thanh cong!";
+            String msg = "L\u01b0u phi\u1ebfu nh\u1eadp th\u00e0nh c\u00f4ng!";
             if (!warnings.isEmpty()) {
-                msg += "\n\nSan pham sap het hang:\n- " + String.join("\n- ", warnings);
-                JOptionPane.showMessageDialog(this, msg, "Canh bao ton kho", JOptionPane.WARNING_MESSAGE);
+                msg += "\n\nS\u1ea3n ph\u1ea9m s\u1eafp h\u1ebft h\u00e0ng:\n- " + String.join("\n- ", warnings);
+                JOptionPane.showMessageDialog(this, msg, "C\u1ea3nh b\u00e1o t\u1ed3n kho", JOptionPane.WARNING_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(this, msg, "Thanh cong", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, msg, "Th\u00e0nh c\u00f4ng", JOptionPane.INFORMATION_MESSAGE);
             }
             closeDialog();
         } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Loi xac thuc", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "L\u1ed7i x\u00e1c th\u1ef1c", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Loi khi luu phieu: " + ex.getMessage(),
-                    "Loi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "L\u1ed7i khi l\u01b0u phi\u1ebfu: " + ex.getMessage(),
+                    "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private List<String> saveNhapKho(EmployeeDTO emp) throws Exception {
         int supIdx = cbSupplier.getSelectedIndex();
         if (supIdx <= 0 || supIdx > allSuppliers.size())
-            throw new IllegalArgumentException("Vui long chon nha cung cap.");
+            throw new IllegalArgumentException("Vui l\u00f2ng ch\u1ecdn nh\u00e0 cung c\u1ea5p.");
 
         SupplierDTO sup = allSuppliers.get(supIdx - 1);
 
@@ -586,7 +586,7 @@ class NhapXuatFormCard extends JPanel {
         inv.setTotalAmount(total);
 
         boolean ok = new PurchaseInvoicesBUS().addPurchaseInvoice(inv);
-        if (!ok) throw new RuntimeException("Luu phieu nhap that bai.");
+        if (!ok) throw new RuntimeException("L\u01b0u phi\u1ebfu nh\u1eadp th\u1ea5t b\u1ea1i.");
 
         List<String> warnings = new ArrayList<>();
         for (ProductDTO fresh : new ProductBUS().getAllProducts()) {
@@ -610,7 +610,7 @@ class NhapXuatFormCard extends JPanel {
         lblTotalItems.setText(String.valueOf(items.size()));
         lblTotalQty.setText(String.valueOf(items.stream().mapToLong(fi -> fi.quantity).sum()));
         BigDecimal total = items.stream().map(fi -> fi.subtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
-        String totalStr = formatMoney(total) + " d";
+        String totalStr = formatMoney(total) + " \u0111";
         lblTotalMoney.setText(totalStr);
         lblLeftTotal.setText(totalStr);
     }
