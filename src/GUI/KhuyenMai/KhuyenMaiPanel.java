@@ -103,6 +103,7 @@ public class KhuyenMaiPanel extends JPanel {
         JLabel lbLoc = new JLabel("Loại giảm:");  lbLoc.setFont(new Font("Arial", Font.PLAIN, 13));
         JLabel lbTT  = new JLabel("Trạng thái:"); lbTT.setFont(new Font("Arial", Font.PLAIN, 13));
         JLabel lbTim = new JLabel("Tìm kiếm:");   lbTim.setFont(new Font("Arial", Font.PLAIN, 13));
+        
 
         JPanel pLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pLoc.setOpaque(false); pLoc.add(lbLoc); pLoc.add(cbLoc);
         JPanel pTT  = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTT.setOpaque(false);  pTT.add(lbTT);  pTT.add(cbTrangThai);
@@ -123,6 +124,19 @@ public class KhuyenMaiPanel extends JPanel {
         JButton btnPDF    = ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
         JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
         JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
+        JButton btnReset = new JButton("Reset");
+        btnReset.setBackground(new Color(108, 117, 125)); // màu xám
+        btnReset.setForeground(Color.WHITE);
+        btnReset.setFocusPainted(false);
+        btnReset.setBorderPainted(false);
+        btnReset.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnReset.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnReset.addActionListener(e -> {
+            tfTim.setText("");
+            cbLoc.setSelectedIndex(0);
+            cbTrangThai.setSelectedIndex(0);
+            sorter.setRowFilter(null);
+        });
         btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, tableModel, "Danh sách khuyến mãi"));
         btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, tableModel, "khuyen_mai"));
         btnImport.addActionListener(e -> {
@@ -133,7 +147,7 @@ public class KhuyenMaiPanel extends JPanel {
 
         toolbar.add(pLoc); toolbar.add(pTT); toolbar.add(pTim);
         toolbar.add(btnThem); toolbar.add(btnPDF); toolbar.add(btnExcel); toolbar.add(btnImport);
-
+        toolbar.add(btnReset);
         JPanel north = new JPanel();
         north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
         north.add(header);
@@ -233,14 +247,9 @@ public class KhuyenMaiPanel extends JPanel {
             else if (active.size() == 1) sorter.setRowFilter(active.get(0));
             else sorter.setRowFilter(RowFilter.andFilter(active));
         };
-        cbLoc.addActionListener(e -> applyFilter.run());
-        cbTrangThai.addActionListener(e -> applyFilter.run());
+
         btnTim.addActionListener(e -> applyFilter.run());
-        tfTim.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e)  { applyFilter.run(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e)  { applyFilter.run(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
-        });
+
 
         JScrollPane scroll = new JScrollPane(bang);
         UIUtils.styleScrollPane(scroll);
