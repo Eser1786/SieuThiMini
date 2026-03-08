@@ -5,11 +5,12 @@ import java.text.SimpleDateFormat;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.List;
 import BUS.DiscountBUS;
+import BUS.ProductBUS;
 import DTO.DiscountDTO;
+import DTO.ProductDTO;
 import GUI.ExportUtils;
 import GUI.UIUtils;
 import GUI.WrapLayout;
@@ -272,6 +273,7 @@ public class KhuyenMaiPanel extends JPanel {
                 d.getStatus() != null ? d.getStatus().name() : "-", ""
             });
         }
+
     }
 
     // ── Detail dialog ─────────────────────────────────────────────────────────
@@ -360,12 +362,43 @@ public class KhuyenMaiPanel extends JPanel {
         JComboBox<String> cbType   = styledCombo(new String[]{"PERCENT", "FIXED"});
         JComboBox<String> cbStatus = styledCombo(new String[]{"ACTIVE", "INACTIVE", "EXPIRED"});
         JDateChooser dcStart = dateChooser(); JDateChooser dcEnd = dateChooser();
+                String[] productCols = {"Chọn", "ID", "Tên sản phẩm"};
 
+        DefaultTableModel productModel = new DefaultTableModel(productCols,0){
+            @Override
+            public Class<?> getColumnClass(int column){
+                return column == 0 ? Boolean.class : String.class;
+            }
+        };
+
+        JTable productTable = new JTable(productModel);
+        productTable.setRowHeight(25);
+
+        JScrollPane productScroll = new JScrollPane(productTable);
+        productScroll.setPreferredSize(new Dimension(300,120));
+
+            ProductBUS productBUS = new ProductBUS();
+        ArrayList<ProductDTO> products = productBUS.getAllProducts();
+
+        for(ProductDTO p : products){
+            productModel.addRow(new Object[]{
+                false,
+                p.getId(),
+                p.getName()
+            });
+        }
         JPanel form = buildFormGrid(new Object[][]{
             {"Tên khuyến mãi *:", fName,     "Loại giảm:",       cbType},
             {"Giá trị giảm *:",   fValue,    "Trạng thái:",      cbStatus},
             {"Min order (VNĐ):",  fMinOrder, "Ngày bắt đầu *:",  dcStart},
             {"Mô tả:",            fDesc,     "Ngày kết thúc *:", dcEnd},
+            {"Sản phẩm áp dụng:", productScroll, "", new JLabel("")}
+        });
+        productScroll.setVisible(false);
+        cbType.addActionListener(e -> {
+            String type = cbType.getSelectedItem().toString();
+            productScroll.setVisible(type.equals("FIXED"));
+            dlg.pack();
         });
         dlg.add(form, BorderLayout.CENTER);
 
