@@ -3,12 +3,14 @@ package BUS;
 import DAO.DBConnection;
 import DAO.EmployeeDAO;
 import DTO.EmployeeDTO;
+import DTO.RoleDTO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class EmployeeBUS {
     private EmployeeDAO dao;
@@ -49,4 +51,26 @@ public class EmployeeBUS {
         }
         return "default";  // Default nếu lỗi
     }
+
+
+    public RoleDTO getRole(Long employeeId) {
+        return dao.getRoleByEmployeeID(employeeId);
+    }
+
+    public boolean hasPermission(Long employeeId, String permissionName) {
+        RoleDTO role = getRole(employeeId);
+        if (role == null) return false;
+        List<String> permissions = role.getPermissions();
+        return permissions.contains(permissionName);
+    }
+
+    public boolean canShowPanel(Long employeeId, String panelPermission) {
+        return hasPermission(employeeId, panelPermission);
+    }
+
+    // if (bus.canShowPanel(loggedEmployeeId, "PRODUCT_ADD")) {
+    // panelQuanLySanPham.setVisible(true);
+    // } else {
+    // panelQuanLySanPham.setVisible(false);
+    // }
 }
