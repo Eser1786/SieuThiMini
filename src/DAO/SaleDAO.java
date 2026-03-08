@@ -15,11 +15,16 @@ public class SaleDAO {
         ArrayList<SaleDTO> list = new ArrayList<>();
 
         String sql = """
-                SELECT s.*, 
-                       c.customer_code, 
-                       c.full_name AS customer_name,
-                       e.employee_code, 
-                       e.name AS employee_name
+                SELECT s.sale_id, s.sale_code, s.sale_date, s.customer_id, s.employee_id,
+                       s.subtotal, s.discount_amount, s.status, s.payment_method,
+                       s.total_amount, s.note,
+                       COALESCE((SELECT SUM(sii.quantity)
+                                 FROM sales_invoices si
+                                 JOIN sales_invoice_items sii ON si.invoice_id = sii.invoice_id
+                                 WHERE si.sale_id = s.sale_id), s.total_quantity) AS total_quantity,
+                       c.customer_code, c.full_name AS customer_name,
+                       c.phone AS customer_phone, c.address AS customer_address,
+                       e.employee_code, e.name AS employee_name
                 FROM sales s
                 LEFT JOIN customers c ON s.customer_id = c.customer_id
                 LEFT JOIN employees e ON s.employee_id = e.employee_id
@@ -45,11 +50,16 @@ public class SaleDAO {
         ArrayList<SaleDTO> list = new ArrayList<>();
 
         String sql = """
-                SELECT s.*, 
-                       c.customer_code, 
-                       c.full_name AS customer_name,
-                       e.employee_code, 
-                       e.name AS employee_name
+                SELECT s.sale_id, s.sale_code, s.sale_date, s.customer_id, s.employee_id,
+                       s.subtotal, s.discount_amount, s.status, s.payment_method,
+                       s.total_amount, s.note,
+                       COALESCE((SELECT SUM(sii.quantity)
+                                 FROM sales_invoices si
+                                 JOIN sales_invoice_items sii ON si.invoice_id = sii.invoice_id
+                                 WHERE si.sale_id = s.sale_id), s.total_quantity) AS total_quantity,
+                       c.customer_code, c.full_name AS customer_name,
+                       c.phone AS customer_phone, c.address AS customer_address,
+                       e.employee_code, e.name AS employee_name
                 FROM sales s
                 LEFT JOIN customers c ON s.customer_id = c.customer_id
                 LEFT JOIN employees e ON s.employee_id = e.employee_id
@@ -77,11 +87,16 @@ public class SaleDAO {
     public SaleDTO getSaleById(int saleId) {
 
         String sql = """
-                SELECT s.*, 
-                       c.customer_code, 
-                       c.full_name AS customer_name,
-                       e.employee_code, 
-                       e.name AS employee_name
+                SELECT s.sale_id, s.sale_code, s.sale_date, s.customer_id, s.employee_id,
+                       s.subtotal, s.discount_amount, s.status, s.payment_method,
+                       s.total_amount, s.note,
+                       COALESCE((SELECT SUM(sii.quantity)
+                                 FROM sales_invoices si
+                                 JOIN sales_invoice_items sii ON si.invoice_id = sii.invoice_id
+                                 WHERE si.sale_id = s.sale_id), s.total_quantity) AS total_quantity,
+                       c.customer_code, c.full_name AS customer_name,
+                       c.phone AS customer_phone, c.address AS customer_address,
+                       e.employee_code, e.name AS employee_name
                 FROM sales s
                 LEFT JOIN customers c ON s.customer_id = c.customer_id
                 LEFT JOIN employees e ON s.employee_id = e.employee_id
@@ -175,6 +190,8 @@ public class SaleDAO {
         sale.setCustomerID(rs.getInt("customer_id"));
         sale.setCustomerCode(rs.getString("customer_code"));
         sale.setCustomerName(rs.getString("customer_name"));
+        sale.setCustomerPhone(rs.getString("customer_phone"));
+        sale.setCustomerAddress(rs.getString("customer_address"));
 
         sale.setEmployeeID(rs.getInt("employee_id"));
         sale.setEmployeeCode(rs.getString("employee_code"));
@@ -202,11 +219,16 @@ public class SaleDAO {
     public SaleDTO getSaleByCode(String code) {
 
         String sql = """
-                SELECT s.*, 
-                       c.customer_code, 
-                       c.full_name AS customer_name,
-                       e.employee_code, 
-                       e.name AS employee_name
+                SELECT s.sale_id, s.sale_code, s.sale_date, s.customer_id, s.employee_id,
+                       s.subtotal, s.discount_amount, s.status, s.payment_method,
+                       s.total_amount, s.note,
+                       COALESCE((SELECT SUM(sii.quantity)
+                                 FROM sales_invoices si
+                                 JOIN sales_invoice_items sii ON si.invoice_id = sii.invoice_id
+                                 WHERE si.sale_id = s.sale_id), s.total_quantity) AS total_quantity,
+                       c.customer_code, c.full_name AS customer_name,
+                       c.phone AS customer_phone, c.address AS customer_address,
+                       e.employee_code, e.name AS employee_name
                 FROM sales s
                 LEFT JOIN customers c ON s.customer_id = c.customer_id
                 LEFT JOIN employees e ON s.employee_id = e.employee_id

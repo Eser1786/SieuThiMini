@@ -184,6 +184,42 @@ public class SalesInvoiceDAO {
         return invoice;
     }
 
+    public SalesInvoiceDTO getSalesInvoiceBySaleId(Long saleId) {
+        SalesInvoiceDTO invoice = null;
+        String sql = "SELECT si.*, c.full_name AS customer_name, c.phone AS customer_phone, e.name AS employee_name " +
+                     "FROM sales_invoices si " +
+                     "LEFT JOIN customers c ON si.customer_id = c.customer_id " +
+                     "LEFT JOIN employees e ON si.employee_id = e.employee_id " +
+                     "WHERE si.sale_id = ? LIMIT 1";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, saleId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                invoice = new SalesInvoiceDTO();
+                invoice.setInvoiceId(rs.getLong("invoice_id"));
+                invoice.setInvoiceCode(rs.getString("invoice_code"));
+                invoice.setSaleId(rs.getLong("sale_id"));
+                invoice.setCustomerId(rs.getLong("customer_id"));
+                invoice.setCustomerName(rs.getString("customer_name"));
+                invoice.setCustomerPhone(rs.getString("customer_phone"));
+                invoice.setEmployeeId(rs.getLong("employee_id"));
+                invoice.setEmployeeName(rs.getString("employee_name"));
+                invoice.setSubtotal(rs.getBigDecimal("subtotal"));
+                invoice.setDiscountAmount(rs.getBigDecimal("discount_amount"));
+                invoice.setTaxAmount(rs.getBigDecimal("tax_amount"));
+                invoice.setTotalAmount(rs.getBigDecimal("total_amount"));
+                invoice.setPaymentMethod(rs.getString("payment_method"));
+                invoice.setStatus(rs.getString("status"));
+                invoice.setItems(getItemsByInvoiceId(invoice.getInvoiceId()));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return invoice;
+    }
+
     public boolean updateSalesInvoice(SalesInvoiceDTO invoice) {
         boolean result = false;
         String sql = "UPDATE sales_invoices SET invoice_code = ?, sale_id = ?, customer_id = ?, employee_id = ?, " +

@@ -26,6 +26,11 @@ public class SalesInvoiceBUS {
         return salesInvoiceDAO.getSalesInvoiceById(invoiceId);
     }
 
+    public SalesInvoiceDTO getSalesInvoiceBySaleId(Long saleId) {
+        if (saleId == null || saleId <= 0) return null;
+        return salesInvoiceDAO.getSalesInvoiceBySaleId(saleId);
+    }
+
     public boolean addSalesInvoice(SalesInvoiceDTO invoice) {
         if (invoice == null) return false;
 

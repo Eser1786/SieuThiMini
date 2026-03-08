@@ -1,4 +1,4 @@
-﻿package GUI.NhapKho;
+package GUI.NhapKho;
 
 import BUS.PurchaseInvoicesBUS;
 import DTO.PurchaseInvoiceItemsDTO;

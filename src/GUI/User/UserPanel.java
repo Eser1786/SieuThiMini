@@ -74,11 +74,6 @@ public class UserPanel extends JPanel {
         avatar.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Camera icon overlay hint
-        JLabel changePhoto = new JLabel("Đổi ảnh đại diện");
-        changePhoto.setFont(new Font("Arial", Font.PLAIN, 12));
-        changePhoto.setForeground(ACCENT2);
-        changePhoto.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        changePhoto.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel name = new JLabel("Nguyễn Văn A");
         name.setFont(new Font("Arial", Font.BOLD, 22));
@@ -89,8 +84,6 @@ public class UserPanel extends JPanel {
         role.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         card.add(avatar);
-        card.add(Box.createVerticalStrut(8));
-        card.add(changePhoto);
         card.add(Box.createVerticalStrut(10));
         card.add(name);
         card.add(Box.createVerticalStrut(6));
@@ -128,9 +121,6 @@ public class UserPanel extends JPanel {
         JPanel card = makeCard();
         card.setLayout(new FlowLayout(FlowLayout.CENTER, 16, 16));
 
-        JButton btnPasswd = makeActionBtn("Đổi mật khẩu", ACCENT2);
-        btnPasswd.addActionListener(e -> showChangePasswordDialog());
-
         JButton btnLogout = makeActionBtn("Đăng xuất", new Color(0xB83434));
         btnLogout.addActionListener(e -> {
             int ok = JOptionPane.showConfirmDialog(this,
@@ -140,59 +130,8 @@ public class UserPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Đã đăng xuất.");
         });
 
-        card.add(btnPasswd);
         card.add(btnLogout);
         return card;
-    }
-
-    // ── Change password dialog ────────────────────────────────────────────
-    private void showChangePasswordDialog() {
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        JDialog dlg = new JDialog(owner, "Đổi mật khẩu", Dialog.ModalityType.APPLICATION_MODAL);
-        dlg.setSize(400, 280);
-        dlg.setLocationRelativeTo(this);
-        dlg.setResizable(false);
-        dlg.setLayout(new BorderLayout());
-
-        JPanel hdr = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
-        hdr.setBackground(ACCENT2);
-        JLabel hl = new JLabel("Đổi mật khẩu");
-        hl.setFont(new Font("Arial", Font.BOLD, 17));
-        hl.setForeground(Color.WHITE);
-        hdr.add(hl);
-        dlg.add(hdr, BorderLayout.NORTH);
-
-        JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(PAGE_BG);
-        form.setBorder(BorderFactory.createEmptyBorder(16, 28, 8, 28));
-        GridBagConstraints g = new GridBagConstraints();
-        g.fill = GridBagConstraints.HORIZONTAL; g.insets = new Insets(6, 4, 6, 4);
-        Font lf = new Font("Arial", Font.BOLD, 13);
-        Dimension fd = new Dimension(220, 32);
-
-        String[] rowLabels = { "Mật khẩu hiện tại", "Mật khẩu mới", "Xác nhận mật khẩu mới" };
-        JPasswordField[] pfs = new JPasswordField[3];
-        for (int i = 0; i < rowLabels.length; i++) {
-            g.gridx = 0; g.gridy = i; g.weightx = 0;
-            JLabel lbl = new JLabel(rowLabels[i]); lbl.setFont(lf); form.add(lbl, g);
-            g.gridx = 1; g.weightx = 1;
-            pfs[i] = new JPasswordField(); pfs[i].setPreferredSize(fd); form.add(pfs[i], g);
-        }
-        dlg.add(form, BorderLayout.CENTER);
-
-        JPanel ft = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 10));
-        ft.setBackground(PAGE_BG);
-        ft.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, DIVIDER));
-        JButton cancel = makeActionBtn("Hủy",  new Color(0x9B8EA8));
-        JButton save   = makeActionBtn("Lưu",  ACCENT2);
-        cancel.addActionListener(e -> dlg.dispose());
-        save.addActionListener(e -> {
-            JOptionPane.showMessageDialog(dlg, "Đổi mật khẩu thành công!");
-            dlg.dispose();
-        });
-        ft.add(cancel); ft.add(save);
-        dlg.add(ft, BorderLayout.SOUTH);
-        dlg.setVisible(true);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────

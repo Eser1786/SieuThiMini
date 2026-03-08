@@ -1,8 +1,10 @@
 package GUI.DonHang;
 
 import BUS.SalesBUS;
+import BUS.SalesInvoiceBUS;
 import DTO.SaleDTO;
-import DTO.enums.SaleEnum.SaleStatus;
+import DTO.SalesInvoiceDTO;
+import DTO.SalesInvoiceItemDTO;
 import GUI.UIUtils;
 import javax.swing.*;
 import javax.swing.table.*;
@@ -11,6 +13,7 @@ import java.awt.*;
 class DonHangDetailCard extends JPanel {
 
     private final DonHangPanel parent;
+    private final SalesInvoiceBUS salesInvoiceBUS = new SalesInvoiceBUS();
 
     /* ── form fields ── */
     private JLabel lbMaDon, lbNgayDat, lbNgayGiao, lbIdTK;
@@ -22,7 +25,7 @@ class DonHangDetailCard extends JPanel {
     /* ── footer buttons ── */
     private JButton btnSua, btnLuu, btnXoa, btnInHoaDon, btnHuyDon, btnThanhToan, btnXacNhan, btnHoanTac;
     /* ── edit snapshot (for undo) ── */
-    private String origTenND, origSdt, origDiaChi, origTongTT, origTrangThai;
+    private String origTenND, origSdt, origDiaChi, origTrangThai;
     private JLabel lbNhanVien;
 
     DonHangDetailCard(DonHangPanel parent) {
@@ -191,7 +194,7 @@ class DonHangDetailCard extends JPanel {
                     "Huỷ đơn " + parent.tableModel.getValueAt(parent.currentRow, 0) + "?",
                     "Xác nhận", JOptionPane.YES_NO_OPTION);
             if (c == JOptionPane.YES_OPTION) {
-                parent.tableModel.setValueAt("Đã hủy", parent.currentRow, 5);
+                parent.tableModel.setValueAt("Đã hủy", parent.currentRow, 6);
                 JOptionPane.showMessageDialog(this, "Đơn hàng đã được huỷ.",
                         "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 loadDetail(parent.currentRow);
@@ -212,7 +215,7 @@ class DonHangDetailCard extends JPanel {
                     "Xác nhận đơn hàng " + parent.tableModel.getValueAt(parent.currentRow, 0) + "?",
                     "Xác nhận đơn hàng", JOptionPane.YES_NO_OPTION);
             if (c != JOptionPane.YES_OPTION) return;
-            parent.tableModel.setValueAt("Đã xác nhận", parent.currentRow, 5);
+            parent.tableModel.setValueAt("Đã xác nhận", parent.currentRow, 6);
             JOptionPane.showMessageDialog(this, "Đã xác nhận đơn hàng.",
                     "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             loadDetail(parent.currentRow);
@@ -223,11 +226,9 @@ class DonHangDetailCard extends JPanel {
                     "Bỏ các thay đổi và khôi phục dữ liệu gốc?",
                     "Hoàn tác", JOptionPane.YES_NO_OPTION);
             if (c == JOptionPane.YES_OPTION) {
-                cbTrangThai.setSelectedItem(origTrangThai);
                 tfTenND.setText(origTenND);
                 tfSdt.setText(origSdt);
                 tfDiaChi.setText(origDiaChi);
-                tfTongTT.setText(origTongTT);
                 setDetailEditable(false);
             }
         });
@@ -252,44 +253,59 @@ class DonHangDetailCard extends JPanel {
         String maDon     = parent.tableModel.getValueAt(modelRow, 0).toString();
         String nguoiMua  = parent.tableModel.getValueAt(modelRow, 1).toString();
         String tongTien  = parent.tableModel.getValueAt(modelRow, 4).toString();
-        String trangThai = parent.tableModel.getValueAt(modelRow, 5).toString();
+        String trangThai = parent.tableModel.getValueAt(modelRow, 6).toString();
         String maKMTbl   = parent.tableModel.getValueAt(modelRow, 3).toString();
 
         lbMaDon.setText(maDon);
+        // Restore full combo before setting selection
+        cbTrangThai.setModel(new DefaultComboBoxModel<>(new String[]{
+                "Chờ xác nhận", "Đã xác nhận", "Chờ vận chuyển",
+                "Đang giao", "Đã giao", "Đã hủy"}));
         cbTrangThai.setSelectedItem(trangThai);
         if (lbNhanVien != null)
             lbNhanVien.setText(parent.nhanVienMap.getOrDefault(maDon, "Nguyễn Thị Thẹo"));
 
-        // First try to load from database
         SalesBUS salesBUS = new SalesBUS();
         SaleDTO sale = salesBUS.getSaleByCode(maDon);
         if (sale != null) {
-            // Database order
-            lbNgayDat.setText("N/A"); // TODO: add created_at to database
+            lbNgayDat.setText(sale.getSaleDate() != null ? sale.getSaleDate().toString() : "-");
             lbNgayGiao.setText("Dự kiến giao sau 1-3 ngày");
-            tfTenND.setText(sale.getCustomerName() != null ? sale.getCustomerName() : "N/A");
-            tfSdt.setText("N/A"); // TODO: add phone to customer table
-            tfDiaChi.setText("N/A"); // TODO: add address to customer table
-            lbHinhThuc.setText(sale.getSalePaymentMethod() != null ? sale.getSalePaymentMethod().getValue() : "N/A");
+            tfTenND.setText(sale.getCustomerName() != null ? sale.getCustomerName() : "");
+            tfSdt.setText(sale.getCustomerPhone() != null ? sale.getCustomerPhone() : "");
+            tfDiaChi.setText(sale.getCustomerAddress() != null ? sale.getCustomerAddress() : "");
+            lbHinhThuc.setText(sale.getSalePaymentMethod() != null ? sale.getSalePaymentMethod().getValue() : "-");
             lbMaGiam.setText(sale.getDiscountAmount() != null && sale.getDiscountAmount().signum() > 0
                 ? String.format("Giảm %,dđ", sale.getDiscountAmount().intValue()) : "-");
             lbIdTK.setText(sale.getCustomerCode() != null ? sale.getCustomerCode() : "-");
 
             chitietModel.setRowCount(0);
-            // TODO: Load actual items from sales_invoice_items table
-            // For now, create mock item based on total_quantity
-            if (sale.getTotalQuantity() > 0) {
-                long unitPrice = sale.getTotalAmount().divide(java.math.BigDecimal.valueOf(sale.getTotalQuantity())).longValue();
-                chitietModel.addRow(new Object[]{ "1",
-                    "SP001 - Sản phẩm mẫu", sale.getTotalQuantity(),
-                    String.format("%,.0fđ", (double) unitPrice),
-                    String.format("%,.0fđ", (double) sale.getTotalAmount().longValue()) });
+            SalesInvoiceDTO inv = salesInvoiceBUS.getSalesInvoiceBySaleId((long) sale.getSaleID());
+            if (inv != null && inv.getItems() != null && !inv.getItems().isEmpty()) {
+                int stt = 1; long sub = 0;
+                for (SalesInvoiceItemDTO item : inv.getItems()) {
+                    long line = item.getSubtotal() != null ? item.getSubtotal().longValue()
+                              : (item.getUnitPrice() != null ? item.getUnitPrice().longValue() * item.getQuantity() : 0);
+                    sub += line;
+                    chitietModel.addRow(new Object[]{
+                        String.valueOf(stt++),
+                        (item.getProductCode() != null ? item.getProductCode() + " - " : "") + item.getProductName(),
+                        item.getQuantity(),
+                        item.getUnitPrice() != null ? String.format("%,.0fđ", item.getUnitPrice().doubleValue()) : "-",
+                        String.format("%,.0fđ", (double) line)
+                    });
+                }
+                long finalSub = sale.getSubTotal() != null ? sale.getSubTotal().longValue() : sub;
+                long finalTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue() : sub;
+                lbTongCong.setText(String.format("%,.0fđ", (double) finalSub));
+                lbVAT.setText(inv.getTaxAmount() != null ? String.format("%,.0fđ", inv.getTaxAmount().doubleValue()) : "0đ");
+                lbPhiVC.setText("Miễn phí");
+                tfTongTT.setText(String.format("%,.0fđ", (double) finalTot));
+            } else {
+                lbTongCong.setText(String.format("%,.0fđ", (double) (sale.getSubTotal() != null ? sale.getSubTotal().longValue() : sale.getTotalAmount().longValue())));
+                lbVAT.setText("0đ");
+                lbPhiVC.setText("Miễn phí");
+                tfTongTT.setText(String.format("%,.0fđ", (double) sale.getTotalAmount().longValue()));
             }
-
-            lbTongCong.setText(String.format("%,.0fđ", (double) (sale.getSubTotal() != null ? sale.getSubTotal().longValue() : sale.getTotalAmount().longValue())));
-            lbVAT.setText("0đ"); // TODO: calculate VAT
-            lbPhiVC.setText("Miễn phí");
-            tfTongTT.setText(String.format("%,.0fđ", (double) sale.getTotalAmount().longValue()));
         } else {
             // Fallback to in-memory data or sample data
             DonHangPanel.OrderDetailData od = parent.orderDataMap.get(maDon);
@@ -344,82 +360,100 @@ class DonHangDetailCard extends JPanel {
     }
 
     void setDetailEditable(boolean editable) {
+        String tt = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString() : "";
+        boolean isFinal          = tt.equals("Đã giao") || tt.equals("Đã hủy");
+        boolean isShippingOrMore = tt.equals("Chờ vận chuyển") || tt.equals("Đang giao") || isFinal;
+
         if (editable) {
-            origTrangThai = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString() : "";
+            origTrangThai = tt;
             origTenND  = tfTenND.getText();
             origSdt    = tfSdt.getText();
             origDiaChi = tfDiaChi.getText();
-            origTongTT = tfTongTT.getText();
+            // Rebuild combo to only show valid forward transitions
+            cbTrangThai.setModel(new DefaultComboBoxModel<>(buildValidStatusOptions(tt)));
+            cbTrangThai.setSelectedItem(tt);
+            cbTrangThai.setEnabled(!isFinal);
+        } else {
+            // Restore full combo for display
+            cbTrangThai.setModel(new DefaultComboBoxModel<>(new String[]{
+                    "Chờ xác nhận", "Đã xác nhận", "Chờ vận chuyển",
+                    "Đang giao", "Đã giao", "Đã hủy"}));
+            cbTrangThai.setSelectedItem(tt);
+            cbTrangThai.setEnabled(false);
         }
-        if (cbTrangThai != null) cbTrangThai.setEnabled(editable);
-        tfTenND.setEditable(editable);
-        tfSdt.setEditable(editable);
-        tfDiaChi.setEditable(editable);
-        tfTongTT.setEditable(editable);
-        if (btnSua      != null) btnSua.setVisible(!editable);
+
+        // name/phone/address only editable before shipping
+        tfTenND.setEditable(editable && !isShippingOrMore);
+        tfSdt.setEditable(editable && !isShippingOrMore);
+        tfDiaChi.setEditable(editable && !isShippingOrMore);
+        tfTongTT.setEditable(false); // always read-only
+
+        if (btnSua      != null) btnSua.setVisible(!editable && !isFinal);
         if (btnLuu      != null) btnLuu.setVisible(editable);
         if (btnHoanTac  != null) btnHoanTac.setVisible(editable);
-        if (btnXoa      != null) btnXoa.setVisible(!editable);
+        if (btnXoa      != null) btnXoa.setVisible(!editable && tt.equals("Đã hủy"));
         if (btnInHoaDon != null) btnInHoaDon.setVisible(!editable);
         if (editable) {
             if (btnHuyDon    != null) btnHuyDon.setVisible(false);
             if (btnThanhToan != null) btnThanhToan.setVisible(false);
             if (btnXacNhan   != null) btnXacNhan.setVisible(false);
         } else if (parent.currentRow >= 0) {
-            String tt = cbTrangThai.getSelectedItem() != null ? cbTrangThai.getSelectedItem().toString() : "";
-            if (btnHuyDon    != null) btnHuyDon.setVisible(tt.equals("Chờ xác nhận") || tt.equals("Đã xác nhận"));
+            if (btnHuyDon    != null) btnHuyDon.setVisible(!isFinal && (tt.equals("Chờ xác nhận") || tt.equals("Đã xác nhận")));
             if (btnThanhToan != null) btnThanhToan.setVisible(!tt.equals("Đã hủy"));
             if (btnXacNhan   != null) btnXacNhan.setVisible(tt.equals("Chờ xác nhận"));
         }
     }
 
+    private String[] buildValidStatusOptions(String current) {
+        return switch (current) {
+            case "Chờ xác nhận"   -> new String[]{"Chờ xác nhận", "Đã xác nhận", "Đã hủy"};
+            case "Đã xác nhận"    -> new String[]{"Đã xác nhận", "Chờ vận chuyển", "Đã hủy"};
+            case "Chờ vận chuyển" -> new String[]{"Chờ vận chuyển", "Đang giao", "Đã hủy"};
+            case "Đang giao"      -> new String[]{"Đang giao", "Đã giao", "Đã hủy"};
+            default               -> new String[]{current};
+        };
+    }
+
     private void saveDetailChanges() {
         if (parent.currentRow < 0) return;
 
-        String ten      = tfTenND.getText().trim();
-        String sdt      = tfSdt.getText().trim();
-        String diaChi   = tfDiaChi.getText().trim();
-        String tongTien = tfTongTT.getText().trim();
         String trangThai = cbTrangThai.getSelectedItem() != null
                 ? cbTrangThai.getSelectedItem().toString() : "";
+        boolean isShippingOrMore = (origTrangThai != null) && (origTrangThai.equals("Chờ vận chuyển")
+                || origTrangThai.equals("Đang giao") || origTrangThai.equals("Đã giao") || origTrangThai.equals("Đã hủy"));
 
         java.util.List<String> errors = new java.util.ArrayList<>();
         JComponent firstBad = null;
 
-        if (ten.isEmpty()) {
-            errors.add("• Tên người đặt không được để trống.");
-            firstBad = tfTenND;
-        } else if (!ten.matches("[\\p{L} .'-]+")) {
-            errors.add("• Tên người đặt không hợp lệ (không chứa số hoặc ký tự đặc biệt).");
-            firstBad = tfTenND;
-        }
-        if (!sdt.matches("0[0-9]{9}")) {
-            errors.add("• Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.");
-            if (firstBad == null) firstBad = tfSdt;
-        }
-        if (diaChi.isEmpty()) {
-            errors.add("• Địa chỉ không được để trống.");
-            if (firstBad == null) firstBad = tfDiaChi;
-        }
-        String soTien = tongTien.replaceAll("[đĐ.,\\s]", "");
-        try {
-            long amount = Long.parseLong(soTien);
-            if (amount <= 0) throw new NumberFormatException();
-        } catch (NumberFormatException ex) {
-            errors.add("• Tổng số tiền phải là số dương hợp lệ (ví dụ: 90.000đ hoặc 90000).");
-            if (firstBad == null) firstBad = tfTongTT;
+        if (!isShippingOrMore) {
+            String ten    = tfTenND.getText().trim();
+            String sdt    = tfSdt.getText().trim();
+            String diaChi = tfDiaChi.getText().trim();
+            if (ten.isEmpty()) {
+                errors.add("• Tên người đặt không được để trống.");
+                firstBad = tfTenND;
+            } else if (!ten.matches("[\\p{L} .'-]+")) {
+                errors.add("• Tên người đặt không hợp lệ.");
+                firstBad = tfTenND;
+            }
+            if (!sdt.isEmpty() && !sdt.matches("0[0-9]{9}")) {
+                errors.add("• Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.");
+                if (firstBad == null) firstBad = tfSdt;
+            }
+            if (diaChi.isEmpty()) {
+                errors.add("• Địa chỉ không được để trống.");
+                if (firstBad == null) firstBad = tfDiaChi;
+            }
         }
         if (!errors.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    String.join("\n", errors),
+            JOptionPane.showMessageDialog(this, String.join("\n", errors),
                     "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
             if (firstBad != null) firstBad.requestFocus();
             return;
         }
 
-        parent.tableModel.setValueAt(ten,      parent.currentRow, 1);
-        parent.tableModel.setValueAt(tongTien, parent.currentRow, 4);
-        parent.tableModel.setValueAt(trangThai, parent.currentRow, 5);
+        parent.tableModel.setValueAt(tfTenND.getText().trim(), parent.currentRow, 1);
+        parent.tableModel.setValueAt(trangThai, parent.currentRow, 6);
         setDetailEditable(false);
         JOptionPane.showMessageDialog(this, "Đã lưu thay đổi đơn hàng.",
                 "Thông báo", JOptionPane.INFORMATION_MESSAGE);

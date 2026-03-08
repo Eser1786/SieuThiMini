@@ -30,6 +30,8 @@ public class SaleDTO {
     private BigDecimal totalAmount;
     private int totalQuantity;
     private String note;
+    private String customerPhone;
+    private String customerAddress;
 
 
     //GETTER
@@ -40,6 +42,8 @@ public class SaleDTO {
     public int getCustomerID(){return customerID;}
     public String getCustomerCode(){return customerCode;}
     public String getCustomerName(){return customerName;}
+    public String getCustomerPhone(){return customerPhone;}
+    public String getCustomerAddress(){return customerAddress;}
 
     public int getEmployeeID(){return employeeID;}
     public String getEmployeeCode(){return employeeCode;}
@@ -58,6 +62,8 @@ public class SaleDTO {
     public void setSaleID(int saleID){this.saleID = saleID;}
     public void setSaleCode(String saleCode){this.saleCode = saleCode;}
     public void setSaleDate(LocalDate saleDate){this.saleDate = saleDate;}
+    public void setCustomerPhone(String customerPhone){this.customerPhone = customerPhone;}
+    public void setCustomerAddress(String customerAddress){this.customerAddress = customerAddress;}
     
     public void setCustomerID(int customerID){this.customerID = customerID;}
     public void setCustomerCode(String customerCode){this.customerCode = customerCode;}

@@ -1,4 +1,4 @@
-﻿package GUI.NhapKho;
+package GUI.NhapKho;
 
 import BUS.PurchaseInvoicesBUS;
 import DTO.PurchaseInvoicesDTO;
@@ -241,32 +241,10 @@ class NhapKhoTableCard extends JPanel {
         });
         btnNew.addActionListener(e -> parent.openCreatePopup(SwingUtilities.getWindowAncestor(this)));
 
-        JButton btnExportPDF = new JButton("Xuat PDF");
-        btnExportPDF.setFocusPainted(false);
-        btnExportPDF.setBackground(new Color(0xD9D9D9));
-        btnExportPDF.setFont(new Font("Arial", Font.BOLD, 13));
-        btnExportPDF.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
-        btnExportPDF.setOpaque(true);
-        btnExportPDF.setBorderPainted(false);
-        btnExportPDF.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnExportPDF.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent e) { btnExportPDF.setBackground(new Color(0xEF9A9A)); }
-            public void mouseExited (java.awt.event.MouseEvent e) { btnExportPDF.setBackground(new Color(0xD9D9D9)); }
-        });
+        JButton btnExportPDF   = GUI.ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
         btnExportPDF.addActionListener(e -> GUI.ExportUtils.xuatPDF(this, model, "Danh sach phieu nhap kho"));
 
-        JButton btnExportExcel = new JButton("Xuat Excel");
-        btnExportExcel.setFocusPainted(false);
-        btnExportExcel.setBackground(new Color(0xD9D9D9));
-        btnExportExcel.setFont(new Font("Arial", Font.BOLD, 13));
-        btnExportExcel.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
-        btnExportExcel.setOpaque(true);
-        btnExportExcel.setBorderPainted(false);
-        btnExportExcel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnExportExcel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent e) { btnExportExcel.setBackground(new Color(0xA5D6A7)); }
-            public void mouseExited (java.awt.event.MouseEvent e) { btnExportExcel.setBackground(new Color(0xD9D9D9)); }
-        });
+        JButton btnExportExcel = GUI.ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
         btnExportExcel.addActionListener(e -> GUI.ExportUtils.xuatCSV(this, model, "Danh sach phieu nhap kho"));
 
         top.add(pLoc);

@@ -146,7 +146,7 @@ public class KhuyenMaiPanel extends JPanel {
         });
 
         toolbar.add(pLoc); toolbar.add(pTT); toolbar.add(pTim);
-        toolbar.add(btnThem); toolbar.add(btnPDF); toolbar.add(btnExcel); toolbar.add(btnImport);
+        toolbar.add(btnThem); toolbar.add(btnPDF); toolbar.add(btnExcel);
         toolbar.add(btnReset);
         JPanel north = new JPanel();
         north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
@@ -336,13 +336,56 @@ public class KhuyenMaiPanel extends JPanel {
         String[] labels = { "Mã:", "Tên:", "Mô tả:", "Giá trị giảm:", "Loại giảm:",
                              "Ngày bắt đầu:", "Ngày kết thúc:", "Min order:", "Trạng thái:" };
         Object[] values = { ma, ten, moTa, giaTriStr, loaiGiam, ngayBD, ngayKT, minOrder, trangThai };
-        JPanel body = new JPanel(new GridLayout(labels.length, 2, 10, 10));
+        JPanel body = new JPanel(new BorderLayout(0, 0));
         body.setBackground(new Color(0xF0EFF8));
         body.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+
+        JPanel infoGrid = new JPanel(new GridLayout(labels.length, 2, 10, 10));
+        infoGrid.setOpaque(false);
         for (int i = 0; i < labels.length; i++) {
             JLabel l = new JLabel(labels[i]); l.setFont(new Font("Arial", Font.BOLD, 14));
             JLabel v = new JLabel(values[i] == null ? "-" : values[i].toString()); v.setFont(new Font("Arial", Font.PLAIN, 14));
-            body.add(l); body.add(v);
+            infoGrid.add(l); infoGrid.add(v);
+        }
+        body.add(infoGrid, BorderLayout.NORTH);
+
+        // Load products that apply to this discount
+        if (dto != null) {
+            DiscountProductBUS dpBUS2 = new DiscountProductBUS();
+            ArrayList<Integer> pids = dpBUS2.getProductsByDiscount(dto.getId());
+            if (!pids.isEmpty()) {
+                ProductBUS productBUS2 = new ProductBUS();
+                ArrayList<ProductDTO> allProducts = productBUS2.getAllProducts();
+                java.util.Map<Integer, String> pidToName = new java.util.HashMap<>();
+                for (ProductDTO p : allProducts) pidToName.put(p.getId(), p.getName());
+
+                JPanel prodSection = new JPanel(new BorderLayout(0, 6));
+                prodSection.setOpaque(false);
+                prodSection.setBorder(BorderFactory.createEmptyBorder(14, 0, 0, 0));
+                JLabel prodTitle = new JLabel("Sản phẩm áp dụng:");
+                prodTitle.setFont(new Font("Arial", Font.BOLD, 14));
+                prodSection.add(prodTitle, BorderLayout.NORTH);
+
+                DefaultTableModel prodModel = new DefaultTableModel(new String[]{"#", "ID", "Tên sản phẩm"}, 0) {
+                    @Override public boolean isCellEditable(int r, int c) { return false; }
+                };
+                for (int i = 0; i < pids.size(); i++) {
+                    int pid = pids.get(i);
+                    String pname = pidToName.getOrDefault(pid, "SP#" + pid);
+                    prodModel.addRow(new Object[]{i + 1, pid, pname});
+                }
+                JTable prodTable = new JTable(prodModel);
+                prodTable.setRowHeight(26);
+                prodTable.setFont(new Font("Arial", Font.PLAIN, 13));
+                prodTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
+                prodTable.getColumnModel().getColumn(0).setPreferredWidth(35);
+                prodTable.getColumnModel().getColumn(1).setPreferredWidth(55);
+                prodTable.getColumnModel().getColumn(2).setPreferredWidth(260);
+                JScrollPane ps = new JScrollPane(prodTable);
+                ps.setPreferredSize(new Dimension(400, Math.min(120, 28 + 26 * pids.size())));
+                prodSection.add(ps, BorderLayout.CENTER);
+                body.add(prodSection, BorderLayout.CENTER);
+            }
         }
         dlg.add(body, BorderLayout.CENTER);
 

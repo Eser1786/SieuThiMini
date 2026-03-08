@@ -25,10 +25,10 @@ class DonHangTableCard extends JPanel {
     private void build() {
         /* ── Khởi tạo tableModel trên parent ── */
         String[] cols = { "Mã đơn", "Người mua", "Số lượng SP", "Giảm giá",
-                "Tổng số tiền", "Tình trạng", "Thao tác" };
+                "Tổng số tiền", "Phương thức", "Tình trạng", "Thao tác" };
         parent.tableModel = new DefaultTableModel(cols, 0) {
             @Override
-            public boolean isCellEditable(int r, int c) { return c == 6; }
+            public boolean isCellEditable(int r, int c) { return c == 7; }
         };
         loadSalesFromDatabase();
 
@@ -108,19 +108,11 @@ class DonHangTableCard extends JPanel {
         JButton btnExcel = ExportUtils.makeExportButton("Xu\u1ea5t Excel", new Color(0x2E7D32));
         btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, parent.tableModel, "don_hang"));
 
-        JButton btnImport = ExportUtils.makeImportButton("Nh\u1eadp CSV");
-        btnImport.addActionListener(e -> {
-            List<String[]> rows = ExportUtils.importCSV(this);
-            if (rows == null) return;
-            for (String[] r : rows) { if (r.length < 6) continue; parent.tableModel.addRow((Object[])r); }
-        });
-
         top.add(pLoc);
         top.add(pTim);
         top.add(btnTao);
         top.add(btnPDF);
         top.add(btnExcel);
-        top.add(btnImport);
 
         /* Bảng */
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(parent.tableModel);
@@ -138,8 +130,8 @@ class DonHangTableCard extends JPanel {
         bang.setIntercellSpacing(new Dimension(0, 1));
         bang.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         bang.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        int[] prefWidths = { 70, 120, 80, 90, 110, 130, 200 };
-        int[] minWidths  = { 55,  80, 60,  70,  85, 100,  80 };
+        int[] prefWidths = { 70, 120, 80, 90, 110, 90, 130, 200 };
+        int[] minWidths  = { 55,  80, 60,  70,  85, 70, 100,  80 };
         for (int i = 0; i < prefWidths.length; i++) {
             bang.getColumnModel().getColumn(i).setPreferredWidth(prefWidths[i]);
             bang.getColumnModel().getColumn(i).setMinWidth(minWidths[i]);
@@ -155,7 +147,7 @@ class DonHangTableCard extends JPanel {
                     setForeground(Color.BLACK);
                     if (c == 3) setForeground(new Color(0xC62828));
                     if (c == 4) setForeground(new Color(0x388E3C));
-                    if (c == 5) {
+                    if (c == 6) {
                         String v = val == null ? "" : val.toString();
                         switch (v) {
                             case "Chờ xác nhận"   -> setForeground(new Color(0xE65100));
@@ -171,12 +163,12 @@ class DonHangTableCard extends JPanel {
                 return this;
             }
         };
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 7; i++)
             bang.getColumnModel().getColumn(i).setCellRenderer(altR);
 
-        bang.getColumnModel().getColumn(6).setCellRenderer(
+        bang.getColumnModel().getColumn(7).setCellRenderer(
                 (t, val, sel, foc, r, c) -> buildActionPanel(t, r, false));
-        bang.getColumnModel().getColumn(6).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+        bang.getColumnModel().getColumn(7).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
             private JPanel panel;
             @Override
             public Component getTableCellEditorComponent(JTable t, Object val, boolean sel, int r, int c) {
@@ -191,7 +183,7 @@ class DonHangTableCard extends JPanel {
             String kw  = tfTim.getText().trim();
             int    idx = cbLoc.getSelectedIndex();
             RowFilter<DefaultTableModel, Integer> fSt = idx == 0 ? null
-                    : RowFilter.regexFilter("(?i)^" + trangThais[idx] + "$", 5);
+                    : RowFilter.regexFilter("(?i)^" + trangThais[idx] + "$", 6);
             RowFilter<DefaultTableModel, Integer> fSr = kw.isEmpty() ? null
                     : RowFilter.orFilter(java.util.List.of(
                             RowFilter.regexFilter("(?i)" + kw, 0),
@@ -267,6 +259,7 @@ class DonHangTableCard extends JPanel {
             }
 
             String trangThai = mapStatus(s.getSaleStatus());
+            String phuongThuc = s.getSalePaymentMethod() != null ? s.getSalePaymentMethod().getValue() : "-";
 
             parent.tableModel.addRow(new Object[]{
                     maDon,
@@ -274,6 +267,7 @@ class DonHangTableCard extends JPanel {
                     soLuong,
                     giamGia,
                     tongTien,
+                    phuongThuc,
                     trangThai,
                     ""
             });
@@ -297,7 +291,7 @@ class DonHangTableCard extends JPanel {
 
     private JPanel buildActionPanel(JTable table, int viewRow, boolean withAction) {
         int    modelRow  = table.convertRowIndexToModel(viewRow);
-        String trangThai = parent.tableModel.getValueAt(modelRow, 5).toString();
+        String trangThai = parent.tableModel.getValueAt(modelRow, 6).toString();
         Color  rowBg     = viewRow % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA);
 
         // Inner panel holds the buttons with FlowLayout (wraps if needed)
@@ -368,7 +362,7 @@ class DonHangTableCard extends JPanel {
     boolean ok = salesBUS.confirmSale(saleCode);
 
     if(ok){
-        parent.tableModel.setValueAt("Đã xác nhận", row, 5);
+        parent.tableModel.setValueAt("Đã xác nhận", row, 6);
         t.repaint();
     }
 }
@@ -381,7 +375,7 @@ class DonHangTableCard extends JPanel {
         if (c == JOptionPane.YES_OPTION) {
             boolean ok = salesBUS.cancelSale(saleCode);
             if (ok) {
-                parent.tableModel.setValueAt("Đã hủy", row, 5);
+                parent.tableModel.setValueAt("Đã hủy", row, 6);
                 t.repaint();
             }
         }
@@ -436,7 +430,8 @@ class DonHangTableCard extends JPanel {
                             tongTien = String.format("%,.0fđ", s.getTotalAmount());
                         }
                         String trangThai = mapStatus(s.getSaleStatus());
-                        parent.tableModel.addRow(new Object[]{maDon, nguoiMua, soLuong, giamGia, tongTien, trangThai, ""});
+                        String phuongThuc = s.getSalePaymentMethod() != null ? s.getSalePaymentMethod().getValue() : "-";
+                        parent.tableModel.addRow(new Object[]{maDon, nguoiMua, soLuong, giamGia, tongTien, phuongThuc, trangThai, ""});
                     }
                 }
             } catch (Exception ex) {
