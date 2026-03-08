@@ -77,7 +77,7 @@ public class MainPanel extends JPanel {
         JButton btnNhanVien = createNavButton("Nhân viên");
         JButton btnDonHang = createNavButton("Đơn hàng");
         JButton btnKho = createNavButton("Kho");
-        JButton btnNhapXuat = createNavButton("Nhập Xuất");
+        JButton btnNhapXuat = createNavButton("Nhập kho");
         JButton btnKhuyenMai = createNavButton("Khuyến mãi");
         JButton btnUser = createNavButton("👤 Tài khoản"); // tránh emoji --hem, emoji đẹp mò
 

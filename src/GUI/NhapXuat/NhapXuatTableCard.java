@@ -122,36 +122,92 @@ class NhapXuatTableCard extends JPanel {
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBorder(BorderFactory.createEmptyBorder());
 
-        // ─── Toolbar (WrapLayout) ─────────────────────────────────
-        JPanel top = new JPanel(new WrapLayout(FlowLayout.LEFT, 10, 8));
+        // ─── Toolbar (DonHang-style) ──────────────────────────────
+        JPanel top = new JPanel(new WrapLayout(FlowLayout.LEFT, 8, 4));
         top.setBackground(new Color(0xF8F7FF));
-        top.setBorder(BorderFactory.createEmptyBorder(4, 16, 4, 16));
-
-        txtSearch = new JTextField(18);
-        txtSearch.setFont(new Font("Arial", Font.PLAIN, 14));
-        txtSearch.setToolTipText("Tìm kiếm mã phiếu, nhà cung cấp, nhân viên...");
+        top.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
+                BorderFactory.createEmptyBorder(8, 10, 8, 10)));
 
         cbStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đã nhập", "Đã hủy", "Chưa thanh toán", "Đã thanh toán"});
+        cbStatus.setPreferredSize(new Dimension(200, 36));
         UIUtils.styleComboBox(cbStatus);
+        cbStatus.addActionListener(e -> applyFilter());
 
-        JButton btnTim     = UIUtils.makeActionButton("Tim kiem",         new Color(0x5C4A7F));
-        JButton btnRefresh = UIUtils.makeActionButton("Lam moi",          new Color(0x607D8B));
-        JButton btnNew     = UIUtils.makeActionButton("+ Tao phieu nhap", new Color(0x5C4A7F));
+        JPanel timPanel = new JPanel(new BorderLayout());
+        timPanel.setPreferredSize(new Dimension(220, 36));
+        timPanel.setBackground(Color.WHITE);
+        timPanel.setBorder(BorderFactory.createLineBorder(new Color(0xBBBBBB), 1));
 
+        txtSearch = new JTextField();
+        txtSearch.setFont(new Font("Arial", Font.PLAIN, 13));
+        txtSearch.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
+        txtSearch.setToolTipText("Tìm kiếm mã phiếu, nhà cung cấp, nhân viên...");
         txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate (javax.swing.event.DocumentEvent e) { applyFilter(); }
             public void removeUpdate (javax.swing.event.DocumentEvent e) { applyFilter(); }
             public void changedUpdate(javax.swing.event.DocumentEvent e) { applyFilter(); }
         });
-        cbStatus.addActionListener(e -> applyFilter());
+
+        JButton btnTim = new JButton("\uD83D\uDD0D");
+        btnTim.setBorderPainted(false);
+        btnTim.setContentAreaFilled(false);
+        btnTim.setFocusPainted(false);
+        btnTim.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnTim.addActionListener(e -> applyFilter());
+        btnTim.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                btnTim.setContentAreaFilled(true);
+                btnTim.setBackground(new Color(0xC5B3E6));
+                btnTim.setOpaque(true);
+            }
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                btnTim.setContentAreaFilled(false);
+                btnTim.setOpaque(false);
+            }
+        });
+        timPanel.add(txtSearch, BorderLayout.CENTER);
+        timPanel.add(btnTim, BorderLayout.EAST);
+
+        JLabel lbLoc = new JLabel("Trạng thái:");
+        lbLoc.setFont(new Font("Arial", Font.PLAIN, 13));
+        JLabel lbTim = new JLabel("Tìm kiếm:");
+        lbTim.setFont(new Font("Arial", Font.PLAIN, 13));
+        JPanel pLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        pLoc.setOpaque(false); pLoc.add(lbLoc); pLoc.add(cbStatus);
+        JPanel pTim = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        pTim.setOpaque(false); pTim.add(lbTim); pTim.add(timPanel);
+
+        JButton btnRefresh = new JButton("Lam moi");
+        btnRefresh.setFocusPainted(false);
+        btnRefresh.setBackground(new Color(0xD9D9D9));
+        btnRefresh.setFont(new Font("Arial", Font.BOLD, 13));
+        btnRefresh.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnRefresh.setOpaque(true);
+        btnRefresh.setBorderPainted(false);
+        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRefresh.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnRefresh.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnRefresh.setBackground(new Color(0xD9D9D9)); }
+        });
         btnRefresh.addActionListener(e -> refresh());
+
+        JButton btnNew = new JButton("+ Tao phieu nhap");
+        btnNew.setFocusPainted(false);
+        btnNew.setBackground(new Color(0xD9D9D9));
+        btnNew.setFont(new Font("Arial", Font.BOLD, 13));
+        btnNew.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnNew.setOpaque(true);
+        btnNew.setBorderPainted(false);
+        btnNew.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnNew.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnNew.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnNew.setBackground(new Color(0xD9D9D9)); }
+        });
         btnNew.addActionListener(e -> parent.openCreatePopup(SwingUtilities.getWindowAncestor(this)));
 
-        top.add(new JLabel("Tim:"));
-        top.add(txtSearch);
-        top.add(btnTim);
-        top.add(cbStatus);
+        top.add(pLoc);
+        top.add(pTim);
         top.add(btnRefresh);
         top.add(btnNew);
 
