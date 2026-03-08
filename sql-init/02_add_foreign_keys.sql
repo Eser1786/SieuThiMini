@@ -1,5 +1,7 @@
 -- 02_add_foreign_keys.sql
-SET NAMES utf8mb4;
+SET
+    NAMES utf8mb4;
+
 USE sieuthiminiv2;
 
 -- products

@@ -6,7 +6,6 @@ SET
 SET
     CHARACTER SET utf8mb4;
 
--- 1. categories
 INSERT
     IGNORE INTO categories (name, description)
 VALUES
@@ -43,7 +42,6 @@ VALUES
         'Vở, bút, gôm, thước,...'
     );
 
--- 2. suppliers
 INSERT
     IGNORE INTO suppliers (
         supplier_code,
@@ -119,9 +117,6 @@ VALUES
         'Chị Thoa'
     );
 
-;
-
--- 3. products
 INSERT
     IGNORE INTO products (
         product_code,
@@ -144,7 +139,7 @@ VALUES
     (
         'SP001',
         '7 Up',
-        'img\7up.png',
+        'img\\7up.png',
         3,
         1,
         22000.00,
@@ -161,7 +156,7 @@ VALUES
     (
         'SP002',
         'Mì Hảo Hảo tôm chua cay',
-        'img\mitrontrung.png',
+        'img\\mitrontrung.png',
         2,
         3,
         3500.00,
@@ -178,7 +173,7 @@ VALUES
     (
         'SP003',
         'Fanta Việt Quất',
-        'img\Fanta Viet Quat.png',
+        'img\\Fanta Viet Quat.png',
         1,
         1,
         4000.00,
@@ -193,7 +188,6 @@ VALUES
         1
     );
 
--- 4. customers
 INSERT
     IGNORE INTO customers (
         customer_code,
@@ -261,10 +255,8 @@ VALUES
         900000.00,
         'REGULAR',
         'ACTIVE'
-    ),
-;
+    );
 
--- 5. roles
 INSERT
     IGNORE INTO roles (role_name, description)
 VALUES
@@ -277,169 +269,96 @@ VALUES
     ),
     ('SUPPORT', 'Xem thông tin khách hàng');
 
--- 6. permissions
 INSERT
     IGNORE INTO permissions (permission_name, description)
 VALUES
-    -- Quyền chung
     ('DASHBOARD_VIEW', 'Xem trang tổng quan'),
-    (
-        'REPORT_VIEW',
-        'Xem báo cáo doanh thu, tồn kho, bán hàng'
-    ),
+    ('REPORT_VIEW', 'Xem báo cáo doanh thu, tồn kho, bán hàng'),
     ('REPORT_EXPORT', 'Xuất báo cáo ra pdf, excel'),
-    -- Quyền trong sản phẩm
     ('CATEGORY_VIEW', 'Xem danh mục sản phẩm'),
     ('CATEGORY_ADD', 'Thêm danh mục'),
     ('SUPPLIER_VIEW', 'Xem các nhà cung cấp'),
     ('SUPPLIER_ADD', 'Thêm nhà cung cấp'),
     ('PRODUCT_VIEW', 'Xem sản phẩm'),
     ('PRODUCT_ADD', 'Thêm sản phẩm'),
-    -- Quyền khách hàng
     ('CUSTOMER_VIEW', 'Xem khách hàng'),
     ('CUSTOMER_ADD', 'Thêm khách hàng'),
-    --Quyền nhân viên
     ('EMPLOYEE_VIEW', 'Xem nhân viên'),
     ('EMPLOYEE_ADD', 'Thêm khách hàng'),
     ('EMPLOYEE_ROLE', 'Phân quyền cho nhân viên'),
-    --Quyền bán hàng
     ('SALE_VIEW', 'Xem đơn hàng'),
     ('SALE_CREATE', 'Tạo đơn hàng'),
-    --Quyền nhập hàng
     ('PURCHASE_VIEW', 'Xem nhập hàng'),
     ('PURCHASE_CREATE', 'Tạo đơn nhập'),
-    --Quyền khuyến mãi
     ('DISCOUNT_VIEW', 'Xem khuyến mãi'),
     ('DISCOUNT_ADD', 'Tạo khuyến mãi');
 
--- 7. role_permissions
 INSERT
     IGNORE INTO role_permissions (role_id, permission_id)
 VALUES
     (1, 1),
-    -- DASHBOARD_VIEW
     (1, 2),
-    -- REPORT_VIEW
     (1, 3),
-    -- REPORT_EXPORT
     (1, 4),
-    -- CATEGORY_VIEW
     (1, 5),
-    -- CATEGORY_ADD
     (1, 6),
-    -- SUPPLIER_VIEW
     (1, 7),
-    -- SUPPLIER_ADD
     (1, 8),
-    -- PRODUCT_VIEW
     (1, 9),
-    -- PRODUCT_ADD
     (1, 10),
-    -- CUSTOMER_VIEW
     (1, 11),
-    -- CUSTOMER_ADD
     (1, 12),
-    -- EMPLOYEE_VIEW
     (1, 13),
-    -- EMPLOYEE_ADD
     (1, 14),
-    -- EMPLOYEE_ROLE
     (1, 15),
-    -- SALE_VIEW
     (1, 16),
-    -- SALE_CREATE
     (1, 17),
-    -- PURCHASE_VIEW
     (1, 18),
-    -- PURCHASE_CREATE
     (1, 19),
-    -- DISCOUNT_VIEW
     (1, 20),
-    -- DISCOUNT_ADD
     (2, 1),
-    -- DASHBOARD_VIEW
     (2, 2),
-    -- REPORT_VIEW
     (2, 3),
-    -- REPORT_EXPORT
     (2, 4),
-    -- CATEGORY_VIEW
     (2, 5),
-    -- CATEGORY_ADD
     (2, 6),
-    -- SUPPLIER_VIEW
     (2, 7),
-    -- SUPPLIER_ADD
     (2, 8),
-    -- PRODUCT_VIEW
     (2, 9),
-    -- PRODUCT_ADD
     (2, 10),
-    -- CUSTOMER_VIEW
     (2, 11),
-    -- CUSTOMER_ADD
     (2, 12),
-    -- EMPLOYEE_VIEW
+    (2, 13),
     (2, 15),
-    -- SALE_VIEW
     (2, 16),
-    -- SALE_CREATE
     (2, 17),
-    -- PURCHASE_VIEW
     (2, 18),
-    -- PURCHASE_CREATE
     (2, 19),
-    -- DISCOUNT_VIEW
     (2, 20),
-    -- DISCOUNT_ADD
     (3, 1),
-    -- DASHBOARD_VIEW
     (3, 2),
-    -- REPORT_VIEW
     (3, 8),
-    -- PRODUCT_VIEW
     (3, 10),
-    -- CUSTOMER_VIEW
     (3, 11),
-    -- CUSTOMER_ADD
     (3, 15),
-    -- SALE_VIEW
     (3, 16),
-    -- SALE_CREATE
     (3, 19),
-    -- DISCOUNT_VIEW
     (3, 20),
-    -- DISCOUNT_APPLY (áp dụng khuyến mãi khi bán)
     (4, 1),
-    -- DASHBOARD_VIEW
     (4, 2),
-    -- REPORT_VIEW
     (4, 4),
-    -- CATEGORY_VIEW
     (4, 6),
-    -- SUPPLIER_VIEW
     (4, 8),
-    -- PRODUCT_VIEW
     (4, 9),
-    -- PRODUCT_ADD (cập nhật thông tin sản phẩm)
     (4, 17),
-    -- PURCHASE_VIEW
     (4, 18),
-    -- PURCHASE_CREATE
     (5, 1),
-    -- DASHBOARD_VIEW
     (5, 2),
-    -- REPORT_VIEW
     (5, 8),
-    -- PRODUCT_VIEW
     (5, 10),
-    -- CUSTOMER_VIEW
     (5, 11),
-    -- CUSTOMER_ADD
     (5, 15);
 
--- SALE_VIEW
--- 8. employees (sau khi roles có dữ liệu)
 INSERT
     IGNORE INTO employees (
         employee_code,
@@ -493,6 +412,7 @@ VALUES
         '123456',
         '0123456789',
         'NhuyenThao@gmail.com',
+        '2025-10-01',
         5000000,
         4
     ),
@@ -503,6 +423,7 @@ VALUES
         '123456',
         '0123456789',
         'Loptruongkho11@gmail.com',
+        '2025-10-15',
         7500000,
         5
     ),
@@ -512,6 +433,8 @@ VALUES
         'PhDuy',
         '123456',
         '0123456789',
+        'phduy@sieuthi.com',
+        '2025-11-01',
         8000000,
         2
     ),
@@ -521,12 +444,12 @@ VALUES
         'LyNguyen',
         '123456',
         '0123456789',
+        'lynguyen@sieuthi.com',
+        '2025-12-01',
         7500000,
         3
-    ),
-;
+    );
 
--- 9. sales
 INSERT
     IGNORE INTO sales (
         sale_code,
@@ -563,7 +486,6 @@ VALUES
         'COMPLETED'
     );
 
--- 10. sales_invoices
 INSERT
     IGNORE INTO sales_invoices (
         invoice_code,
@@ -603,7 +525,6 @@ VALUES
         'COMPLETED'
     );
 
--- 11. sales_invoice_items
 INSERT
     IGNORE INTO sales_invoice_items (
         invoice_id,
@@ -618,7 +539,6 @@ VALUES
     (1, 3, 1, 7000.00, 7000.00),
     (2, 4, 3, 22000.00, 66000.00);
 
--- 12. discounts
 INSERT
     IGNORE INTO discounts (
         name,
@@ -649,19 +569,16 @@ VALUES
         'ACTIVE'
     );
 
--- 13. discount_products
 INSERT
     IGNORE INTO discount_products (discount_id, product_id)
 VALUES
     (2, 1);
 
--- 14. sale_invoice_discounts
 INSERT
     IGNORE INTO sale_invoice_discounts (discount_id, invoice_id)
 VALUES
     (1, 1);
 
--- 15. purchases
 INSERT
     IGNORE INTO purchases (
         purchase_code,
@@ -687,7 +604,6 @@ VALUES
         'RECEIVED'
     );
 
--- 16. purchase_invoices
 INSERT
     IGNORE INTO purchase_invoices (
         invoice_code,
@@ -717,7 +633,6 @@ VALUES
         'PAID'
     );
 
--- 17. purchase_invoice_items
 INSERT
     IGNORE INTO purchase_invoice_items (
         invoice_id,
@@ -730,7 +645,6 @@ VALUES
     (1, 1, 100, 22000.00, 2200000.00),
     (1, 2, 200, 3500.00, 700000.00);
 
--- 18. supplier_discounts
 INSERT
     IGNORE INTO supplier_discounts (discount_id, supplier_id)
 VALUES
