@@ -282,7 +282,10 @@ INSERT
     IGNORE INTO permissions (permission_name, description)
 VALUES
     ('DASHBOARD_VIEW', 'Xem trang tổng quan'),
-    ('REPORT_VIEW', 'Xem báo cáo doanh thu, tồn kho, bán hàng'),
+    (
+        'REPORT_VIEW',
+        'Xem báo cáo doanh thu, tồn kho, bán hàng'
+    ),
     ('REPORT_EXPORT', 'Xuất báo cáo ra pdf, excel'),
     ('CATEGORY_VIEW', 'Xem danh mục sản phẩm'),
     ('CATEGORY_ADD', 'Thêm danh mục'),
@@ -427,6 +430,7 @@ VALUES
     (5, 11),
     -- CUSTOMER_ADD
     (5, 15);
+
 -- 8. employees (sau khi roles có dữ liệu)
 INSERT
     IGNORE INTO employees (

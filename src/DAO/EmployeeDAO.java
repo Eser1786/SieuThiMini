@@ -1,8 +1,11 @@
 package DAO;
 
 import DTO.EmployeeDTO;
+import DTO.RoleDTO;
+
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class EmployeeDAO {
     private Connection con;
@@ -121,4 +124,60 @@ public class EmployeeDAO {
             closeConnection();
         }
     }
+
+    public RoleDTO getRoleByEmployeeID(Long employeeID){
+        RoleDTO role = null;
+        if(openConnection()){
+            try{
+                String sql = "SELECT r.role_id, r.role_name, r.description " +
+                     "FROM employees e " +
+                     "JOIN roles r ON e.role_id = r.role_id " +
+                     "WHERE e.employee_id = ?";
+                
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setLong(1, employeeID);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    role = new RoleDTO();
+                    role.setId(rs.getInt("role_id"));
+                    role.setName(rs.getString("role_name"));
+                    role.setDescription(rs.getString("description"));
+
+                    // Lấy danh sách quyền
+                    role.setPermissions(getPermissionsByRoleId(role.getId()));
+                }   
+            }catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
+        return role;
+    }
+
+    public List<String> getPermissionsByRoleId(int roleID){
+        List<String> permissions = new ArrayList<>();
+        if(openConnection()){
+            try{
+                    String sql = "SELECT p.permission_name " +
+                        "FROM role_permissions rp " +
+                        "JOIN permissions p ON rp.permission_id = p.permission_id " +
+                        "WHERE rp.role_id = ?";
+
+                    PreparedStatement ps = con.prepareStatement(sql); 
+                    ps.setLong(1, roleID);
+                    ResultSet rs = ps.executeQuery();
+
+                    while (rs.next()) {
+                        permissions.add(rs.getString("permission_name"));
+                    }
+            
+            }catch(SQLException e){
+                e.printStackTrace();
+        
+            }
+        }
+        return permissions;
+
+    }
+
+    //Sau khi có đăng nhập dùng bus của nhân viên rồi chọn có thể hiện panel nào
 }

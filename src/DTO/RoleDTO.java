@@ -1,9 +1,13 @@
 package DTO;
 
+import java.util.*;
+
 public class RoleDTO {
     private int id;
     private String name;
     private String description;
+    private List<String> permissions;
+
         public RoleDTO() {
         }
 
@@ -36,4 +40,7 @@ public class RoleDTO {
         public void setDescription(String description) {
             this.description = description;
         }
+
+        public List<String> getPermissions() { return permissions; }
+        public void setPermissions(List<String> permissions) { this.permissions = permissions; }
 }

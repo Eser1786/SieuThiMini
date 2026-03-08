@@ -273,7 +273,10 @@ INSERT
     IGNORE INTO permissions (permission_name, description)
 VALUES
     ('DASHBOARD_VIEW', 'Xem trang tổng quan'),
-    ('REPORT_VIEW', 'Xem báo cáo doanh thu, tồn kho, bán hàng'),
+    (
+        'REPORT_VIEW',
+        'Xem báo cáo doanh thu, tồn kho, bán hàng'
+    ),
     ('REPORT_EXPORT', 'Xuất báo cáo ra pdf, excel'),
     ('CATEGORY_VIEW', 'Xem danh mục sản phẩm'),
     ('CATEGORY_ADD', 'Thêm danh mục'),
