@@ -62,16 +62,23 @@ public class PurchaseInvoicesBUS {
         // Calculate totals if not set
         calculateTotals(invoice);
 
-        boolean saved = purchaseInvoicesDAO.addPurchaseInvoice(invoice);
-        if (saved) {
-            // Tăng tồn kho cho từng sản phẩm
-            for (PurchaseInvoiceItemsDTO item : invoice.getItems()) {
+        return purchaseInvoicesDAO.addPurchaseInvoice(invoice);
+        // Stock is NOT updated on create - only updated when invoice is confirmed
+    }
+
+    /** Xác nhận phiếu nhập: status PENDING → RECEIVED, cộng tồn kho */
+    public boolean confirmPurchaseInvoice(Long invoiceId) {
+        PurchaseInvoicesDTO inv = getPurchaseInvoiceById(invoiceId);
+        if (inv == null || !"PENDING".equals(inv.getStatus())) return false;
+        boolean ok = purchaseInvoicesDAO.updateStatus(invoiceId, "RECEIVED");
+        if (ok && inv.getItems() != null) {
+            for (PurchaseInvoiceItemsDTO item : inv.getItems()) {
                 if (item.getProductId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
                     productBUS.updateStock(item.getProductId(), item.getQuantity());
                 }
             }
         }
-        return saved;
+        return ok;
     }
 
     public boolean updatePurchaseInvoice(PurchaseInvoicesDTO invoice) {

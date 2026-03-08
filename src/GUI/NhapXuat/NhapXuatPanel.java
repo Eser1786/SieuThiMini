@@ -1,5 +1,7 @@
 package GUI.NhapXuat;
 
+import DTO.PurchaseInvoicesDTO;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -24,7 +26,26 @@ public class NhapXuatPanel extends JPanel {
         dlg.setLocationRelativeTo(owner);
         dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dlg.setVisible(true);
-        // Refresh table after dialog closes
+        tableCard.refresh();
+    }
+
+    /** Mở popup chi tiết phiếu nhập kho */
+    public void openDetailPopup(PurchaseInvoicesDTO invoice, Window owner) {
+        NhapXuatDetailPopup popup = new NhapXuatDetailPopup(owner, invoice, this);
+        popup.setVisible(true);
+        tableCard.refresh();
+    }
+
+    /** Mở popup sửa phiếu nhập kho (chỉ dành cho PENDING) */
+    public void openEditPopup(PurchaseInvoicesDTO invoice, Window owner) {
+        JDialog dlg = new JDialog(owner, "Sửa phiếu nhập kho", Dialog.ModalityType.APPLICATION_MODAL);
+        NhapXuatFormCard form = new NhapXuatFormCard(dlg, invoice);
+        dlg.setContentPane(form);
+        dlg.setSize(1200, 750);
+        dlg.setMinimumSize(new Dimension(900, 600));
+        dlg.setLocationRelativeTo(owner);
+        dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dlg.setVisible(true);
         tableCard.refresh();
     }
 

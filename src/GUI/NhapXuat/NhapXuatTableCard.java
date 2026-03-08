@@ -21,8 +21,7 @@ class NhapXuatTableCard extends JPanel {
     private static final Color ROW_ALT = new Color(0xF3F0FA);
 
     private final NhapXuatPanel parent;
-    private final DefaultTableModel model;
-    private JTextField txtSearch;
+    private final DefaultTableModel model;    private final java.util.List<PurchaseInvoicesDTO> invoiceList = new java.util.ArrayList<>();    private JTextField txtSearch;
     private JComboBox<String> cbStatus;
     private TableRowSorter<DefaultTableModel> sorter;
 
@@ -32,9 +31,9 @@ class NhapXuatTableCard extends JPanel {
         setBackground(new Color(0xF8F7FF));
 
         // ─── Column model ─────────────────────────────────────────
-        String[] cols = {"Mã phiếu", "Ngày nhập", "Nhà cung cấp", "Nhân viên", "Tổng tiền (đ)", "TT Thanh toán", "Trạng thái"};
+        String[] cols = {"Mã phiếu", "Ngày nhập", "Nhà cung cấp", "Nhân viên", "Tổng tiền (đ)", "TT Thanh toán", "Trạng thái", "Thao tác"};
         model = new DefaultTableModel(cols, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            @Override public boolean isCellEditable(int r, int c) { return c == 7; }
         };
 
         // ─── Table ────────────────────────────────────────────────
@@ -115,9 +114,41 @@ class NhapXuatTableCard extends JPanel {
             else                  table.getColumnModel().getColumn(i).setCellRenderer(altRenderer);
         }
 
-        int[] widths = {120, 130, 180, 150, 130, 130, 110};
+        int[] widths = {120, 130, 180, 150, 130, 130, 110, 90};
         for (int i = 0; i < widths.length; i++)
             table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
+
+        // ─── Action column renderer ───────────────────────────────
+        table.getColumnModel().getColumn(7).setCellRenderer(
+            new javax.swing.table.TableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean foc, int row, int col) {
+                    JButton btn = new JButton("Chi tiết");
+                    btn.setFont(new Font("Arial", Font.BOLD, 12));
+                    btn.setBackground(new Color(0x9B8EA8));
+                    btn.setForeground(Color.WHITE);
+                    btn.setFocusPainted(false);
+                    btn.setBorderPainted(false);
+                    btn.setOpaque(true);
+                    return btn;
+                }
+            });
+
+        // ─── Click handler for action column ─────────────────────
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int viewRow = table.rowAtPoint(e.getPoint());
+                int col     = table.columnAtPoint(e.getPoint());
+                if (col == 7 && viewRow >= 0) {
+                    int modelRow = table.convertRowIndexToModel(viewRow);
+                    if (modelRow < invoiceList.size()) {
+                        PurchaseInvoicesDTO inv = invoiceList.get(modelRow);
+                        parent.openDetailPopup(inv, SwingUtilities.getWindowAncestor(NhapXuatTableCard.this));
+                    }
+                }
+            }
+        });
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBorder(BorderFactory.createEmptyBorder());
@@ -129,7 +160,7 @@ class NhapXuatTableCard extends JPanel {
                 BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)));
 
-        cbStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Đã nhập", "Đã hủy", "Chưa thanh toán", "Đã thanh toán"});
+        cbStatus = new JComboBox<>(new String[]{"Tất cả trạng thái", "Chờ xác nhận", "Đã nhập", "Đã hủy", "Chưa thanh toán", "Đã thanh toán"});
         cbStatus.setPreferredSize(new Dimension(200, 36));
         UIUtils.styleComboBox(cbStatus);
         cbStatus.addActionListener(e -> applyFilter());
@@ -242,10 +273,12 @@ class NhapXuatTableCard extends JPanel {
     // ─────────────────────────────────────────────────────────────
     void refresh() {
         model.setRowCount(0);
+        invoiceList.clear();
         try {
             List<PurchaseInvoicesDTO> invoices = new PurchaseInvoicesBUS().getAllPurchaseInvoices();
             if (invoices == null) return;
             for (PurchaseInvoicesDTO inv : invoices) {
+                invoiceList.add(inv);
                 String date  = inv.getDateIn() != null ? inv.getDateIn().format(FMT) : "";
                 String total = inv.getTotalAmount() != null
                         ? String.format("%,.0fđ", inv.getTotalAmount()) : "0đ";
@@ -256,7 +289,7 @@ class NhapXuatTableCard extends JPanel {
                         date,
                         inv.getSupplierName()  != null ? inv.getSupplierName()  : "",
                         inv.getEmployeeName()  != null ? inv.getEmployeeName()  : "",
-                        total, pay, stat
+                        total, pay, stat, ""
                 });
             }
         } catch (Exception ex) {
@@ -287,8 +320,9 @@ class NhapXuatTableCard extends JPanel {
     }
 
     private static String mapStatus(String s) {
-        if (s == null) return "Đã nhập";
+        if (s == null) return "Chờ xác nhận";
         return switch (s) {
+            case "PENDING"   -> "Chờ xác nhận";
             case "RECEIVED"  -> "Đã nhập";
             case "CANCELLED" -> "Đã hủy";
             default          -> s;

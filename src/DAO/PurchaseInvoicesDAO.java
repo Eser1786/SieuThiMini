@@ -235,6 +235,19 @@ public class PurchaseInvoicesDAO {
         return result;
     }
 
+    public boolean updateStatus(Long invoiceId, String status) {
+        String sql = "UPDATE purchase_invoices SET status = ?, updated_at = NOW() WHERE invoice_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setLong(2, invoiceId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean deletePurchaseInvoice(Long invoiceId) throws SQLException {
         boolean result = false;
         // Xóa items trước
