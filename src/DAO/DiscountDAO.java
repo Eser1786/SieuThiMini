@@ -1,7 +1,7 @@
 package DAO;
 import DTO.DiscountDTO;
 import java.util.ArrayList;
-
+import DAO.DBConnection;
 import DTO.enums.DiscountEnum.DiscountType;
 import DTO.enums.DiscountEnum.DiscountStatus;
 import java.sql.*;
@@ -96,35 +96,48 @@ public class DiscountDAO {
 
     return list;
 }
-    public boolean addDiscount(DiscountDTO discount){
-        boolean result = false;
-        if(openConnection()){
-            try{
-                String sql = "INSERT INTO discounts (name, discount_type, value, min_order_amount, start_date, end_date, description, status, is_auto_apply, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                PreparedStatement pstmt = con.prepareStatement(sql);
-                pstmt.setString(1, discount.getName());
-                pstmt.setString(2, discount.getDiscountType().name());
-                pstmt.setBigDecimal(3, discount.getValue());
-                pstmt.setBigDecimal(4, discount.getMinOrderAmount());
-                pstmt.setDate(5, Date.valueOf(discount.getStartDate()));
-                pstmt.setDate(6, Date.valueOf(discount.getEndDate()));
-                pstmt.setString(7, discount.getDescription());
-                pstmt.setString(8, discount.getStatus().name());
-                pstmt.setBoolean(9, discount.getIsAutoApply());
-                pstmt.setTimestamp(10, Timestamp.valueOf(discount.getCreatedAt()));
-                pstmt.setTimestamp(11, Timestamp.valueOf(discount.getUpdatedAt()));
-                
-                int rowsAffected = pstmt.executeUpdate();
-                result = rowsAffected > 0;
-            }catch(SQLException e){
-                System.out.println("Không thể thêm mới discount \n DiscountDAO - addDiscount \n");
-                e.printStackTrace();
-            }finally{
-                closeConnection();
+   public int addDiscount(DiscountDTO d){
+
+    int discountId = -1;
+
+    if(openConnection()){
+        try{
+
+            String sql = "INSERT INTO discounts(name,description,value,discount_type,status,start_date,end_date,min_order_amount,is_auto_apply,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+
+            PreparedStatement pstmt = con.prepareStatement(
+                sql, PreparedStatement.RETURN_GENERATED_KEYS
+            );
+
+            pstmt.setString(1,d.getName());
+            pstmt.setString(2,d.getDescription());
+            pstmt.setBigDecimal(3,d.getValue());
+            pstmt.setString(4,d.getDiscountType().name());
+            pstmt.setString(5,d.getStatus().name());
+            pstmt.setDate(6,java.sql.Date.valueOf(d.getStartDate()));
+            pstmt.setDate(7,java.sql.Date.valueOf(d.getEndDate()));
+            pstmt.setBigDecimal(8,d.getMinOrderAmount());
+            pstmt.setBoolean(9,d.getIsAutoApply());
+            pstmt.setTimestamp(10,java.sql.Timestamp.valueOf(d.getCreatedAt()));
+            pstmt.setTimestamp(11,java.sql.Timestamp.valueOf(d.getUpdatedAt()));
+
+            pstmt.executeUpdate();
+
+            ResultSet rs = pstmt.getGeneratedKeys();
+
+            if(rs.next()){
+                discountId = rs.getInt(1);
             }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }finally{
+            closeConnection();
         }
-        return result;
     }
+
+    return discountId;
+}
     public boolean deleteDiscount(int id){
 
     boolean result = false;
@@ -153,7 +166,7 @@ public class DiscountDAO {
         }
 
     }
-
+    
     return result;
 }
 
@@ -220,5 +233,50 @@ public class DiscountDAO {
         return false;
 
     }
+}
+public void insertDiscountProduct(int discountId, int productId){
+
+    String sql = "INSERT INTO discount_products(discount_id, product_id) VALUES (?,?)";
+
+    try(Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)){
+
+        ps.setInt(1, discountId);
+        ps.setInt(2, productId);
+
+        ps.executeUpdate();
+
+    }catch(Exception e){
+        e.printStackTrace();
+    }
+}
+public int getDiscountIdByNameAndCreatedAt(String name, Timestamp createdAt){
+
+    int id = -1;
+
+    if(openConnection()){
+        try{
+
+            String sql = "SELECT discount_id FROM discounts WHERE name = ? AND created_at = ? LIMIT 1";
+
+            PreparedStatement pstmt = con.prepareStatement(sql);
+
+            pstmt.setString(1, name);
+            pstmt.setTimestamp(2, createdAt);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            if(rs.next()){
+                id = rs.getInt("discount_id");
+            }
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }finally{
+            closeConnection();
+        }
+    }
+
+    return id;
 }
 }

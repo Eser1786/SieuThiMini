@@ -26,27 +26,6 @@ public class DiscountProductDAO {
 
         return false;
     }
-
-
-    public boolean deleteByDiscount(int discountId){
-
-        String sql = "DELETE FROM discount_products WHERE discount_id = ?";
-
-        try(Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)){
-
-            ps.setInt(1, discountId);
-
-            return ps.executeUpdate() > 0;
-
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-
     public ArrayList<Integer> getProductsByDiscount(int discountId){
 
         ArrayList<Integer> list = new ArrayList<>();

@@ -2,7 +2,8 @@ package BUS;
 
 import DAO.DiscountProductDAO;
 import DTO.DiscountProductDTO;
-
+import DAO.DiscountDAO;
+import DTO.DiscountDTO;
 import java.util.ArrayList;
 
 public class DiscountProductBUS {
@@ -12,16 +13,15 @@ public class DiscountProductBUS {
 
     public boolean addDiscountProduct(int discountId, int productId){
 
-        DiscountProductDTO dp = new DiscountProductDTO(discountId, productId);
+    DiscountProductDTO dp = new DiscountProductDTO();
 
-        return dao.add(dp);
-    }
+    dp.setDiscountId(discountId);
+    dp.setProductId(productId);
+
+    return dao.add(dp);
+}
 
 
-    public boolean removeByDiscount(int discountId){
-
-        return dao.deleteByDiscount(discountId);
-    }
 
 
     public ArrayList<Integer> getProductsByDiscount(int discountId){
