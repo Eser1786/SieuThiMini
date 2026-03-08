@@ -2,6 +2,7 @@ package BUS;
 
 import DTO.DiscountDTO;
 import DAO.DiscountDAO;
+import DAO.DiscountProductDAO;
 import DTO.DiscountProductDTO;
 import BUS.DiscountProductBUS;
 import java.math.BigDecimal;
@@ -171,11 +172,33 @@ public boolean updateDiscount(
         String startDate,
         String endDate,
         double minOrder,
-        String status
-
+        String status,
+        Integer productId
 ){
-    return discountDAO.updateDiscount(
+    boolean result = discountDAO.updateDiscount(
             id,name,description,value,type,startDate,endDate,minOrder,status
     );
+
+    if(!result) return false;
+
+    if(type.equals("FIXED")){
+
+        DiscountProductDAO dpDAO = new DiscountProductDAO();
+
+        // xóa sản phẩm cũ
+        dpDAO.deleteByDiscountId(id);
+
+        // thêm sản phẩm mới
+        if(productId != null){
+
+            DiscountProductDTO dp = new DiscountProductDTO();
+            dp.setDiscountId(id);
+            dp.setProductId(productId);
+
+            dpDAO.add(dp);
+        }
+    }
+
+    return true;
 }
 }

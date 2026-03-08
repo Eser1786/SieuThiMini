@@ -11,6 +11,7 @@ import java.util.List;
 import javax.swing.event.DocumentEvent;
 import BUS.CategoryBUS;
 import BUS.DiscountBUS;
+import BUS.DiscountProductBUS;
 import BUS.ProductBUS;
 import DTO.CategoryDTO;
 import DTO.DiscountDTO;
@@ -68,7 +69,7 @@ public class KhuyenMaiPanel extends JPanel {
         cbLoc.setPreferredSize(new Dimension(160, 38));
         UIUtils.styleComboBox(cbLoc);
 
-        String[] trangThaiList = { "Tất cả", "ACTIVE", "EXPIRED", "INACTIVE" };
+        String[] trangThaiList = { "Tất cả", "ACTIVE", "EXPIRED"};
         JComboBox<String> cbTrangThai = new JComboBox<>(trangThaiList);
         cbTrangThai.setPreferredSize(new Dimension(150, 38));
         UIUtils.styleComboBox(cbTrangThai);
@@ -265,20 +266,31 @@ public class KhuyenMaiPanel extends JPanel {
     }
 
     // ── Load data ─────────────────────────────────────────────────────────────
-    void loadDiscountTables() {
-        ArrayList<DiscountDTO> list = discountBUS.getAllDiscounts();
-        tableModel.setRowCount(0);
-        if (list == null) return;
-        for (DiscountDTO d : list) {
-            tableModel.addRow(new Object[]{
-                d.getId(), d.getName(), d.getValue(),
-                d.getDiscountType().name(),
-                d.getStartDate(), d.getEndDate(),
-                d.getStatus() != null ? d.getStatus().name() : "-", ""
-            });
-        }
+   void loadDiscountTables() {
 
+    ArrayList<DiscountDTO> list = discountBUS.getAllDiscounts();
+    tableModel.setRowCount(0);
+
+    if (list == null) return;
+
+    for (DiscountDTO d : list) {
+
+        // bỏ qua INACTIVE
+        if(d.getStatus() != null && d.getStatus().name().equals("INACTIVE"))
+            continue;
+
+        tableModel.addRow(new Object[]{
+            d.getId(),
+            d.getName(),
+            d.getValue(),
+            d.getDiscountType().name(),
+            d.getStartDate(),
+            d.getEndDate(),
+            d.getStatus() != null ? d.getStatus().name() : "-",
+            ""
+        });
     }
+}
 
     // ── Detail dialog ─────────────────────────────────────────────────────────
     private void showDetailDialog(int modelRow) {
@@ -364,7 +376,7 @@ public class KhuyenMaiPanel extends JPanel {
         JTextField fName     = formField(); JTextField fDesc  = formField();
         JTextField fValue    = formField(); JTextField fMinOrder = formField();
         JComboBox<String> cbType   = styledCombo(new String[]{"PERCENT", "FIXED"});
-        JComboBox<String> cbStatus = styledCombo(new String[]{"ACTIVE", "INACTIVE", "EXPIRED"});
+        JComboBox<String> cbStatus = styledCombo(new String[]{"ACTIVE", "EXPIRED"});
         JDateChooser dcStart = dateChooser(); JDateChooser dcEnd = dateChooser();
                 String[] productCols = {"Chọn", "ID", "Tên sản phẩm"};
 
@@ -553,62 +565,190 @@ cbCategory.addActionListener(e -> applyFilter.run());
 
     // ── Edit dialog ───────────────────────────────────────────────────────────
     private void showEditDialog(DiscountDTO d) {
-        JDialog dlg = makeFormDialog("Sửa thông tin khuyến mãi", "Sửa khuyến mãi");
-        JTextField fName     = formField(); fName.setText(d.getName());
-        JTextField fDesc     = formField(); fDesc.setText(d.getDescription() != null ? d.getDescription() : "");
-        JTextField fValue    = formField(); fValue.setText(String.valueOf(d.getValue()));
-        JTextField fMinOrder = formField(); fMinOrder.setText(String.valueOf(d.getMinOrderAmount()));
-        JComboBox<String> cbType   = styledCombo(new String[]{"PERCENT", "FIXED"});
-        JComboBox<String> cbStatus = styledCombo(new String[]{"ACTIVE", "INACTIVE", "EXPIRED"});
-        cbType.setSelectedItem(d.getDiscountType().name());
-        cbType.setEnabled(false);
-        if (d.getStatus() != null) cbStatus.setSelectedItem(d.getStatus().name());
-        JDateChooser dcStart = dateChooser(); JDateChooser dcEnd = dateChooser();
-        if (d.getStartDate() != null) dcStart.setDate(java.sql.Date.valueOf(d.getStartDate()));
-        if (d.getEndDate()   != null) dcEnd.setDate(java.sql.Date.valueOf(d.getEndDate()));
 
-        JPanel form = buildFormGrid(new Object[][]{
-            {"Tên khuyến mãi *:", fName,     "Loại giảm:",       cbType},
-            {"Giá trị giảm *:",   fValue,    "Trạng thái:",      cbStatus},
-            {"Min order (VNĐ):",  fMinOrder, "Ngày bắt đầu *:",  dcStart},
-            {"Mô tả:",            fDesc,     "Ngày kết thúc *:", dcEnd},
-        });
-        dlg.add(form, BorderLayout.CENTER);
+    JDialog dlg = makeFormDialog("Sửa thông tin khuyến mãi", "Sửa khuyến mãi");
 
-        JPanel footer = makeFooter();
-        JButton btnLuu = makeDialogBtn("Cập nhật", ACCENT);
-        JButton btnHuy = makeDialogBtn("Hủy", new Color(0x9B8EA8));
-        footer.add(btnLuu); footer.add(btnHuy);
-        dlg.add(footer, BorderLayout.SOUTH);
-        btnHuy.addActionListener(e -> dlg.dispose());
-        btnLuu.addActionListener(e -> {
-            try {
-                if (dcStart.getDate() == null || dcEnd.getDate() == null) {
-                    JOptionPane.showMessageDialog(dlg, "Vui lòng chọn ngày bắt đầu và ngày kết thúc!"); return;
+    JTextField fName = formField();
+    fName.setText(d.getName());
+
+    JTextField fDesc = formField();
+    fDesc.setText(d.getDescription() != null ? d.getDescription() : "");
+
+    JTextField fValue = formField();
+    fValue.setText(String.valueOf(d.getValue()));
+
+    JTextField fMinOrder = formField();
+    fMinOrder.setText(String.valueOf(d.getMinOrderAmount()));
+
+    JComboBox<String> cbType = styledCombo(new String[]{"PERCENT", "FIXED"});
+    JComboBox<String> cbStatus = styledCombo(new String[]{"ACTIVE", "EXPIRED"});
+
+    cbType.setSelectedItem(d.getDiscountType().name());
+    cbType.setEnabled(false);
+
+    if (d.getStatus() != null)
+        cbStatus.setSelectedItem(d.getStatus().name());
+
+    JDateChooser dcStart = dateChooser();
+    JDateChooser dcEnd = dateChooser();
+
+    if (d.getStartDate() != null)
+        dcStart.setDate(java.sql.Date.valueOf(d.getStartDate()));
+
+    if (d.getEndDate() != null)
+        dcEnd.setDate(java.sql.Date.valueOf(d.getEndDate()));
+
+    // ================= PRODUCT TABLE =================
+
+    String[] cols = {"Chọn", "ID", "Tên sản phẩm"};
+
+    DefaultTableModel productModel = new DefaultTableModel(cols,0){
+        @Override
+        public Class<?> getColumnClass(int column){
+            return column == 0 ? Boolean.class : String.class;
+        }
+    };
+
+    JTable productTable = new JTable(productModel);
+    productTable.setRowHeight(25);
+
+    // chỉ chọn 1 checkbox
+    productModel.addTableModelListener(e -> {
+
+        if(e.getColumn() == 0){
+
+            int row = e.getFirstRow();
+            Boolean checked = (Boolean) productModel.getValueAt(row,0);
+
+            if(Boolean.TRUE.equals(checked)){
+
+                for(int i=0;i<productModel.getRowCount();i++){
+                    if(i != row){
+                        productModel.setValueAt(false,i,0);
+                    }
                 }
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                boolean ok = discountBUS.updateDiscount(
-                        d.getId(), fName.getText().trim(), fDesc.getText().trim(),
-                        Double.parseDouble(fValue.getText().trim()),
-                        cbType.getSelectedItem().toString(),
-                        
-                        sdf.format(dcStart.getDate()), sdf.format(dcEnd.getDate()),
-                        Double.parseDouble(fMinOrder.getText().trim()),
-                        cbStatus.getSelectedItem().toString());
-                if (ok) { JOptionPane.showMessageDialog(dlg, "Cập nhật thành công!"); loadDiscountTables(); dlg.dispose(); }
-                else    { JOptionPane.showMessageDialog(dlg, "Cập nhật thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE); }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dlg, "Giá trị giảm và Min order phải là số!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dlg, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+
             }
-        });
-        dlg.pack();
-        dlg.setMinimumSize(new Dimension(680, dlg.getPreferredSize().height));
-        dlg.setLocationRelativeTo(this);
-        dlg.setVisible(true);
+
+        }
+
+    });
+
+    JScrollPane productScroll = new JScrollPane(productTable);
+    productScroll.setPreferredSize(new Dimension(300,120));
+
+    // load sản phẩm
+    ProductBUS productBUS = new ProductBUS();
+    ArrayList<ProductDTO> products = productBUS.getAllProducts();
+
+    // lấy sản phẩm hiện tại của discount
+    DiscountProductBUS dpBUS = new DiscountProductBUS();
+    ArrayList<Integer> productIds = dpBUS.getProductsByDiscount(d.getId());
+
+    Integer selectedProduct = null;
+
+    if(!productIds.isEmpty()){
+        selectedProduct = productIds.get(0);
     }
 
+    for(ProductDTO p : products){
+
+        boolean checked = selectedProduct != null && p.getId() == selectedProduct;
+
+        productModel.addRow(new Object[]{
+                checked,
+                p.getId(),
+                p.getName()
+        });
+    }
+
+    JPanel productPanel = new JPanel(new BorderLayout());
+    productPanel.add(productScroll, BorderLayout.CENTER);
+
+    productPanel.setVisible(d.getDiscountType().name().equals("FIXED"));
+
+    // ================= FORM =================
+
+    JPanel form = buildFormGrid(new Object[][]{
+            {"Tên khuyến mãi *:", fName, "Loại giảm:", cbType},
+            {"Giá trị giảm *:", fValue, "Trạng thái:", cbStatus},
+            {"Min order (VNĐ):", fMinOrder, "Ngày bắt đầu *:", dcStart},
+            {"Mô tả:", fDesc, "Ngày kết thúc *:", dcEnd},
+            {"Sản phẩm áp dụng:", productPanel, "", new JLabel("")}
+    });
+
+    dlg.add(form, BorderLayout.CENTER);
+
+    // ================= FOOTER =================
+
+    JPanel footer = makeFooter();
+
+    JButton btnLuu = makeDialogBtn("Cập nhật", ACCENT);
+    JButton btnHuy = makeDialogBtn("Hủy", new Color(0x9B8EA8));
+
+    footer.add(btnLuu);
+    footer.add(btnHuy);
+
+    dlg.add(footer, BorderLayout.SOUTH);
+
+    btnHuy.addActionListener(e -> dlg.dispose());
+
+    btnLuu.addActionListener(e -> {
+
+        try {
+
+            if (dcStart.getDate() == null || dcEnd.getDate() == null) {
+                JOptionPane.showMessageDialog(dlg,"Vui lòng chọn ngày!");
+                return;
+            }
+
+            // lấy productId
+            Integer productId = null;
+
+            for(int i=0;i<productModel.getRowCount();i++){
+
+                Boolean checked = (Boolean) productModel.getValueAt(i,0);
+
+                if(Boolean.TRUE.equals(checked)){
+                    productId = Integer.parseInt(productModel.getValueAt(i,1).toString());
+                    break;
+                }
+            }
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+            boolean ok = discountBUS.updateDiscount(
+                    d.getId(),
+                    fName.getText().trim(),
+                    fDesc.getText().trim(),
+                    Double.parseDouble(fValue.getText().trim()),
+                    cbType.getSelectedItem().toString(),
+                    sdf.format(dcStart.getDate()),
+                    sdf.format(dcEnd.getDate()),
+                    Double.parseDouble(fMinOrder.getText().trim()),
+                    cbStatus.getSelectedItem().toString(),
+                    productId
+            );
+
+            if(ok){
+                JOptionPane.showMessageDialog(dlg,"Cập nhật thành công!");
+                loadDiscountTables();
+                dlg.dispose();
+            }else{
+                JOptionPane.showMessageDialog(dlg,"Cập nhật thất bại!");
+            }
+
+        }catch(Exception ex){
+            JOptionPane.showMessageDialog(dlg,"Lỗi: "+ex.getMessage());
+        }
+
+    });
+
+    dlg.pack();
+    dlg.setMinimumSize(new Dimension(700, dlg.getPreferredSize().height));
+    dlg.setLocationRelativeTo(this);
+    dlg.setVisible(true);
+}
     // ── Helpers ───────────────────────────────────────────────────────────────
     private String cell(int row, int col) {
         Object v = tableModel.getValueAt(row, col);
