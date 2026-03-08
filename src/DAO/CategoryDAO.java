@@ -1,6 +1,7 @@
 package DAO;
 
 import DTO.CategoryDTO;
+import DAO.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,17 +10,8 @@ public class CategoryDAO {
     private Connection con;
     public boolean openConnection(){
         try{
-            String URL = "jdbc:mysql://localhost:3307/sieuthiminiv2" +
-                                      "?useSSL=false" +
-                                      "&allowPublicKeyRetrieval=true" +
-                                      "&serverTimezone=UTC" +
-                                      "&useUnicode=true" +
-                                      "&characterEncoding=UTF-8";
-            String USER = "sieuthimini_user";
-            String PASSWORD = "sieuthimini_pass123";
-            
-            con = DriverManager.getConnection(URL, USER, PASSWORD);
-            return true;
+            con = DBConnection.getConnection();
+            return con != null;
         }catch(Exception e){
             e.printStackTrace();
             return false;

@@ -1,22 +1,14 @@
 package DAO;
 import DTO.RoleDTO; 
+import DAO.DBConnection;
 import java.sql.*;
 import java.util.*;
 public class RoleDAO {
     private Connection con;
     public boolean openConnection(){
         try{
-            String URL = "jdbc:mysql://localhost:3307/sieuthiminiv2" +
-                                      "?useSSL=false" +
-                                      "&allowPublicKeyRetrieval=true" +
-                                      "&serverTimezone=UTC" +
-                                      "&useUnicode=true" +
-                                      "&characterEncoding=UTF-8";
-            String USER = "sieuthimini_user";
-            String PASSWORD = "sieuthimini_pass123";
-            
-            con = DriverManager.getConnection(URL, USER, PASSWORD);
-            return true;
+            con = DBConnection.getConnection();
+            return con != null;
         }catch(Exception e){
             e.printStackTrace();
             return false;
@@ -43,12 +35,13 @@ public class RoleDAO {
                 while(rs.next()){
                     RoleDTO role = new RoleDTO();
                     role.setId(rs.getInt("role_id"));
-                    role.setName(rs.getString("name"));
+                    role.setName(rs.getString("role_name"));
                     role.setDescription(rs.getString("description"));
                     arr.add(role);
                 }
             }catch(SQLException e){
                 System.out.println("Không thể lấy dữ liệu từ bảng roles");
+                e.printStackTrace();
             }finally{
                 closeConnection();
             }
