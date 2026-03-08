@@ -115,6 +115,9 @@ class NhapKhoTableCard extends JPanel {
             else                  table.getColumnModel().getColumn(i).setCellRenderer(altRenderer);
         }
 
+        // Disable column dragging/reordering
+        table.getTableHeader().setReorderingAllowed(false);
+
         int[] widths = {120, 130, 180, 150, 130, 130, 110, 90};
         for (int i = 0; i < widths.length; i++)
             table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
@@ -238,9 +241,39 @@ class NhapKhoTableCard extends JPanel {
         });
         btnNew.addActionListener(e -> parent.openCreatePopup(SwingUtilities.getWindowAncestor(this)));
 
+        JButton btnExportPDF = new JButton("Xuat PDF");
+        btnExportPDF.setFocusPainted(false);
+        btnExportPDF.setBackground(new Color(0xD9D9D9));
+        btnExportPDF.setFont(new Font("Arial", Font.BOLD, 13));
+        btnExportPDF.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnExportPDF.setOpaque(true);
+        btnExportPDF.setBorderPainted(false);
+        btnExportPDF.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnExportPDF.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnExportPDF.setBackground(new Color(0xEF9A9A)); }
+            public void mouseExited (java.awt.event.MouseEvent e) { btnExportPDF.setBackground(new Color(0xD9D9D9)); }
+        });
+        btnExportPDF.addActionListener(e -> GUI.ExportUtils.xuatPDF(this, model, "Danh sach phieu nhap kho"));
+
+        JButton btnExportExcel = new JButton("Xuat Excel");
+        btnExportExcel.setFocusPainted(false);
+        btnExportExcel.setBackground(new Color(0xD9D9D9));
+        btnExportExcel.setFont(new Font("Arial", Font.BOLD, 13));
+        btnExportExcel.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnExportExcel.setOpaque(true);
+        btnExportExcel.setBorderPainted(false);
+        btnExportExcel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnExportExcel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnExportExcel.setBackground(new Color(0xA5D6A7)); }
+            public void mouseExited (java.awt.event.MouseEvent e) { btnExportExcel.setBackground(new Color(0xD9D9D9)); }
+        });
+        btnExportExcel.addActionListener(e -> GUI.ExportUtils.xuatCSV(this, model, "Danh sach phieu nhap kho"));
+
         top.add(pLoc);
         top.add(pTim);
         top.add(btnRefresh);
+        top.add(btnExportPDF);
+        top.add(btnExportExcel);
         top.add(btnNew);
 
         // ─── Page header ──────────────────────────────────────────

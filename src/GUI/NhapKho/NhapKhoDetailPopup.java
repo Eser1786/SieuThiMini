@@ -50,7 +50,7 @@ class NhapKhoDetailPopup extends JDialog {
         header.add(titleLbl, BorderLayout.WEST);
 
         // Status badge
-        boolean isPending = "PENDING".equals(invoice.getStatus());
+        boolean isPending = invoice.getStatus() == null || "PENDING".equals(invoice.getStatus());
         JLabel statusLbl = new JLabel(mapStatus(invoice.getStatus()));
         statusLbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
         statusLbl.setOpaque(true);
@@ -132,23 +132,26 @@ class NhapKhoDetailPopup extends JDialog {
 
         JButton btnClose = makeBtn("\u0110\u00f3ng", new Color(0x607D8B));
         btnClose.addActionListener(e -> dispose());
+
+        // Show Sua + Xac nhan when invoice is PENDING (or null/unknown = treat as PENDING)
+        boolean canEdit = invoice.getStatus() == null || "PENDING".equals(invoice.getStatus());
+
+        JButton btnEdit = makeBtn("S\u1eeda phi\u1ebfu", new Color(0xD9D9D9));
+        btnEdit.setForeground(new Color(0x333333));
+        btnEdit.addActionListener(e -> {
+            Window owner = NhapKhoDetailPopup.this.getOwner();
+            dispose();
+            parentPanel.openEditPopup(invoice, owner);
+        });
+        btnEdit.setVisible(canEdit);
+
+        JButton btnConfirm = makeBtn("X\u00e1c nh\u1eadn nh\u1eadp kho", new Color(0x388E3C));
+        btnConfirm.addActionListener(e -> handleConfirm());
+        btnConfirm.setVisible(canEdit);
+
+        footer.add(btnEdit);
+        footer.add(btnConfirm);
         footer.add(btnClose);
-
-        if ("PENDING".equals(invoice.getStatus())) {
-            JButton btnEdit = makeBtn("\u270f S\u1eeda phi\u1ebfu", new Color(0xD9D9D9));
-            btnEdit.setForeground(new Color(0x333333));
-            btnEdit.addActionListener(e -> {
-                Window owner = NhapKhoDetailPopup.this.getOwner();
-                dispose();
-                parentPanel.openEditPopup(invoice, owner);
-            });
-
-            JButton btnConfirm = makeBtn("\u2714 X\u00e1c nh\u1eadn nh\u1eadp kho", new Color(0x388E3C));
-            btnConfirm.addActionListener(e -> handleConfirm());
-
-            footer.add(btnEdit);
-            footer.add(btnConfirm);
-        }
 
         root.add(footer, BorderLayout.SOUTH);
         return root;
@@ -193,12 +196,12 @@ class NhapKhoDetailPopup extends JDialog {
     private static String nvl(String s) { return s != null ? s : ""; }
 
     private static String mapStatus(String s) {
-        if (s == null) return "";
+        if (s == null) return "Ch\u1edd x\u00e1c nh\u1eadn";
         return switch (s) {
             case "PENDING"   -> "Ch\u1edd x\u00e1c nh\u1eadn";
             case "RECEIVED"  -> "\u0110\u00e3 nh\u1eadp";
             case "CANCELLED" -> "\u0110\u00e3 h\u1ee7y";
-            default          -> s;
+            default          -> "Ch\u1edd x\u00e1c nh\u1eadn";
         };
     }
 
