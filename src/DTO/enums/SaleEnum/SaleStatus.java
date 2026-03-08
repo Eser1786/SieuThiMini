@@ -3,7 +3,7 @@ package DTO.enums.SaleEnum;
 // import DTO.enums.CustomerEnum.SaleStatus;
 
 public enum SaleStatus {
-    COMPLETED("COMPLETED"), CANCELLED("CANCELLED");
+    PENDING("PENDING"), CONFIRMED("CONFIRMED"), SHIPPING("SHIPPING"), DELIVERING("DELIVERING"), COMPLETED("COMPLETED"), CANCELLED("CANCELLED");
 
     private final String value;
     

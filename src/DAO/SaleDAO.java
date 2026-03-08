@@ -40,6 +40,40 @@ public class SaleDAO {
         return list;
     }
 
+    public ArrayList<SaleDTO> getSalesByStatus(SaleStatus status) {
+
+        ArrayList<SaleDTO> list = new ArrayList<>();
+
+        String sql = """
+                SELECT s.*, 
+                       c.customer_code, 
+                       c.full_name AS customer_name,
+                       e.employee_code, 
+                       e.name AS employee_name
+                FROM sales s
+                LEFT JOIN customers c ON s.customer_id = c.customer_id
+                LEFT JOIN employees e ON s.employee_id = e.employee_id
+                WHERE s.status = ?
+                """;
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, status.getValue());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRowToSale(rs));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     public SaleDTO getSaleById(int saleId) {
 
         String sql = """
@@ -76,8 +110,8 @@ public class SaleDAO {
 
         String sql = """
                 INSERT INTO sales
-                (sale_code, sale_date, customer_id, employee_id, subtotal, discount_amount, status, payment_method, total_amount, note)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (sale_code, sale_date, customer_id, employee_id, subtotal, discount_amount, status, payment_method, total_amount, total_quantity, note)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection con = DBConnection.getConnection();
@@ -99,7 +133,8 @@ public class SaleDAO {
             ps.setString(7, sale.getSaleStatus() != null ? sale.getSaleStatus().getValue() : null);
             ps.setString(8, sale.getSalePaymentMethod() != null ? sale.getSalePaymentMethod().getValue() : null);
             ps.setBigDecimal(9, sale.getTotalAmount());
-            ps.setString(10, sale.getNote());
+            ps.setInt(10, sale.getTotalQuantity());
+            ps.setString(11, sale.getNote());
 
             return ps.executeUpdate() > 0;
 
@@ -159,31 +194,42 @@ public class SaleDAO {
         }
 
         sale.setTotalAmount(rs.getBigDecimal("total_amount"));
+        sale.setTotalQuantity(rs.getInt("total_quantity"));
         sale.setNote(rs.getString("note"));
 
         return sale;
     }
     public SaleDTO getSaleByCode(String code) {
 
-    String sql = "SELECT * FROM sales WHERE sale_code = ?";
+        String sql = """
+                SELECT s.*, 
+                       c.customer_code, 
+                       c.full_name AS customer_name,
+                       e.employee_code, 
+                       e.name AS employee_name
+                FROM sales s
+                LEFT JOIN customers c ON s.customer_id = c.customer_id
+                LEFT JOIN employees e ON s.employee_id = e.employee_id
+                WHERE s.sale_code = ?
+                """;
 
-    try (Connection con = DBConnection.getConnection();
-         PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
-        ps.setString(1, code);
+            ps.setString(1, code);
 
-        ResultSet rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery();
 
-        if (rs.next()) {
-            return mapRowToSale(rs);
+            if (rs.next()) {
+                return mapRowToSale(rs);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return null;
     }
-
-    return null;
-}
     public boolean updateStatus(String saleCode, SaleStatus newStatus) {
         String sql = "UPDATE sales SET status = ? WHERE sale_code = ?";
 
@@ -192,6 +238,23 @@ public class SaleDAO {
 
             ps.setString(1, newStatus.getValue());
             ps.setString(2, saleCode);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean deleteSale(String saleCode) {
+        String sql = "DELETE FROM sales WHERE sale_code = ?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, saleCode);
 
             return ps.executeUpdate() > 0;
 

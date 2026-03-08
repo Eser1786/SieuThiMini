@@ -49,6 +49,7 @@ class DonHangTableCard extends JPanel {
         JComboBox<String> cbLoc = new JComboBox<>(trangThais);
         cbLoc.setPreferredSize(new Dimension(200, 36));
         UIUtils.styleComboBox(cbLoc);
+        cbLoc.addActionListener(e -> filterByStatus(cbLoc.getSelectedItem().toString()));
 
         JPanel timPanel = new JPanel(new BorderLayout());
         timPanel.setPreferredSize(new Dimension(220, 36));
@@ -234,7 +235,7 @@ class DonHangTableCard extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
-    private void loadSalesFromDatabase() {
+    public void loadSalesFromDatabase() {
     parent.tableModel.setRowCount(0);
 
     try {
@@ -285,6 +286,10 @@ class DonHangTableCard extends JPanel {
     private String mapStatus(SaleStatus status) {
         if (status == null) return "";
         return switch (status) {
+            case PENDING -> "Chờ xác nhận";
+            case CONFIRMED -> "Đã xác nhận";
+            case SHIPPING -> "Chờ vận chuyển";
+            case DELIVERING -> "Đang giao";
             case COMPLETED -> "Đã giao";
             case CANCELLED -> "Đã hủy";
         };
@@ -331,6 +336,16 @@ class DonHangTableCard extends JPanel {
             }
         }
 
+        if (trangThai.equals("Đã hủy")) {
+            JButton btnXoa = UIUtils.makeActionButton("Xóa", new Color(0xB83434));
+            inner.add(btnXoa);
+            if (withAction)
+                btnXoa.addActionListener(e -> {
+                    stopEdit(table);
+                    xoaDon(table, modelRow);
+                });
+        }
+
         if (withAction)
             btnXem.addActionListener(e -> { stopEdit(table); parent.showDetail(modelRow); });
 
@@ -359,12 +374,74 @@ class DonHangTableCard extends JPanel {
 }
 
     private void huyDon(JTable t, int row) {
+        String saleCode = parent.tableModel.getValueAt(row, 0).toString();
         int c = JOptionPane.showConfirmDialog(this,
-                "Huỷ đơn " + parent.tableModel.getValueAt(row, 0) + "?",
+                "Huỷ đơn " + saleCode + "?",
                 "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (c == JOptionPane.YES_OPTION) {
-            parent.tableModel.setValueAt("Đã hủy", row, 5);
-            t.repaint();
+            boolean ok = salesBUS.cancelSale(saleCode);
+            if (ok) {
+                parent.tableModel.setValueAt("Đã hủy", row, 5);
+                t.repaint();
+            }
+        }
+    }
+
+    private void xoaDon(JTable t, int row) {
+        String saleCode = parent.tableModel.getValueAt(row, 0).toString();
+        int c = JOptionPane.showConfirmDialog(this,
+                "Xóa vĩnh viễn đơn " + saleCode + "?",
+                "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+        if (c == JOptionPane.YES_OPTION) {
+            boolean ok = salesBUS.deleteSale(saleCode);
+            if (ok) {
+                parent.tableModel.removeRow(row);
+                t.repaint();
+            }
+        }
+    }
+
+    private void filterByStatus(String statusText) {
+        parent.tableModel.setRowCount(0);
+
+        if ("Tất cả".equals(statusText)) {
+            loadSalesFromDatabase();
+            return;
+        }
+
+        SaleStatus status = null;
+        switch (statusText) {
+            case "Chờ xác nhận" -> status = SaleStatus.PENDING;
+            case "Đã xác nhận" -> status = SaleStatus.CONFIRMED;
+            case "Chờ vận chuyển" -> status = SaleStatus.SHIPPING;
+            case "Đang giao" -> status = SaleStatus.DELIVERING;
+            case "Đã giao" -> status = SaleStatus.COMPLETED;
+            case "Đã hủy" -> status = SaleStatus.CANCELLED;
+        }
+
+        if (status != null) {
+            try {
+                List<SaleDTO> sales = salesBUS.getSalesByStatus(status);
+                if (sales != null) {
+                    for (SaleDTO s : sales) {
+                        String maDon = s.getSaleCode();
+                        String nguoiMua = s.getCustomerName() != null ? s.getCustomerName() : "";
+                        int soLuong = s.getTotalQuantity();
+                        String giamGia = "-";
+                        if (s.getDiscountAmount() != null && s.getDiscountAmount().signum() != 0) {
+                            giamGia = "-" + String.format("%,.0fđ", s.getDiscountAmount());
+                        }
+                        String tongTien = "-";
+                        if (s.getTotalAmount() != null) {
+                            tongTien = String.format("%,.0fđ", s.getTotalAmount());
+                        }
+                        String trangThai = mapStatus(s.getSaleStatus());
+                        parent.tableModel.addRow(new Object[]{maDon, nguoiMua, soLuong, giamGia, tongTien, trangThai, ""});
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 }

@@ -3,12 +3,22 @@ package GUI.DonHang;
 import BUS.CustomerBUS;
 import BUS.EmployeeBUS;
 import BUS.ProductBUS;
+import BUS.SalesBUS;
+import DAO.DBConnection;
 import DTO.CustomerDTO;
 import DTO.EmployeeDTO;
 import DTO.ProductDTO;
+import DTO.SaleDTO;
+import DTO.enums.SaleEnum.SaleStatus;
+import DTO.enums.SaleEnum.SalePaymentMethod;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.util.ArrayList;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -577,41 +587,54 @@ class DonHangCreateCard extends JPanel {
             for (OrderItem it : items) tongCong += it.unitPrice * it.qty;
             tongCong = Math.max(0, tongCong - discAmt);
             int totalQty = 0; for (OrderItem it : items) totalQty += it.qty;
-            String maDon    = "HD" + String.format("%03d", parent.tableModel.getRowCount() + 1);
+            
+            // Tạo mã đơn tự động
+            SalesBUS salesBUS = new SalesBUS();
+            String maDon = salesBUS.generateSaleCode();
+            
             String nhanVien = cbNhanVien.getSelectedItem().toString();
-            String maKM     = tfMaKM.getText().trim();
-            // Confirm save
-            int cf = JOptionPane.showConfirmDialog(this,
-                "X\u00e1c nh\u1eadn t\u1ea1o \u0111\u01a1n h\u00e0ng cho kh\u00e1ch \u201c" + ten + "\u201d?\nT\u1ed5ng c\u1ed9ng: "
-                    + String.format("%,.0f\u0111", (double) tongCong),
-                "X\u00e1c nh\u1eadn l\u01b0u", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (cf != JOptionPane.YES_OPTION) return;
-
-            parent.tableModel.addRow(new Object[]{ maDon, ten, totalQty,
-                discAmt > 0 ? "-" + String.format("%,.0fđ", (double) discAmt) : "-",
-                String.format("%,.0f", (double) tongCong) + "\u0111",
-                "Ch\u1edd x\u00e1c nh\u1eadn", "" });
-            parent.nhanVienMap.put(maDon, nhanVien);
-            parent.timeMap.put(maDon, lbTime.getText());
-            DonHangPanel.OrderDetailData od = new DonHangPanel.OrderDetailData();
-            od.ten = ten; od.phone = sdt; od.diaChi = diaChi;
-            od.payMethod = cbHinhThuc.getSelectedItem().toString();
-            od.notes = taNotes.getText().trim();
-            od.maKM = maKM; od.discAmt = discAmt; od.time = lbTime.getText();
-            for (OrderItem it : items) {
-                DonHangPanel.OrderDetailData.Item di = new DonHangPanel.OrderDetailData.Item();
-                di.code = it.code; di.name = it.name; di.unitPrice = it.unitPrice; di.qty = it.qty;
-                od.items.add(di);
+            String maKM = tfMaKM.getText().trim();
+            
+            // Tạo SaleDTO để lưu vào database
+            SaleDTO sale = new SaleDTO();
+            sale.setSaleCode(maDon);
+            sale.setSaleDate(java.time.LocalDate.now());
+            
+            // Tìm customer ID từ tên và SĐT
+            CustomerDTO customer = findOrCreateCustomer(ten, sdt, diaChi);
+            if (customer != null) {
+                sale.setCustomerID(customer.getId());
+                sale.setCustomerName(customer.getFullName());
             }
-            parent.orderDataMap.put(maDon, od);
-            JOptionPane.showMessageDialog(this,
-                "\u0110\u00e3 t\u1ea1o \u0111\u01a1n h\u00e0ng " + maDon + " th\u00e0nh c\u00f4ng!",
-                "Th\u00e0nh c\u00f4ng", JOptionPane.INFORMATION_MESSAGE);
-            // reset
-            cbKhachHang.setSelectedIndex(0);
-            tfTenND.setText(""); tfSdt.setText(""); tfDiaChi.setText("");
-            taNotes.setText(""); tfMaKM.setText("");
-            cbNhanVien.setSelectedIndex(0);
+            
+            // Tìm employee ID từ tên
+            EmployeeDTO employee = findEmployeeByName(nhanVien);
+            if (employee != null) {
+                sale.setEmployeeID(employee.getId());
+                sale.setEmployeeName(employee.getFullName());
+            }
+            
+            sale.setSubTotal(BigDecimal.valueOf(tongCong + discAmt));
+            sale.setDiscountAmount(BigDecimal.valueOf(discAmt));
+            sale.setTotalAmount(BigDecimal.valueOf(tongCong));
+            sale.setTotalQuantity(totalQty);
+            sale.setSaleStatus(SaleStatus.PENDING);
+            sale.setPaymentMethod(SalePaymentMethod.CASH); // Default
+            sale.setNote(taNotes.getText().trim());
+            
+            // Lưu vào database
+            boolean saved = salesBUS.addSale(sale);
+            if (!saved) {
+                JOptionPane.showMessageDialog(this, "Lỗi khi lưu đơn hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Confirm save
+            JOptionPane.showMessageDialog(this, "Đã tạo đơn hàng " + maDon + " thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+            
+            // Refresh table và đóng dialog
+            parent.refreshTable();
+            parent.showCard(DonHangPanel.CARD_TABLE);
             items.clear(); discAmt = 0; rebuildList(); updateTotals(); lbDiscStatus.setText("");
             parent.showCard(DonHangPanel.CARD_TABLE);
         });
@@ -809,6 +832,56 @@ class DonHangCreateCard extends JPanel {
         cb.addItem("NV003 - Le Van Cuong");
     }
 
+    // Helper methods
+    private CustomerDTO findOrCreateCustomer(String name, String phone, String address) {
+        // Tìm customer theo phone
+        for (CustomerDTO c : allCustomers) {
+            if (phone.equals(c.getPhone())) {
+                return c;
+            }
+        }
+        
+        // Nếu không tìm thấy, tạo customer mới và lưu vào database
+        CustomerDTO newCustomer = new CustomerDTO();
+        newCustomer.setFullName(name);
+        newCustomer.setPhone(phone);
+        newCustomer.setAddress(address);
+        
+        // Tạo mã code unique
+        String code = generateCustomerCode();
+        newCustomer.setCode(code);
+        
+        CustomerBUS customerBUS = new CustomerBUS();
+        boolean added = customerBUS.AddCustomer(newCustomer);
+        if (added) {
+            // Reload allCustomers để có ID mới
+            allCustomers = customerBUS.getAllCustomers();
+            // Tìm customer vừa thêm
+            for (CustomerDTO c : allCustomers) {
+                if (code.equals(c.getCode())) {
+                    return c;
+                }
+            }
+        }
+        
+        return null; // Nếu không thêm được
+    }
+    
+    private EmployeeDTO findEmployeeByName(String name) {
+        EmployeeBUS employeeBUS = new EmployeeBUS();
+        java.util.ArrayList<EmployeeDTO> employees = employeeBUS.getAllEmployees();
+        for (EmployeeDTO e : employees) {
+            if (name.equals(e.getFullName())) {
+                return e;
+            }
+        }
+        // Nếu không tìm thấy, chọn employee đầu tiên làm mặc định
+        if (!employees.isEmpty()) {
+            return employees.get(0);
+        }
+        return null;
+    }
+
     // ── inner class ───────────────────────────────────────────────────────────
     private static final class OrderItem {
         String code; String name; long unitPrice; int qty;
@@ -816,5 +889,24 @@ class DonHangCreateCard extends JPanel {
             this.code = code; this.name = name;
             this.unitPrice = unitPrice; this.qty = qty;
         }
+    }
+    
+    private String generateCustomerCode() {
+        String sql = "SELECT MAX(customer_code) FROM customers WHERE customer_code LIKE 'KH%'";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                String maxCode = rs.getString(1);
+                if (maxCode == null) {
+                    return "KH001";
+                }
+                int num = Integer.parseInt(maxCode.substring(2)) + 1;
+                return "KH" + String.format("%03d", num);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "KH001";
     }
 }

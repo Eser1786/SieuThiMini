@@ -35,22 +35,29 @@ public class DonHangPanel extends JPanel {
         static class Item { String code = "", name = ""; long unitPrice; int qty; }
     }
 
-    private final DonHangDetailCard  detailCard;
-    private final DonHangInvoiceCard invoiceCard;
+    DonHangTableCard tableCard;
+    DonHangDetailCard detailCard;
+    DonHangInvoiceCard invoiceCard;
     JDialog createDialog = null;
 
     public DonHangPanel() {
         setLayout(innerCard);
-        DonHangTableCard  tableCardPanel  = new DonHangTableCard(this);
+        tableCard  = new DonHangTableCard(this);
         detailCard  = new DonHangDetailCard(this);
         invoiceCard = new DonHangInvoiceCard(this);
         DonHangCreateCard createCardPanel = new DonHangCreateCard(this);
 
-        add(tableCardPanel,  CARD_TABLE);
+        add(tableCard,  CARD_TABLE);
         add(detailCard,      CARD_DETAIL);
         add(invoiceCard,     CARD_INVOICE);
         add(createCardPanel, CARD_CREATE);
         innerCard.show(this, CARD_TABLE);
+    }
+
+    public void refreshTable() {
+        if (tableCard != null) {
+            tableCard.loadSalesFromDatabase();
+        }
     }
 
     void showCard(String card) {

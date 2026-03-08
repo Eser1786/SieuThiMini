@@ -1,5 +1,8 @@
 package GUI.DonHang;
 
+import BUS.SalesBUS;
+import DTO.SaleDTO;
+import DTO.enums.SaleEnum.SaleStatus;
 import GUI.UIUtils;
 import javax.swing.*;
 import javax.swing.table.*;
@@ -257,52 +260,85 @@ class DonHangDetailCard extends JPanel {
         if (lbNhanVien != null)
             lbNhanVien.setText(parent.nhanVienMap.getOrDefault(maDon, "Nguyễn Thị Thẹo"));
 
-        DonHangPanel.OrderDetailData od = parent.orderDataMap.get(maDon);
-        if (od != null) {
-            // Real order created from the create form
-            lbNgayDat.setText(od.time);
+        // First try to load from database
+        SalesBUS salesBUS = new SalesBUS();
+        SaleDTO sale = salesBUS.getSaleByCode(maDon);
+        if (sale != null) {
+            // Database order
+            lbNgayDat.setText("N/A"); // TODO: add created_at to database
             lbNgayGiao.setText("Dự kiến giao sau 1-3 ngày");
-            tfTenND.setText(od.ten);
-            tfSdt.setText(od.phone);
-            tfDiaChi.setText(od.diaChi);
-            lbHinhThuc.setText(od.payMethod);
-            String discDisplay = od.maKM.isEmpty()
-                ? (od.discAmt > 0 ? "Giảm " + String.format("%,.0fđ", (double) od.discAmt) : "-")
-                : od.maKM + (od.discAmt > 0 ? " (giảm " + String.format("%,.0fđ", (double) od.discAmt) + ")" : "");
-            lbMaGiam.setText(discDisplay);
-            lbIdTK.setText("-");
+            tfTenND.setText(sale.getCustomerName() != null ? sale.getCustomerName() : "N/A");
+            tfSdt.setText("N/A"); // TODO: add phone to customer table
+            tfDiaChi.setText("N/A"); // TODO: add address to customer table
+            lbHinhThuc.setText(sale.getSalePaymentMethod() != null ? sale.getSalePaymentMethod().getValue() : "N/A");
+            lbMaGiam.setText(sale.getDiscountAmount() != null && sale.getDiscountAmount().signum() > 0
+                ? String.format("Giảm %,dđ", sale.getDiscountAmount().intValue()) : "-");
+            lbIdTK.setText(sale.getCustomerCode() != null ? sale.getCustomerCode() : "-");
+
             chitietModel.setRowCount(0);
-            long sub = 0; int stt = 1;
-            for (DonHangPanel.OrderDetailData.Item it : od.items) {
-                long line = it.unitPrice * it.qty; sub += line;
-                chitietModel.addRow(new Object[]{ String.valueOf(stt++),
-                    it.code + " - " + it.name, it.qty,
-                    String.format("%,.0fđ", (double) it.unitPrice),
-                    String.format("%,.0fđ", (double) line) });
+            // TODO: Load actual items from sales_invoice_items table
+            // For now, create mock item based on total_quantity
+            if (sale.getTotalQuantity() > 0) {
+                long unitPrice = sale.getTotalAmount().divide(java.math.BigDecimal.valueOf(sale.getTotalQuantity())).longValue();
+                chitietModel.addRow(new Object[]{ "1",
+                    "SP001 - Sản phẩm mẫu", sale.getTotalQuantity(),
+                    String.format("%,.0fđ", (double) unitPrice),
+                    String.format("%,.0fđ", (double) sale.getTotalAmount().longValue()) });
             }
-            long tot = Math.max(0, sub - od.discAmt);
-            lbTongCong.setText(String.format("%,.0fđ", (double) sub));
-            lbVAT.setText(String.format("%,.0fđ", (double) (tot * 10L / 110)));
+
+            lbTongCong.setText(String.format("%,.0fđ", (double) (sale.getSubTotal() != null ? sale.getSubTotal().longValue() : sale.getTotalAmount().longValue())));
+            lbVAT.setText("0đ"); // TODO: calculate VAT
             lbPhiVC.setText("Miễn phí");
-            tfTongTT.setText(String.format("%,.0fđ", (double) tot));
+            tfTongTT.setText(String.format("%,.0fđ", (double) sale.getTotalAmount().longValue()));
         } else {
-            // Fallback for pre-existing sample orders
-            lbNgayDat.setText("05/03/2026 (22:28)");
-            lbNgayGiao.setText("06/03/2026 (08:00)");
-            tfTenND.setText(nguoiMua);
-            lbIdTK.setText("TK" + (100000 + modelRow));
-            tfSdt.setText("0902345678");
-            tfDiaChi.setText("123 Nguyễn Trãi, P.2, Q.5, TP.HCM");
-            lbHinhThuc.setText("Thanh toán khi nhận hàng");
-            lbMaGiam.setText(maKMTbl.equals("-") ? "-" : maKMTbl);
-            chitietModel.setRowCount(0);
-            chitietModel.addRow(new Object[]{ "1", "SP001 - Nước F trái K",   2, "25.000đ", "50.000đ" });
-            chitietModel.addRow(new Object[]{ "2", "SP004 - Mì ý sốt kem",    1, "36.000đ", "36.000đ" });
-            chitietModel.addRow(new Object[]{ "3", "SP005 - Pepsi không calo", 1, "10.000đ", "10.000đ" });
-            lbTongCong.setText("96.000đ");
-            lbVAT.setText(String.format("%,.0fđ", (double) (Long.parseLong(tongTien.replaceAll("[^0-9]", "")) * 10L / 110)));
-            lbPhiVC.setText("Miễn phí");
-            tfTongTT.setText(tongTien);
+            // Fallback to in-memory data or sample data
+            DonHangPanel.OrderDetailData od = parent.orderDataMap.get(maDon);
+            if (od != null) {
+                // Real order created from the create form
+                lbNgayDat.setText(od.time);
+                lbNgayGiao.setText("Dự kiến giao sau 1-3 ngày");
+                tfTenND.setText(od.ten);
+                tfSdt.setText(od.phone);
+                tfDiaChi.setText(od.diaChi);
+                lbHinhThuc.setText(od.payMethod);
+                String discDisplay = od.maKM.isEmpty()
+                    ? (od.discAmt > 0 ? "Giảm " + String.format("%,.0fđ", (double) od.discAmt) : "-")
+                    : od.maKM + (od.discAmt > 0 ? " (giảm " + String.format("%,.0fđ", (double) od.discAmt) + ")" : "");
+                lbMaGiam.setText(discDisplay);
+                lbIdTK.setText("-");
+                chitietModel.setRowCount(0);
+                long sub = 0; int stt = 1;
+                for (DonHangPanel.OrderDetailData.Item it : od.items) {
+                    long line = it.unitPrice * it.qty; sub += line;
+                    chitietModel.addRow(new Object[]{ String.valueOf(stt++),
+                        it.code + " - " + it.name, it.qty,
+                        String.format("%,.0fđ", (double) it.unitPrice),
+                        String.format("%,.0fđ", (double) line) });
+                }
+                long tot = Math.max(0, sub - od.discAmt);
+                lbTongCong.setText(String.format("%,.0fđ", (double) sub));
+                lbVAT.setText(String.format("%,.0fđ", (double) (tot * 10L / 110)));
+                lbPhiVC.setText("Miễn phí");
+                tfTongTT.setText(String.format("%,.0fđ", (double) tot));
+            } else {
+                // Fallback for pre-existing sample orders
+                lbNgayDat.setText("05/03/2026 (22:28)");
+                lbNgayGiao.setText("06/03/2026 (08:00)");
+                tfTenND.setText(nguoiMua);
+                lbIdTK.setText("TK" + (100000 + modelRow));
+                tfSdt.setText("0902345678");
+                tfDiaChi.setText("123 Nguyễn Trãi, P.2, Q.5, TP.HCM");
+                lbHinhThuc.setText("Thanh toán khi nhận hàng");
+                lbMaGiam.setText(maKMTbl.equals("-") ? "-" : maKMTbl);
+                chitietModel.setRowCount(0);
+                chitietModel.addRow(new Object[]{ "1", "SP001 - Nước F trái K",   2, "25.000đ", "50.000đ" });
+                chitietModel.addRow(new Object[]{ "2", "SP004 - Mì ý sốt kem",    1, "36.000đ", "36.000đ" });
+                chitietModel.addRow(new Object[]{ "3", "SP005 - Pepsi không calo", 1, "10.000đ", "10.000đ" });
+                lbTongCong.setText("96.000đ");
+                lbVAT.setText(String.format("%,.0fđ", (double) (Long.parseLong(tongTien.replaceAll("[^0-9]", "")) * 10L / 110)));
+                lbPhiVC.setText("Miễn phí");
+                tfTongTT.setText(tongTien);
+            }
         }
         setDetailEditable(false);
     }

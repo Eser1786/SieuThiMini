@@ -229,9 +229,17 @@ CREATE TABLE sales (
     employee_id BIGINT NOT NULL,
     subtotal DECIMAL(15, 2) NOT NULL,
     discount_amount DECIMAL(15, 2) DEFAULT '0.00',
-    STATUS ENUM('COMPLETED', 'CANCELLED') COLLATE utf8mb4_unicode_ci DEFAULT 'COMPLETED',
+    STATUS ENUM(
+        'PENDING',
+        'CONFIRMED',
+        'SHIPPING',
+        'DELIVERING',
+        'COMPLETED',
+        'CANCELLED'
+    ) COLLATE utf8mb4_unicode_ci DEFAULT 'PENDING',
     payment_method ENUM('CASH', 'CARD', 'TRANSFER') COLLATE utf8mb4_unicode_ci DEFAULT 'CASH',
     total_amount DECIMAL(15, 2) NOT NULL,
+    total_quantity INT DEFAULT 0,
     note TEXT COLLATE utf8mb4_unicode_ci,
     PRIMARY KEY (sale_id),
     UNIQUE KEY sale_code (sale_code),
