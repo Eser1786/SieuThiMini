@@ -153,8 +153,15 @@ class NhapKhoDetailPopup extends JDialog {
         JButton btnCancel = makeBtn("Hủy phiếu", new Color(0xE53935));
                 btnCancel.addActionListener(e -> handleCancel());
                 btnCancel.setVisible(canEdit);
+                JButton btnPayment = makeBtn("Xác nhận thanh toán", new Color(0x1976D2));
+btnPayment.addActionListener(e -> handleConfirmPayment());
+btnPayment.setVisible(
+        invoice.getStatus() == PurchaseInvoicesStatus.PENDING
+        && !"PAID".equals(invoice.getPaymentStatus())
+);
         footer.add(btnEdit);
         footer.add(btnConfirm);
+        footer.add(btnPayment);
         footer.add(btnCancel);
         footer.add(btnClose);
 
@@ -280,4 +287,55 @@ class NhapKhoDetailPopup extends JDialog {
         btn.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
         return btn;
     }
+    private void handleConfirmPayment() {
+
+    int choice = JOptionPane.showConfirmDialog(
+            this,
+            "Xác nhận đã thanh toán phiếu nhập này?",
+            "Xác nhận thanh toán",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+    );
+
+    if (choice != JOptionPane.YES_OPTION) return;
+
+    try {
+
+        boolean ok = new PurchaseInvoicesBUS()
+                .confirmPayment(invoice.getInvoiceId());
+
+        if (ok) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Đã xác nhận thanh toán!",
+                    "Thành công",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            dispose();
+            parentPanel.showTable();
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Xác nhận thanh toán thất bại.",
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+
+    } catch (Exception ex) {
+
+        ex.printStackTrace();
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Lỗi: " + ex.getMessage(),
+                "Lỗi",
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+}
 }

@@ -118,4 +118,5 @@ public class PurchasesBUS {
         BigDecimal total = subtotal.subtract(discount).add(tax);
         purchase.setTotalAmount(total);
     }
+    
 }

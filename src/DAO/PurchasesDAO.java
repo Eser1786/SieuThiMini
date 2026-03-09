@@ -166,4 +166,22 @@ public class PurchasesDAO {
 
         return result;
     }
+    public boolean updatePaymentStatus(long purchaseId, String status){
+
+    String sql = "UPDATE purchases SET payment_status = ? WHERE purchase_id = ?";
+
+    try(Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)){
+
+        ps.setString(1, status);
+        ps.setLong(2, purchaseId);
+
+        return ps.executeUpdate() > 0;
+
+    }catch(Exception e){
+        e.printStackTrace();
+    }
+
+    return false;
+}
 }

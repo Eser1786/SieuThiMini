@@ -1,10 +1,14 @@
 package BUS;
 
+import DAO.DBConnection;
 import DAO.PurchaseInvoicesDAO;
+import DAO.PurchasesDAO;
 import DTO.PurchaseInvoicesDTO;
 import DTO.PurchaseInvoiceItemsDTO;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
 public class PurchaseInvoicesBUS {
+    private PurchasesDAO purchasesDAO = new PurchasesDAO();
     private PurchaseInvoicesDAO purchaseInvoicesDAO;
     private final ProductBUS productBUS = new ProductBUS();
 
@@ -71,25 +76,20 @@ public class PurchaseInvoicesBUS {
 
     PurchaseInvoicesDTO inv = getPurchaseInvoiceById(invoiceId);
 
-    if (inv == null || inv.getStatus() != PurchaseInvoicesStatus.PENDING)
+    if(inv == null) return false;
+
+    if(!"PAID".equals(inv.getPaymentStatus())){
+        throw new RuntimeException("Phải thanh toán trước khi xác nhận nhập kho!");
+    }
+
+    if(inv.getStatus() != PurchaseInvoicesStatus.PENDING)
         return false;
 
-    // update invoice + purchase
     boolean ok = purchaseInvoicesDAO.confirmInvoice(invoiceId);
 
-    if (ok && inv.getItems() != null) {
-
-        for (PurchaseInvoiceItemsDTO item : inv.getItems()) {
-
-            if (item.getProductId() != null &&
-                item.getQuantity() != null &&
-                item.getQuantity() > 0) {
-
-                productBUS.updateStock(
-                        item.getProductId(),
-                        item.getQuantity()
-                );
-            }
+    if(ok && inv.getItems()!=null){
+        for(PurchaseInvoiceItemsDTO item : inv.getItems()){
+            productBUS.updateStock(item.getProductId(), item.getQuantity());
         }
     }
 
@@ -171,5 +171,14 @@ public class PurchaseInvoicesBUS {
     }
     public boolean cancelPurchaseInvoice(long invoiceId) throws Exception {
     return new PurchaseInvoicesDAO().cancelPurchaseInvoice(invoiceId);
+}
+
+public boolean confirmPayment(Long invoiceId){
+
+    PurchaseInvoicesDTO inv = purchaseInvoicesDAO.getPurchaseInvoiceById(invoiceId);
+
+    if(inv == null) return false;
+
+    return purchaseInvoicesDAO.updatePaymentStatus(invoiceId,"PAID");
 }
 }

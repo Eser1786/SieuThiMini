@@ -351,4 +351,25 @@ public class PurchaseInvoicesDAO {
         return false;
     }
 }
+public boolean updatePaymentStatus(Long invoiceId, String status) {
+
+    String sql = """
+        UPDATE purchase_invoices
+        SET payment_status = ?
+        WHERE invoice_id = ?
+    """;
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, status);
+        ps.setLong(2, invoiceId);
+
+        return ps.executeUpdate() > 0;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
 }
