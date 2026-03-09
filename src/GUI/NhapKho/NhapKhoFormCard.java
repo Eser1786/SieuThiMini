@@ -1,13 +1,13 @@
 package GUI.NhapKho;
 import BUS.PurchasesBUS;
-import DTO.PurchasesDTO;
 import BUS.EmployeeBUS;
 import BUS.ProductBUS;
 import BUS.PurchaseInvoicesBUS;
 import BUS.SupplierBUS;
 import DTO.*;
 import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
-
+import BUS.PurchasesBUS;
+import DAO.PurchasesDAO;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -22,7 +22,7 @@ import java.util.List;
 
 /** Form t\u1ea1o / s\u1eefa phi\u1ebfu nh\u1eadp kho. Layout 2 c\u1ed9t gi\u1ed1ng DonHangCreateCard. */
 class NhapKhoFormCard extends JPanel {
-
+    private boolean isLoadingData = false;
     private static final Color CLR_PAGE   = new Color(0xF0EFF8);
     private static final Color CLR_WHITE  = Color.WHITE;
     private static final Color CLR_ACCENT = new Color(0x5C4A7F);
@@ -359,6 +359,9 @@ class NhapKhoFormCard extends JPanel {
         // Card 2: Nh\u00e0 cung c\u1ea5p
         JPanel supplierCard = makeRightCard("Nh\u00e0 cung c\u1ea5p");
         cbSupplier = new JComboBox<>();
+        cbSupplier.addActionListener(e -> {
+        onSupplierChanged();
+    });
         cbSupplier.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cbSupplier.addItem("-- Ch\u1ecdn nh\u00e0 cung c\u1ea5p --");
         for (SupplierDTO s : allSuppliers) cbSupplier.addItem(s.getName());
@@ -449,6 +452,20 @@ class NhapKhoFormCard extends JPanel {
     // ── Product picker (multi-select) ─────────────────────────────────────────
 
     private void openProductPicker() {
+        
+           // 🔴 BẮT BUỘC CHỌN NHÀ CUNG CẤP TRƯỚC
+    if (cbSupplier.getSelectedIndex() <= 0) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Vui lòng chọn nhà cung cấp trước khi thêm sản phẩm.",
+            "Thiếu thông tin",
+            JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+    int supIdx = cbSupplier.getSelectedIndex();
+SupplierDTO selectedSupplier = allSuppliers.get(supIdx - 1);
+long supplierId = selectedSupplier.getID();
         JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(this),
                 "Ch\u1ecdn s\u1ea3n ph\u1ea9m", Dialog.ModalityType.APPLICATION_MODAL);
         dlg.setSize(640, 500);
@@ -476,6 +493,7 @@ class NhapKhoFormCard extends JPanel {
             pm.setRowCount(0);
             String kw = search.getText().trim().toLowerCase();
             for (ProductDTO p : allProducts) {
+                if (p.getSupplier().getID() != supplierId) continue;
                 if (!kw.isEmpty() && !p.getName().toLowerCase().contains(kw)
                         && !p.getCode().toLowerCase().contains(kw)) continue;
                 pm.addRow(new Object[]{
@@ -596,13 +614,29 @@ class NhapKhoFormCard extends JPanel {
             invItems.add(it);
             total = total.add(fi.subtotal);
         }
+        PurchasesBUS purchaseBUS = new PurchasesBUS();
 
+        PurchasesDTO purchase = new PurchasesDTO();
+        purchase.setSupplierId((long) sup.getID());
+        purchase.setEmployeeId((long) emp.getId());
+        purchase.setPurchaseDate(dateIn);
+        purchase.setStatus("PENDING");
+        purchase.setTotalAmount(total);
+        purchase.setSubtotal(total);
+        purchase.setDiscountAmount(BigDecimal.ZERO);
+        purchase.setTaxAmount(BigDecimal.ZERO);
+        purchase.setTotalAmount(total);
+long purchaseId = purchaseBUS.addPurchase(purchase);
+if (purchaseId <= 0) {
+    throw new RuntimeException("Tạo purchase thất bại");
+}
         PurchaseInvoicesBUS bus = new PurchaseInvoicesBUS();
         boolean ok;
 
         if (editInvoice == null) {
             // Create: status = PENDING, no stock update
             PurchaseInvoicesDTO inv = new PurchaseInvoicesDTO();
+            inv.setPurchaseId(purchaseId);   // 🔴 QUAN TRỌNG
             inv.setEmployeeId((long) emp.getId());
             inv.setEmployeeName(emp.getFullName());
             inv.setSupplierId((long) sup.getID());
@@ -618,6 +652,7 @@ class NhapKhoFormCard extends JPanel {
             inv.setTaxAmount(BigDecimal.ZERO);
             inv.setSubtotal(total);
             ok = bus.addPurchaseInvoice(inv);
+            
         } else {
             // Edit: keep status as PENDING (only editable when PENDING anyway)
             editInvoice.setEmployeeId((long) emp.getId());
@@ -675,4 +710,23 @@ class NhapKhoFormCard extends JPanel {
         if (val == null) return "0";
         return String.format("%,.0f", val);
     }
+    private void onSupplierChanged() {
+
+    if (!items.isEmpty()) {
+
+        int confirm = JOptionPane.showConfirmDialog(
+            this,
+            "Đổi nhà cung cấp sẽ xoá sản phẩm đã chọn. Tiếp tục?",
+            "Xác nhận",
+            JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+    }
+
+    items.clear();     // xoá danh sách sản phẩm
+    rebuildList();     // rebuild lại UI list
+}
 }

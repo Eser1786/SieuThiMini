@@ -135,7 +135,8 @@ class NhapKhoDetailPopup extends JDialog {
         btnClose.addActionListener(e -> dispose());
 
         // Show Sua + Xac nhan when invoice is PENDING (or null/unknown = treat as PENDING)
-        boolean canEdit = invoice.getStatus() == null || "PENDING".equals(invoice.getStatus());
+        boolean canEdit = invoice.getStatus() == null 
+        || invoice.getStatus() == PurchaseInvoicesStatus.PENDING;
 
         JButton btnEdit = makeBtn("S\u1eeda phi\u1ebfu", new Color(0xD9D9D9));
         btnEdit.setForeground(new Color(0x333333));

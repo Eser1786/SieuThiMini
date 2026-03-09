@@ -24,39 +24,41 @@ public class PurchasesBUS {
         return purchasesDAO.getPurchaseById(purchaseId);
     }
 
-    public boolean addPurchase(PurchasesDTO purchase) {
-        if (purchase == null) return false;
+    public long addPurchase(PurchasesDTO purchase) {
 
-        // Generate purchase code if not provided
-        if (purchase.getPurchaseCode() == null || purchase.getPurchaseCode().isBlank()) {
-            purchase.setPurchaseCode(generatePurchaseCode());
-        }
+    if (purchase == null) return -1;
 
-        // Set purchase date if not provided
-        if (purchase.getPurchaseDate() == null) {
-            purchase.setPurchaseDate(LocalDateTime.now());
-        }
-
-        // Validation
-        if (purchase.getSupplierId() == null || purchase.getSupplierId() <= 0) {
-            System.out.println("Nhà cung cấp không hợp lệ.");
-            return false;
-        }
-        if (purchase.getEmployeeId() == null || purchase.getEmployeeId() <= 0) {
-            System.out.println("Nhân viên không hợp lệ.");
-            return false;
-        }
-        if (purchase.getTotalAmount() == null || purchase.getTotalAmount().signum() <= 0) {
-            System.out.println("Tổng tiền phải lớn hơn 0.");
-            return false;
-        }
-
-        // Calculate totals if not set
-        calculateTotals(purchase);
-
-        return purchasesDAO.addPurchase(purchase);
+    // Generate purchase code if not provided
+    if (purchase.getPurchaseCode() == null || purchase.getPurchaseCode().isBlank()) {
+        purchase.setPurchaseCode(generatePurchaseCode());
     }
 
+    // Set purchase date if not provided
+    if (purchase.getPurchaseDate() == null) {
+        purchase.setPurchaseDate(LocalDateTime.now());
+    }
+
+    // Validation
+    if (purchase.getSupplierId() == null || purchase.getSupplierId() <= 0) {
+        System.out.println("Nhà cung cấp không hợp lệ.");
+        return -1;
+    }
+
+    if (purchase.getEmployeeId() == null || purchase.getEmployeeId() <= 0) {
+        System.out.println("Nhân viên không hợp lệ.");
+        return -1;
+    }
+
+    if (purchase.getTotalAmount() == null || purchase.getTotalAmount().signum() <= 0) {
+        System.out.println("Tổng tiền phải lớn hơn 0.");
+        return -1;
+    }
+
+    // Calculate totals if not set
+    calculateTotals(purchase);
+
+    return purchasesDAO.insert(purchase); // trả về purchase_id
+}
     public boolean updatePurchase(PurchasesDTO purchase) {
         if (purchase == null || purchase.getPurchaseId() == null) return false;
 

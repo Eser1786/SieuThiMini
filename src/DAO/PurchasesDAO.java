@@ -89,40 +89,39 @@ public class PurchasesDAO {
         return purchase;
     }
 
-    public boolean addPurchase(PurchasesDTO purchase) {
-        boolean result = false;
-        String sql = "INSERT INTO purchases (purchase_code, purchase_date, supplier_id, employee_id, subtotal, discount_amount, tax_amount, total_amount, status, notes) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public long insert(PurchasesDTO purchase) {
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    String sql = """
+        INSERT INTO purchases
+        (purchase_code, supplier_id, employee_id,purchase_date,subtotal,discount_amount,tax_amount,total_amount, status)
+        VALUES (?,?, ?, ?, ?, ?, ?, ?, ?)
+    """;
 
-            ps.setString(1, purchase.getPurchaseCode());
-            ps.setTimestamp(2, Timestamp.valueOf(purchase.getPurchaseDate()));
-            ps.setLong(3, purchase.getSupplierId());
-            ps.setLong(4, purchase.getEmployeeId());
-            ps.setBigDecimal(5, purchase.getSubtotal());
-            ps.setBigDecimal(6, purchase.getDiscountAmount());
-            ps.setBigDecimal(7, purchase.getTaxAmount());
-            ps.setBigDecimal(8, purchase.getTotalAmount());
-            ps.setString(9, purchase.getStatus());
-            ps.setString(10, purchase.getNotes());
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        ps.setString(1, purchase.getPurchaseCode());
+        ps.setLong(2, purchase.getSupplierId());
+        ps.setLong(3, purchase.getEmployeeId());
+        ps.setTimestamp(4, Timestamp.valueOf(purchase.getPurchaseDate()));
+        ps.setBigDecimal(5, purchase.getSubtotal());
+        ps.setBigDecimal(6, purchase.getDiscountAmount());
+        ps.setBigDecimal(7, purchase.getTaxAmount());
+        ps.setBigDecimal(8, purchase.getTotalAmount());
+        ps.setString(9, purchase.getStatus());
 
-            int affectedRows = ps.executeUpdate();
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = ps.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    purchase.setPurchaseId(generatedKeys.getLong(1));
-                }
-                result = true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        ps.executeUpdate();
+
+        ResultSet rs = ps.getGeneratedKeys();
+        if (rs.next()) {
+            return rs.getLong(1);
         }
 
-        return result;
+    } catch (Exception e) {
+        e.printStackTrace();
     }
 
+    return -1;
+}
     public boolean updatePurchase(PurchasesDTO purchase) {
         boolean result = false;
         String sql = "UPDATE purchases SET purchase_code = ?, purchase_date = ?, supplier_id = ?, employee_id = ?, " +
