@@ -77,7 +77,7 @@ public class ProductDAO {
                 p.setUnit(rs.getString("unit"));
                 p.setStatus(rs.getString("status"));
                 p.setIsVisible(rs.getBoolean("is_visible"));
-                p.setIsdeleted(rs.getBoolean("isdeleted"));
+                p.setIsdeleted(rs.getBoolean("is_deleted"));
 
                 Timestamp ct = rs.getTimestamp("created_at");
                 if(ct!=null) p.setCreatedAt(ct.toLocalDateTime());
@@ -211,7 +211,7 @@ public class ProductDAO {
         boolean result = false;
         if (openConnection()) {
             try {
-                PreparedStatement pstm = con.prepareStatement("UPDATE products SET isdeleted = 1 WHERE product_id=?");
+                PreparedStatement pstm = con.prepareStatement("UPDATE products SET is_deleted = 1 WHERE product_id=?");
                 pstm.setInt(1, id);
                 result = pstm.executeUpdate() >= 1;
             } catch (SQLException e) {
