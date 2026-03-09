@@ -1,15 +1,20 @@
 package GUI.SanPham;
 
-import com.toedter.calendar.JDateChooser;
-import java.text.SimpleDateFormat;
+import BUS.CategoryBUS;
+import BUS.SupplierBUS;
+import DTO.CategoryDTO;
+import DTO.SupplierDTO;
+import java.util.List;
+
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.awt.Dialog;
-import java.awt.image.BufferedImage;
 import java.io.File;
+import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import GUI.UIUtils;
+import com.toedter.calendar.JDateChooser;
+import java.text.SimpleDateFormat;
 
 /** Dialog add San Pham mới — tách từ SanPhamPanel.showThemPopup */
 class SanPhamAddDialog {
@@ -114,8 +119,14 @@ class SanPhamAddDialog {
         fMa.setForeground(new Color(0x888888));
         JTextField fTen    = UIUtils.makeField(); fTen.setPreferredSize(fd);
         JTextField fMoTa   = UIUtils.makeField(); fMoTa.setPreferredSize(fd);
-        JTextField fNCC    = UIUtils.makeField(); fNCC.setPreferredSize(fd);
-        JTextField fDM     = UIUtils.makeField(); fDM.setPreferredSize(fd);
+        
+        // Combo boxes for category, supplier, and status
+        JComboBox<String> cbNCC = new JComboBox<>();
+        cbNCC.setPreferredSize(fd);
+        
+        JComboBox<String> cbDM = new JComboBox<>();
+        cbDM.setPreferredSize(fd);
+        
         JTextField fGiaVon = UIUtils.makeField(); fGiaVon.setPreferredSize(fd);
         JTextField fGiaBan = UIUtils.makeField(); fGiaBan.setPreferredSize(fd);
         JTextField fSL     = UIUtils.makeField(); fSL.setPreferredSize(fd);
@@ -123,7 +134,11 @@ class SanPhamAddDialog {
         JTextField fXX     = UIUtils.makeField(); fXX.setPreferredSize(fd);
         JTextField fViTri  = UIUtils.makeField(); fViTri.setPreferredSize(fd);
         JTextField fDonVi  = UIUtils.makeField(); fDonVi.setPreferredSize(fd);
-        JTextField fTT     = UIUtils.makeField(); fTT.setPreferredSize(fd);
+        
+        JComboBox<String> cbTT = new JComboBox<>(new String[]{"ACTIVE", "INACTIVE", "DISCONTINUED"});
+        cbTT.setPreferredSize(fd);
+        cbTT.setSelectedItem("ACTIVE"); // Default to ACTIVE for new products
+        
         JTextField fKM     = UIUtils.makeField(); fKM.setPreferredSize(fd);
 
         JDateChooser dcNgaySX = new JDateChooser();
@@ -133,15 +148,37 @@ class SanPhamAddDialog {
         dcNgayHH.setDateFormatString("dd/MM/yyyy");
         dcNgayHH.setPreferredSize(fd);
 
+        // Load data for combo boxes
+        try {
+            // Load suppliers
+            SupplierBUS supplierBUS = new SupplierBUS();
+            List<SupplierDTO> suppliers = supplierBUS.getAllSuppliers();
+            cbNCC.addItem(""); // Empty option
+            for (SupplierDTO supplier : suppliers) {
+                cbNCC.addItem(supplier.getName());
+            }
+            
+            // Load categories
+            CategoryBUS categoryBUS = new CategoryBUS();
+            List<CategoryDTO> categories = categoryBUS.getAllCategories();
+            cbDM.addItem(""); // Empty option
+            for (CategoryDTO category : categories) {
+                cbDM.addItem(category.getName());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(popup, "Lỗi tải dữ liệu combo box: " + e.getMessage());
+        }
+
         Object[][] rows = {
             { "Mã SP:",              fMa,       "Tên sản phẩm:",      fTen    },
-            { "Mô tả:",              fMoTa,     "Nhà cung cấp:",      fNCC    },
-            { "Danh mục:",           fDM,       "Giá vốn (VNĐ):",     fGiaVon },
+            { "Mô tả:",              fMoTa,     "Nhà cung cấp:",      cbNCC   },
+            { "Danh mục:",           cbDM,      "Giá vốn (VNĐ):",     fGiaVon },
             { "Giá bán (VNĐ):",      fGiaBan,   "Số lượng:",           fSL     },
             { "Tồn kho tối thiểu:",  fTonMin,   "Xuất xứ:",            fXX     },
             { "Ngày sản xuất:",      dcNgaySX,  "Ngày hết hạn:",      dcNgayHH },
             { "Vị trí:",             fViTri,    "Đơn vị:",             fDonVi  },
-            { "Trạng thái:",         fTT,       "Khuyến mãi:",         fKM     }
+            { "Trạng thái:",         cbTT,      "Khuyến mãi:",         fKM     }
         };
         for (int i = 0; i < rows.length; i++) {
             g.gridy = i;
@@ -188,13 +225,13 @@ class SanPhamAddDialog {
                 JOptionPane.showMessageDialog(popup, "Tên sản phẩm không được để trống.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
                 fTen.requestFocus(); return;
             }
-            if (fDM.getText().trim().isEmpty()) {
+            if (cbDM.getSelectedItem() == null || ((String)cbDM.getSelectedItem()).trim().isEmpty()) {
                 JOptionPane.showMessageDialog(popup, "Danh mục không được để trống.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                fDM.requestFocus(); return;
+                cbDM.requestFocus(); return;
             }
-            if (fNCC.getText().trim().isEmpty()) {
+            if (cbNCC.getSelectedItem() == null || ((String)cbNCC.getSelectedItem()).trim().isEmpty()) {
                 JOptionPane.showMessageDialog(popup, "Nhà cung cấp không được để trống.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                fNCC.requestFocus(); return;
+                cbNCC.requestFocus(); return;
             }
             double giaVon = 0, giaBan = 0;
             try { giaVon = Double.parseDouble(fGiaVon.getText().trim()); if (giaVon < 0) throw new NumberFormatException(); }
@@ -207,8 +244,8 @@ class SanPhamAddDialog {
                 JOptionPane.showMessageDialog(popup, "Giá bán phải là số không âm.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
                 fGiaBan.requestFocus(); return;
             }
-            if (giaBan < giaVon) {
-                JOptionPane.showMessageDialog(popup, "Giá bán phải lớn hơn hoặc bằng giá vốn.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+            if (giaBan <= giaVon) {
+                JOptionPane.showMessageDialog(popup, "Giá bán phải lớn hơn giá vốn.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
                 fGiaBan.requestFocus(); return;
             }
             int sl = 0;
@@ -237,9 +274,9 @@ class SanPhamAddDialog {
             model.addRow(new Object[]{
                 fMa.getText(), tmpPhotoPath[0] != null ? tmpPhotoPath[0] : "", fTen.getText(), fGiaBan.getText(),
                 sl, kho, ngayHH, fKM.getText().isEmpty() ? "-" : fKM.getText(), "",
-                fMoTa.getText(), fNCC.getText(), fDM.getText(), fGiaVon.getText(),
+                fMoTa.getText(), (String)cbNCC.getSelectedItem(), (String)cbDM.getSelectedItem(), fGiaVon.getText(),
                 fTonMin.getText(), fXX.getText(), ngaySX,
-                fViTri.getText(), fDonVi.getText(), fTT.getText()
+                fViTri.getText(), fDonVi.getText(), (String)cbTT.getSelectedItem()
             });
             popup.dispose();
         });

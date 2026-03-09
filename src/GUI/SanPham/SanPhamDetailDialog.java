@@ -5,6 +5,11 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.Dialog;
 import GUI.UIUtils;
+import BUS.CategoryBUS;
+import BUS.SupplierBUS;
+import DTO.CategoryDTO;
+import DTO.SupplierDTO;
+import java.util.ArrayList;
 
 /** Dialog chi tiết + sửa San Pham — tách từ SanPhamPanel */
 class SanPhamDetailDialog {
@@ -99,11 +104,75 @@ class SanPhamDetailDialog {
         };
         int[] colIdx = { 0, 2, 9, 10, 11, 12, 3, 4, 13, 14, 15, 6, 16, 17, 18, 7 };
 
-        JTextField[] flds = new JTextField[lbls.length];
+        JComponent[] flds = new JComponent[lbls.length];
         for (int i = 0; i < lbls.length; i++) {
-            flds[i] = UIUtils.makeField();
             Object v = model.getValueAt(modelRow, colIdx[i]);
-            flds[i].setText(v == null ? "" : v.toString());
+            String text = v == null ? "" : v.toString();
+            
+            if (i == 0) { // Mã SP - read-only
+                JTextField tf = UIUtils.makeField();
+                tf.setText(text);
+                tf.setEditable(false);
+                tf.setBackground(new Color(0xE8E8E8));
+                flds[i] = tf;
+            } else if (i == 3) { // Nhà cung cấp - combo box
+                JComboBox<String> cb = new JComboBox<>();
+                cb.setFont(new Font("Arial", Font.PLAIN, 14));
+                cb.setBackground(Color.WHITE);
+                try {
+                    ArrayList<SupplierDTO> suppliers = new SupplierBUS().getAllSuppliers();
+                    for (SupplierDTO s : suppliers) {
+                        cb.addItem(s.getName());
+                    }
+                    cb.setSelectedItem(text);
+                } catch (Exception e) {
+                    cb.addItem(text);
+                }
+                flds[i] = cb;
+            } else if (i == 4) { // Danh mục - combo box
+                JComboBox<String> cb = new JComboBox<>();
+                cb.setFont(new Font("Arial", Font.PLAIN, 14));
+                cb.setBackground(Color.WHITE);
+                try {
+                    ArrayList<CategoryDTO> categories = new CategoryBUS().getAllCategories();
+                    for (CategoryDTO c : categories) {
+                        cb.addItem(c.getName());
+                    }
+                    cb.setSelectedItem(text);
+                } catch (Exception e) {
+                    cb.addItem(text);
+                }
+                flds[i] = cb;
+            } else if (i == 7) { // Số lượng - read-only
+                JTextField tf = UIUtils.makeField();
+                tf.setText(text);
+                tf.setEditable(false);
+                tf.setBackground(new Color(0xE8E8E8));
+                flds[i] = tf;
+            } else if (i == 14) { // Trạng thái - combo box
+                JComboBox<String> cb = new JComboBox<>();
+                cb.setFont(new Font("Arial", Font.PLAIN, 14));
+                cb.setBackground(Color.WHITE);
+                cb.addItem("Còn hàng");
+                cb.addItem("Hết hàng");
+                cb.addItem("Ngừng kinh doanh");
+                cb.setSelectedItem(text);
+                flds[i] = cb;
+            } else if (i == 5 || i == 6) { // Giá vốn và giá bán - với validation
+                JTextField tf = UIUtils.makeField();
+                tf.setText(text);
+                final int fieldIndex = i;
+                tf.addFocusListener(new java.awt.event.FocusAdapter() {
+                    public void focusLost(java.awt.event.FocusEvent evt) {
+                        validatePrices(flds, fieldIndex);
+                    }
+                });
+                flds[i] = tf;
+            } else { // Các field khác - text field
+                JTextField tf = UIUtils.makeField();
+                tf.setText(text);
+                flds[i] = tf;
+            }
         }
 
         JPanel formBody = new JPanel();
@@ -115,7 +184,11 @@ class SanPhamDetailDialog {
             lbl.setFont(new Font("Arial", Font.BOLD, 15));
             lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
             flds[i].setAlignmentX(Component.LEFT_ALIGNMENT);
-            flds[i].setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+            if (flds[i] instanceof JTextField) {
+                flds[i].setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+            } else if (flds[i] instanceof JComboBox) {
+                flds[i].setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+            }
             formBody.add(lbl);
             formBody.add(flds[i]);
             formBody.add(Box.createVerticalStrut(8));
@@ -141,10 +214,28 @@ class SanPhamDetailDialog {
         JButton btnLuu = new JButton("Lưu");
         styleBtn(btnLuu, new Color(0xB83434), 100, 40);
         btnLuu.addActionListener(e -> {
-            for (int i = 0; i < colIdx.length; i++)
-                model.setValueAt(flds[i].getText(), modelRow, colIdx[i]);
+            // Validate prices before saving
+            if (!validatePrices(flds, -1)) {
+                return; // Don't save if validation fails
+            }
+            
+            for (int i = 0; i < colIdx.length; i++) {
+                String value;
+                if (flds[i] instanceof JTextField) {
+                    value = ((JTextField) flds[i]).getText();
+                } else if (flds[i] instanceof JComboBox) {
+                    value = ((JComboBox<?>) flds[i]).getSelectedItem().toString();
+                } else {
+                    value = "";
+                }
+                model.setValueAt(value, modelRow, colIdx[i]);
+            }
             try {
-                int sl = Integer.parseInt(flds[7].getText().trim());
+                String slText = "";
+                if (flds[7] instanceof JTextField) {
+                    slText = ((JTextField) flds[7]).getText().trim();
+                }
+                int sl = Integer.parseInt(slText);
                 model.setValueAt(sl > 0 ? "Còn hàng" : "Hết hàng", modelRow, 5);
             } catch (NumberFormatException ignore) {}
             bang.repaint();
@@ -154,6 +245,44 @@ class SanPhamDetailDialog {
         footer.add(btnHuy); footer.add(btnLuu);
         popup.add(footer, BorderLayout.SOUTH);
         popup.setVisible(true);
+    }
+
+    private static boolean validatePrices(JComponent[] flds, int currentFieldIndex) {
+        try {
+            String costPriceText = "";
+            String sellingPriceText = "";
+            
+            if (flds[5] instanceof JTextField) {
+                costPriceText = ((JTextField) flds[5]).getText().trim();
+            }
+            if (flds[6] instanceof JTextField) {
+                sellingPriceText = ((JTextField) flds[6]).getText().trim();
+            }
+            
+            if (!costPriceText.isEmpty() && !sellingPriceText.isEmpty()) {
+                double costPrice = Double.parseDouble(costPriceText);
+                double sellingPrice = Double.parseDouble(sellingPriceText);
+                
+                if (sellingPrice <= costPrice) {
+                    JOptionPane.showMessageDialog(null,
+                        "Giá bán phải lớn hơn giá vốn!",
+                        "Lỗi nhập liệu",
+                        JOptionPane.ERROR_MESSAGE);
+                    
+                    // Focus back to the field that was just edited
+                    if (currentFieldIndex == 5) {
+                        ((JTextField) flds[5]).requestFocus();
+                    } else if (currentFieldIndex == 6) {
+                        ((JTextField) flds[6]).requestFocus();
+                    }
+                    
+                    return false;
+                }
+            }
+        } catch (NumberFormatException e) {
+            // If parsing fails, let it go - will be handled elsewhere
+        }
+        return true;
     }
 
     private static void styleBtn(JButton b, Color bg, int w, int h) {

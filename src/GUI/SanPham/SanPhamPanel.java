@@ -1,20 +1,26 @@
 package GUI.SanPham;
 
 import javax.swing.*;
+import javax.swing.AbstractCellEditor;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
+import BUS.CategoryBUS;
+import BUS.SupplierBUS;
+import DTO.CategoryDTO;
+import DTO.SupplierDTO;
+import java.util.ArrayList;
+import java.util.List;
+
+import java.awt.*;
 import BUS.ProductBUS;
 import DTO.ProductDTO;
 import GUI.ExportUtils;
 import GUI.UIUtils;
-
-import java.awt.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Panel for product management. Contains a card layout switching between
@@ -29,15 +35,41 @@ import java.util.List;
  *   16=Vị trí, 17=Đơn vị, 18=Trạng thái
  */
 public class SanPhamPanel extends JPanel {
-    private CardLayout innerCard;
-    DefaultTableModel model;
+    private JTabbedPane tabbedPane;
+    private JPanel productPanel;
+    private CategoryPanel categoryPanel;
+    
+    private CardLayout productCard;
+    DefaultTableModel productModel;
 
     public static final String CARD_TABLE = "TABLE";
     public static final String CARD_THEM  = "THEM";
 
     public SanPhamPanel() {
-        innerCard = new CardLayout();
-        setLayout(innerCard);
+        setLayout(new BorderLayout());
+        setBackground(new Color(0xF8F7FF));
+
+        tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font("Arial", Font.BOLD, 14));
+        tabbedPane.setBackground(new Color(0xF8F7FF));
+
+        // Product panel
+        productPanel = createProductPanel();
+        tabbedPane.addTab("Sản phẩm", productPanel);
+
+        // Category panel
+        categoryPanel = new CategoryPanel();
+        tabbedPane.addTab("Danh mục", categoryPanel);
+
+        add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    private JPanel createProductPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(0xF8F7FF));
+
+        productCard = new CardLayout();
+        panel.setLayout(productCard);
 
         // ---- All columns (visible + hidden) ----
         String[] columns = {
@@ -48,16 +80,17 @@ public class SanPhamPanel extends JPanel {
             "Tồn kho tối thiểu", "Xuất xứ", "Ngày sản xuất",
             "Vị trí", "Đơn vị", "Trạng thái"
         };
-        model = new DefaultTableModel(columns, 0) {
+        productModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int col) { return col == 8; }
         };
+        loadProducts();
         loadProducts();
 
         // ---- Table card ----
         JPanel tableCard = new JPanel(new BorderLayout());
 
-        JTable bang = new JTable(model);
-        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+        JTable bang = new JTable(productModel);
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(productModel);
         bang.setRowSorter(sorter);
 
         // Hide columns 9–18
@@ -80,7 +113,6 @@ public class SanPhamPanel extends JPanel {
         String[] boloc = { "Tất cả", "Còn hàng", "Hết hàng", "Có khuyến mãi", "Cận date" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
         cbLoc.setPreferredSize(new Dimension(200, 36));
-        UIUtils.styleComboBox(cbLoc);
 
         JPanel timkiem = new JPanel(new BorderLayout());
         timkiem.setPreferredSize(new Dimension(220, 36));
@@ -130,7 +162,7 @@ public class SanPhamPanel extends JPanel {
             public void mouseEntered(java.awt.event.MouseEvent evt) { them.setBackground(new Color(0xC5B3E6)); }
             public void mouseExited(java.awt.event.MouseEvent evt)  { them.setBackground(new Color(0xD9D9D9)); }
         });
-        them.addActionListener(e -> SanPhamAddDialog.show(SanPhamPanel.this, model));
+        them.addActionListener(e -> SanPhamAddDialog.show(SanPhamPanel.this, productModel));
 
         Runnable applyFilter = () -> {
             String tuKhoa = tim.getText().trim();
@@ -178,14 +210,14 @@ public class SanPhamPanel extends JPanel {
         JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
         for (JButton b : new JButton[]{btnPDF, btnExcel, btnImport})
             b.setFont(new Font("Arial", Font.BOLD, 13));
-        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, model, "Danh sách sản phẩm"));
-        btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, model, "san_pham"));
+        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, productModel, "Danh sách sản phẩm"));
+        btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, productModel, "san_pham"));
         btnImport.addActionListener(e -> {
             List<String[]> rows = ExportUtils.importCSV(this);
             if (rows == null) return;
             for (String[] r : rows) {
                 if (r.length < 9) continue;
-                model.addRow(new Object[]{r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8]});
+                productModel.addRow(new Object[]{r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8]});
             }
         });
 
@@ -263,29 +295,10 @@ public class SanPhamPanel extends JPanel {
     }
 });
 
-        bang.getColumnModel().getColumn(8).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
-            private final JPanel p    = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
-            private final JButton xem = UIUtils.makeActionButton("Xem chi tiết", new Color(0x6677C8));
-            private int currentRow = -1;
-            {
-                xem.setPreferredSize(new Dimension(100, 32));
-                p.setOpaque(true);
-                p.add(xem);
-                xem.addActionListener(e -> {
-                    fireEditingStopped();
-                    int modelRow = bang.convertRowIndexToModel(currentRow);
-                    SanPhamDetailDialog.showDetail(SanPhamPanel.this, modelRow, model, bang);
-                });
-            }
-            @Override
-            public Component getTableCellEditorComponent(
-                    JTable table, Object value, boolean isSelected, int row, int column) {
-                currentRow = row;
-                p.setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
-                return p;
-            }
-            @Override public Object getCellEditorValue() { return ""; }
-        });
+        // Custom renderer and editor for action column
+        ActionButtonRenderer actionRenderer = new ActionButtonRenderer(bang, productModel, this);
+        bang.getColumnModel().getColumn(8).setCellRenderer(actionRenderer);
+        bang.getColumnModel().getColumn(8).setCellEditor(actionRenderer);
 
         JScrollPane bangScroll = new JScrollPane(bang);
         UIUtils.styleScrollPane(bangScroll);
@@ -313,14 +326,61 @@ public class SanPhamPanel extends JPanel {
         tableCard.add(spNorth,  BorderLayout.NORTH);
         tableCard.add(content,  BorderLayout.CENTER);
 
-        add(tableCard, CARD_TABLE);
-        innerCard.show(this, CARD_TABLE);
+        panel.add(tableCard, CARD_TABLE);
+        productCard.show(panel, CARD_TABLE);
+
+        return panel;
+    }
+
+    // Custom renderer for action buttons that are always visible
+    private static class ActionButtonRenderer extends AbstractCellEditor implements TableCellRenderer, TableCellEditor {
+        private final JButton button;
+        private final JTable table;
+        private final DefaultTableModel model;
+        private final SanPhamPanel parentPanel;
+
+        public ActionButtonRenderer(JTable table, DefaultTableModel model, SanPhamPanel parentPanel) {
+            this.table = table;
+            this.model = model;
+            this.parentPanel = parentPanel;
+            this.button = UIUtils.makeActionButton("Xem chi tiết", new Color(0x6677C8));
+            button.setPreferredSize(new Dimension(100, 32));
+
+            // Add action listener to the button
+            button.addActionListener(e -> {
+                stopCellEditing(); // Stop editing when button is clicked
+                int row = table.getSelectedRow();
+                if (row >= 0) {
+                    int modelRow = table.convertRowIndexToModel(row);
+                    SanPhamDetailDialog.showDetail(parentPanel, modelRow, model, table);
+                }
+            });
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            button.setBackground(isSelected ? table.getSelectionBackground() : new Color(0x6677C8));
+            button.setForeground(Color.WHITE);
+            return button;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            button.setBackground(isSelected ? table.getSelectionBackground() : new Color(0x6677C8));
+            button.setForeground(Color.WHITE);
+            return button;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return null;
+        }
     }
 
     // Dialog methods moved to SanPhamAddDialog and SanPhamDetailDialog
 
     private void loadProducts() {
-        model.setRowCount(0);
+        productModel.setRowCount(0);
         try {
             ArrayList<ProductDTO> list = new ProductBUS().getAllProducts();
             if (list == null) return;
@@ -340,7 +400,7 @@ if (p.getImagePath() != null && !p.getImagePath().isEmpty()) {
     Image scaled = img.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
     icon = new ImageIcon(scaled);
 }
-                model.addRow(new Object[]{
+                productModel.addRow(new Object[]{
                     p.getCode(),
                     icon,
                     p.getName(), giaBan, qty, kho, ngayHH, "-", "",
