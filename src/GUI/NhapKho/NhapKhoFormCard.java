@@ -1,5 +1,6 @@
 package GUI.NhapKho;
-
+import BUS.PurchasesBUS;
+import DTO.PurchasesDTO;
 import BUS.EmployeeBUS;
 import BUS.ProductBUS;
 import BUS.PurchaseInvoicesBUS;

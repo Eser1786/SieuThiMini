@@ -2,7 +2,7 @@ package DTO;
 
 public class ProductDTO {
         public boolean getIsdeleted() { return isdeleted; }
-        public void setIsdeleted(boolean isdeleted) { this.isdeleted = isdeleted; }
+       
     private int id;
     private String code;
     private String imagePath;
