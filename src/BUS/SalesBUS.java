@@ -9,6 +9,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.sql.*;
 
+import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalAdjusters;
+
 public class SalesBUS {
     private SaleDAO saleDAO;
 
@@ -93,5 +97,52 @@ public class SalesBUS {
         }
         
         return "DH001";
+    }
+
+
+    /**
+     * Lấy doanh thu tuần hiện tại (Thứ 2 - Chủ nhật)
+     * Trả về mảng 7 phần tử: [T2, T3, T4, T5, T6, T7, CN]
+     */
+    public double[] getWeeklyRevenue() {
+        double[] weekRevenue = new double[7];
+        
+        try {
+            ArrayList<SaleDTO> allSales = getAllSales();
+            LocalDate today = LocalDate.now();
+            
+            // Tìm ngày đầu tuần (Thứ 2)
+            LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            
+            // Tính doanh thu từng ngày trong tuần
+            for (int i = 0; i < 7; i++) {
+                LocalDate currentDay = monday.plusDays(i);
+                
+                double dailyRevenue = allSales.stream()
+                    .filter(sale -> sale.getSaleDate() != null)
+                    .filter(sale -> sale.getSaleStatus() == SaleStatus.COMPLETED)
+                    .filter(sale -> sale.getSaleDate().equals(currentDay))
+                    .mapToDouble(sale -> sale.getTotalAmount().doubleValue())
+                    .sum();
+                
+                weekRevenue[i] = dailyRevenue;
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return weekRevenue;
+    }
+
+    /**
+     * Tìm giá trị max trong mảng doanh thu
+     */
+    public double getMaxRevenue(double[] revenues) {
+        double max = 0;
+        for (double rev : revenues) {
+            if (rev > max) max = rev;
+        }
+        return max;
     }
 }
