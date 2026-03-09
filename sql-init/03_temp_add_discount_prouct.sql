@@ -1,3 +1,4 @@
+use sieuthiminiv2;
 CREATE TABLE IF NOT EXISTS discount_products (
     discount_id BIGINT,
     product_id BIGINT,

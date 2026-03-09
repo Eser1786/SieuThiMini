@@ -609,7 +609,6 @@ class NhapKhoFormCard extends JPanel {
             inv.setNotes(txtNote.getText().trim());
             inv.setPaymentMethod("DEBT");
             inv.setPaymentStatus("PENDING");
-            inv.setStatus("PENDING");
             inv.setItems(invItems);
             inv.setTotalAmount(total);
             inv.setDiscountAmount(BigDecimal.ZERO);

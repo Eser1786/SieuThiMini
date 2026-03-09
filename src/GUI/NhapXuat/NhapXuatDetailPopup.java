@@ -1,7 +1,7 @@
 package GUI.NhapXuat;
 
 import BUS.PurchaseInvoicesBUS;
-import BUS.PurchaseInvoicesDAO;
+import DAO.PurchaseInvoicesDAO;
 import DTO.PurchaseInvoicesDTO;
 import DTO.PurchaseInvoiceItemsDTO;
 import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
