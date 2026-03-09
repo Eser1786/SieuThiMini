@@ -3,8 +3,10 @@ package GUI.DonHang;
 import BUS.CustomerBUS;
 import BUS.EmployeeBUS;
 import BUS.ProductBUS;
+import BUS.DiscountBUS;
 import BUS.SalesBUS;
 import DAO.DBConnection;
+import DTO.DiscountDTO;
 import DTO.CustomerDTO;
 import DTO.EmployeeDTO;
 import DTO.ProductDTO;
@@ -358,32 +360,57 @@ class DonHangCreateCard extends JPanel {
         notesScroll.setBorder(BorderFactory.createLineBorder(new Color(0xCCCCCC)));
 
         /* ── Discount ── */
-        JTextField tfMaKM = cf();
-        tfMaKM.setPreferredSize(new Dimension(160, 32));
-        JLabel lbDiscStatus = new JLabel("");
-        lbDiscStatus.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        JButton btnApply = new JButton("\u00c1p d\u1ee5ng");
-        btnApply.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnApply.setBackground(new Color(0x5B4FCC)); btnApply.setForeground(Color.WHITE);
-        btnApply.setFocusPainted(false); btnApply.setBorderPainted(false); btnApply.setOpaque(true);
-        btnApply.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnApply.setPreferredSize(new Dimension(90, 32));
-        btnApply.addActionListener(e -> {
-            String code = tfMaKM.getText().trim();
-            if (code.isEmpty()) {
-                lbDiscStatus.setText("Nh\u1eadp m\u00e3 tr\u01b0\u1edbc."); lbDiscStatus.setForeground(Color.RED); return;
+        java.util.ArrayList<DiscountDTO> activeDiscounts = new java.util.ArrayList<>();
+        JComboBox<String> cbMaKM = new JComboBox<>();
+        cbMaKM.addItem("(Không áp dụng)");
+        try {
+            java.util.ArrayList<DiscountDTO> allD = new DiscountBUS().getAllDiscounts();
+            if (allD != null) {
+                for (DiscountDTO d : allD) {
+                    if (d.getStatus() != null && "ACTIVE".equals(d.getStatus().name())) {
+                        activeDiscounts.add(d);
+                        cbMaKM.addItem(d.getDiscountCode() + " - " + d.getName());
+                    }
+                }
             }
-            long sub = 0; for (OrderItem it : items) sub += it.unitPrice * it.qty;
-            discAmt = sub / 10;
-            lbDiscStatus.setText("Gi\u1ea3m 10%"); lbDiscStatus.setForeground(new Color(0x2E7D32));
+        } catch (Exception ignored) {}
+        cbMaKM.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cbMaKM.setPreferredSize(new Dimension(260, 32));
+        JLabel lbDiscStatus = new JLabel("  ");
+        lbDiscStatus.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        cbMaKM.addActionListener(e -> {
+            int idx = cbMaKM.getSelectedIndex();
+            if (idx <= 0 || idx - 1 >= activeDiscounts.size()) {
+                discAmt = 0; lbDiscStatus.setText("  "); updateTotals(); return;
+            }
+            DiscountDTO d = activeDiscounts.get(idx - 1);
+            long sub = 0; for (OrderItem it : items) sub += (long)(it.unitPrice * it.qty);
+            if (d.getMinOrderAmount() != null && sub < d.getMinOrderAmount().longValue()) {
+                discAmt = 0;
+                lbDiscStatus.setText("⚠ Đơn tối thiểu: " + String.format("%,.0fđ", d.getMinOrderAmount().doubleValue()));
+                lbDiscStatus.setForeground(new Color(0xE65100));
+                updateTotals(); return;
+            }
+            if ("PERCENT".equals(d.getDiscountType().name())) {
+                discAmt = (long)(sub * d.getValue().doubleValue() / 100.0);
+                lbDiscStatus.setText("Giảm " + d.getValue().stripTrailingZeros().toPlainString()
+                        + "% → -" + String.format("%,.0fđ", (double) discAmt));
+            } else {
+                discAmt = Math.min(d.getValue().longValue(), sub);
+                lbDiscStatus.setText("Giảm cố định -" + String.format("%,.0fđ", (double) discAmt));
+            }
+            lbDiscStatus.setForeground(new Color(0x2E7D32));
             updateTotals();
         });
 
         JPanel discRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         discRow.setBackground(Color.WHITE);
-        JLabel lbKMlbl = new JLabel("M\u00e3 khuy\u1ebfn m\u00e3i:");
+        JLabel lbKMlbl = new JLabel("Mã khuyến mãi:");
         lbKMlbl.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        discRow.add(lbKMlbl); discRow.add(tfMaKM); discRow.add(btnApply); discRow.add(lbDiscStatus);
+        discRow.add(lbKMlbl); discRow.add(cbMaKM);
+        JPanel discInfoRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
+        discInfoRow.setBackground(Color.WHITE);
+        discInfoRow.add(lbDiscStatus);
 
         /* ── Summary rows ── */
         JPanel subRow = new JPanel(new BorderLayout());
@@ -424,9 +451,10 @@ class DonHangCreateCard extends JPanel {
         lc.gridy = 4; lc.insets = new Insets(14,0,4,0); leftContent.add(lbNotesLbl, lc);
         lc.gridy = 5; lc.insets = new Insets(0,0,10,0); leftContent.add(notesScroll, lc);
         lc.gridy = 6; lc.insets = new Insets(0,0,10,0); leftContent.add(new JSeparator(), lc);
-        lc.gridy = 7; lc.insets = new Insets(0,0,6,0);  leftContent.add(discRow, lc);
-        lc.gridy = 8; lc.insets = new Insets(4,0,4,0);  leftContent.add(subRow, lc);
-        lc.gridy = 9; lc.insets = new Insets(0,0,0,0);  leftContent.add(totRow, lc);
+        lc.gridy = 7; lc.insets = new Insets(0,0,2,0);  leftContent.add(discRow, lc);
+        lc.gridy = 8; lc.insets = new Insets(0,0,6,0);  leftContent.add(discInfoRow, lc);
+        lc.gridy = 9; lc.insets = new Insets(4,0,4,0);  leftContent.add(subRow, lc);
+        lc.gridy = 10; lc.insets = new Insets(0,0,0,0); leftContent.add(totRow, lc);
 
         JPanel leftCard = new JPanel(new BorderLayout());
         leftCard.setBackground(Color.WHITE);
@@ -594,7 +622,6 @@ class DonHangCreateCard extends JPanel {
             String maDon = salesBUS.generateSaleCode();
             
             String nhanVien = cbNhanVien.getSelectedItem().toString();
-            String maKM = tfMaKM.getText().trim();
             
             // Tạo SaleDTO để lưu vào database
             SaleDTO sale = new SaleDTO();
@@ -646,7 +673,7 @@ class DonHangCreateCard extends JPanel {
             // Refresh table và đóng dialog
             parent.refreshTable();
             parent.showCard(DonHangPanel.CARD_TABLE);
-            items.clear(); discAmt = 0; rebuildList(); updateTotals(); lbDiscStatus.setText("");
+            items.clear(); discAmt = 0; rebuildList(); updateTotals(); cbMaKM.setSelectedIndex(0);
             parent.showCard(DonHangPanel.CARD_TABLE);
         });
         footer.add(btnLuu); footer.add(btnHuy);

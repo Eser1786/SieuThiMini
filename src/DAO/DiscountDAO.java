@@ -62,7 +62,7 @@ public class DiscountDAO {
     if(openConnection()){
         try{
 
-            String sql = "SELECT * FROM discounts";
+            String sql = "SELECT * FROM discounts WHERE is_deleted = 0";
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -171,8 +171,7 @@ public class DiscountDAO {
 
         try{
 
-            String sql = "UPDATE discounts SET status = 'INACTIVE', updated_at = NOW() WHERE discount_id = ?";
-
+            String sql = "UPDATE discounts SET status = 'INACTIVE', is_deleted = 1, updated_at = NOW() WHERE discount_id = ?";
             PreparedStatement pstmt = con.prepareStatement(sql);
 
             pstmt.setInt(1, id);

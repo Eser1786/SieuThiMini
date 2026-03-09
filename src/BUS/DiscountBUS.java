@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import DTO.enums.DiscountEnum.DiscountStatus;
 import DTO.enums.DiscountEnum.DiscountType;
+import DTO.ProductDTO;
 
 public class DiscountBUS {
 
@@ -110,6 +111,29 @@ try{
 
     }
 
+    if(min.compareTo(BigDecimal.ZERO) < 0)
+        return "Giá trị đơn hàng tối thiểu (Min order) không được là số âm";
+
+
+    // ===== KIEM TRA GIA TRI GIAM vs GIA SAN PHAM (chi FIXED) =====
+
+    if (discountType == DiscountType.FIXED && productId != null) {
+        ProductBUS productBUS = new ProductBUS();
+        ProductDTO product = null;
+        for (ProductDTO p : productBUS.getAllProducts()) {
+            if (p.getId() == productId) { product = p; break; }
+        }
+        if (product != null && product.getSellingPrice() != null &&
+                val.compareTo(product.getSellingPrice()) > 0) {
+            return "Không thể tạo khŋyến mãi này:\n"
+                 + "• Tên khŋyến mãi : " + name + "\n"
+                 + "• Sản phẩm chọn  : " + product.getName() + "\n"
+                 + "• Giá tri giảm    : " + String.format("%,.0f VNĐ", val)
+                 + "   >   Giá bán : " + String.format("%,.0f VNĐ", product.getSellingPrice()) + "\n"
+                 + "Lý do: giá trị giảm không được vượt quá giá bán của sản phẩm.";
+        }
+    }
+
 
     // ===== CREATE DTO =====
 
@@ -171,7 +195,7 @@ return "SUCCESS";
     return "Không thể xóa khuyến mãi";
     
 }
-public boolean updateDiscount(
+public String updateDiscount(
         int id,
         String name,
         String description,
@@ -183,11 +207,35 @@ public boolean updateDiscount(
         String status,
         Integer productId
 ){
+    // ===== VALIDATE minOrder =====
+    if (minOrder < 0)
+        return "Giá trị đơn hàng tối thiểu (Min order) không được là số âm";
+
+    // ===== VALIDATE FIXED value vs product price =====
+    if ("FIXED".equals(type) && productId != null) {
+        ProductBUS productBUS = new ProductBUS();
+        ProductDTO product = null;
+        for (ProductDTO p : productBUS.getAllProducts()) {
+            if (p.getId() == productId) { product = p; break; }
+        }
+        if (product != null && product.getSellingPrice() != null) {
+            BigDecimal val = BigDecimal.valueOf(value);
+            if (val.compareTo(product.getSellingPrice()) > 0) {
+                return "Không thể cập nhật khŋyến mãi này:\n"
+                     + "• Tên khŋyến mãi : " + name + "\n"
+                     + "• Sản phẩm chọn  : " + product.getName() + "\n"
+                     + "• Giá trị giảm   : " + String.format("%,.0f VNĐ", val)
+                     + "   >   Giá bán : " + String.format("%,.0f VNĐ", product.getSellingPrice()) + "\n"
+                     + "Lý do: giá trị giảm không được vượt quá giá bán của sản phẩm.";
+            }
+        }
+    }
+
     boolean result = discountDAO.updateDiscount(
             id,name,description,value,type,startDate,endDate,minOrder,status
     );
 
-    if(!result) return false;
+    if(!result) return "Cập nhật thất bại";
 
     if(type.equals("FIXED")){
 
@@ -207,6 +255,6 @@ public boolean updateDiscount(
         }
     }
 
-    return true;
+    return "SUCCESS";
 }
 }

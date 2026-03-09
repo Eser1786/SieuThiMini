@@ -1,4 +1,4 @@
-package GUI.NhanVien;
+﻿package GUI.NhanVien;
 
 import BUS.EmployeeBUS;
 import BUS.RoleBUS;
@@ -31,6 +31,7 @@ public class NhanVienPanel extends JPanel {
     // Column indices
     static final int COL_MA = 0, COL_TEN = 1, COL_CHUCVU = 2;
     static final int COL_SDT = 3, COL_EMAIL = 4, COL_NGAY = 5, COL_PASS = 6;
+    static final int COL_ID = 7; // hidden: employee_id
 
     // Fields
     DefaultTableModel tableModel;
@@ -154,12 +155,17 @@ public class NhanVienPanel extends JPanel {
         btnXoaNV.addActionListener(e -> {
             if (selectedModelRow < 0) return;
             String ten = tableModel.getValueAt(selectedModelRow, COL_TEN).toString();
-            int cf = JOptionPane.showConfirmDialog(this,
-                    "X\u00f3a nh\u00e2n vi\u00ean \"" + ten + "\"?",
-                    "X\u00e1c nh\u1eadn x\u00f3a", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (cf != JOptionPane.YES_OPTION) return;
+            int cf1 = JOptionPane.showConfirmDialog(this,
+                    "Xóa nhân viên \"" + ten + "\"?",
+                    "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (cf1 != JOptionPane.YES_OPTION) return;
+            int cf2 = JOptionPane.showConfirmDialog(this,
+                    "Xác nhận lần cuối: Nhân viên sẽ bị ẩn vĩnh viễn. Tiếp tục?",
+                    "Xác nhận lần 2", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (cf2 != JOptionPane.YES_OPTION) return;
+            int empId = (Integer) tableModel.getValueAt(selectedModelRow, COL_ID);
             String ma = tableModel.getValueAt(selectedModelRow, COL_MA).toString();
-            tableModel.removeRow(selectedModelRow);
+            empBUS.softDeleteEmployee(empId);
             photoPathMap.remove(ma);
             selectedModelRow = -1;
             btnSuaNV.setEnabled(false);
@@ -167,6 +173,7 @@ public class NhanVienPanel extends JPanel {
             resetDetailLabels();
             avatarImage = null;
             if (avatarBox != null) avatarBox.repaint();
+            loadEmployees();
         });
 
         JPanel body = new JPanel(new GridLayout(1, 2));
@@ -365,7 +372,7 @@ public class NhanVienPanel extends JPanel {
         toolbar.add(btnImport);
 
         String[] cols = {"M\u00e3 NV", "T\u00ean nh\u00e2n vi\u00ean", "Ch\u1ee9c v\u1ee5",
-                         "S\u0110T", "Email", "Ng\u00e0y tham gia", "M\u1eadt kh\u1ea9u"};
+                         "S\u0110T", "Email", "Ng\u00e0y tham gia", "M\u1eadt kh\u1ea9u", "employee_id"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -391,6 +398,11 @@ public class NhanVienPanel extends JPanel {
         int[] prefW = {75, 145, 110, 100, 155, 115, 120};
         for (int i = 0; i < prefW.length; i++)
             table.getColumnModel().getColumn(i).setPreferredWidth(prefW[i]);
+        // hide employee_id column
+        table.getColumnModel().getColumn(COL_ID).setMinWidth(0);
+        table.getColumnModel().getColumn(COL_ID).setMaxWidth(0);
+        table.getColumnModel().getColumn(COL_ID).setWidth(0);
+        table.getColumnModel().getColumn(COL_ID).setPreferredWidth(0);
 
         DefaultTableCellRenderer altR = new DefaultTableCellRenderer() {
             @Override public Component getTableCellRendererComponent(
@@ -542,7 +554,8 @@ public class NhanVienPanel extends JPanel {
                 tableModel.addRow(new Object[]{
                     e.getCode(), e.getFullName(), roleName(e.getRoleId()),
                     e.getPhone(), e.getEmail(), ngay,
-                    e.getPasswordHash() != null ? e.getPasswordHash() : ""
+                    e.getPasswordHash() != null ? e.getPasswordHash() : "",
+                    e.getId()
                 });
             }
         } catch (Exception ex) {

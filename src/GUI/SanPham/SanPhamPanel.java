@@ -78,7 +78,7 @@ public class SanPhamPanel extends JPanel {
             // hidden:
             "Mô tả", "Nhà cung cấp", "Danh mục", "Giá vốn",
             "Tồn kho tối thiểu", "Xuất xứ", "Ngày sản xuất",
-            "Vị trí", "Đơn vị", "Trạng thái"
+            "Vị trí", "Đơn vị", "Trạng thái", "product_id"
         };
         productModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int col) { return col == 8; }
@@ -93,8 +93,8 @@ public class SanPhamPanel extends JPanel {
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(productModel);
         bang.setRowSorter(sorter);
 
-        // Hide columns 9–18
-        for (int i = 9; i <= 18; i++) {
+        // Hide columns 9–19
+        for (int i = 9; i <= 19; i++) {
             bang.getColumnModel().getColumn(i).setMinWidth(0);
             bang.getColumnModel().getColumn(i).setMaxWidth(0);
             bang.getColumnModel().getColumn(i).setWidth(0);
@@ -379,7 +379,7 @@ public class SanPhamPanel extends JPanel {
 
     // Dialog methods moved to SanPhamAddDialog and SanPhamDetailDialog
 
-    private void loadProducts() {
+    void loadProducts() {
         productModel.setRowCount(0);
         try {
             ArrayList<ProductDTO> list = new ProductBUS().getAllProducts();
@@ -411,7 +411,8 @@ if (p.getImagePath() != null && !p.getImagePath().isEmpty()) {
                     ngaySX,
                     p.getPosition() != null ? p.getPosition() : "-",
                     p.getUnit()   != null ? p.getUnit()   : "-",
-                    p.getStatus() != null ? p.getStatus() : "-"
+                    p.getStatus() != null ? p.getStatus() : "-",
+                    p.getId()
                 });
             }
         } catch (Exception e) {

@@ -344,17 +344,20 @@ class KhachHangTableCard extends JPanel {
         JButton btnXoaDlg = new JButton("Xóa");
         styleButton(btnXoaDlg, new Color(0xB83434), 100, 40);
         btnXoaDlg.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(detail,
+            int c1 = JOptionPane.showConfirmDialog(detail,
                 "Bạn có chắc muốn xóa khách hàng \"" + ten + "\"?",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (confirm == JOptionPane.YES_OPTION) {
-                if (customerId > 0) {
-                    try { new CustomerBUS().deleteCustomer(customerId); }
-                    catch (Exception ex) { ex.printStackTrace(); }
-                }
-                parent.tableModel.removeRow(modelRow);
-                detail.dispose();
+            if (c1 != JOptionPane.YES_OPTION) return;
+            int c2 = JOptionPane.showConfirmDialog(detail,
+                "Xác nhận lần cuối: Dữ liệu sẽ bị ẩn vĩnh viễn. Tiếp tục?",
+                "Xác nhận lần 2", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (c2 != JOptionPane.YES_OPTION) return;
+            if (customerId > 0) {
+                try { new CustomerBUS().softDeleteCustomer(customerId); }
+                catch (Exception ex) { ex.printStackTrace(); }
             }
+            detail.dispose();
+            parent.loadCustomers();
         });
 
         JButton btnDong = new JButton("Đóng");

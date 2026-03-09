@@ -398,15 +398,18 @@ public class KhuyenMaiPanel extends JPanel {
             JButton btnXoa = makeDialogBtn("Xóa", new Color(0xC62828));
             btnSua.addActionListener(e -> { dlg.dispose(); showEditDialog(dto); });
             btnXoa.addActionListener(e -> {
-                int confirm = JOptionPane.showConfirmDialog(dlg, "Xóa khuyến mãi này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    String result = discountBUS.deleteDiscount(dto.getId());
-                    if ("SUCCESS".equals(result)) {
-                        JOptionPane.showMessageDialog(dlg, "Đã xóa khuyến mãi.");
-                        loadDiscountTables(); dlg.dispose();
-                    } else {
-                        JOptionPane.showMessageDialog(dlg, result, "Lỗi", JOptionPane.ERROR_MESSAGE);
-                    }
+                int c1 = JOptionPane.showConfirmDialog(dlg, "Xóa khuyến mãi này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+                if (c1 != JOptionPane.YES_OPTION) return;
+                int c2 = JOptionPane.showConfirmDialog(dlg,
+                    "Xác nhận lần cuối: Khuyến mãi sẽ bị ẩn vĩnh viễn. Tiếp tục?",
+                    "Xác nhận lần 2", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (c2 != JOptionPane.YES_OPTION) return;
+                String result = discountBUS.deleteDiscount(dto.getId());
+                if ("SUCCESS".equals(result)) {
+                    JOptionPane.showMessageDialog(dlg, "Đã xóa khuyến mãi.");
+                    loadDiscountTables(); dlg.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(dlg, result, "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
             });
             footer.add(btnSua); footer.add(btnXoa);
@@ -769,7 +772,7 @@ cbCategory.addActionListener(e -> applyFilter.run());
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-            boolean ok = discountBUS.updateDiscount(
+            String result = discountBUS.updateDiscount(
                     d.getId(),
                     fName.getText().trim(),
                     fDesc.getText().trim(),
@@ -782,12 +785,12 @@ cbCategory.addActionListener(e -> applyFilter.run());
                     productId
             );
 
-            if(ok){
+            if("SUCCESS".equals(result)){
                 JOptionPane.showMessageDialog(dlg,"Cập nhật thành công!");
                 loadDiscountTables();
                 dlg.dispose();
             }else{
-                JOptionPane.showMessageDialog(dlg,"Cập nhật thất bại!");
+                JOptionPane.showMessageDialog(dlg, result, "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             }
 
         }catch(Exception ex){

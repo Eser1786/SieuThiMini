@@ -1,35 +1,19 @@
--- Add isdeleted column to tables for soft delete functionality
+-- Add is_deleted column to tables for soft delete functionality
 -- Run this after creating tables
 USE sieuthiminiv2;
 
--- Add isdeleted to customers table
-ALTER TABLE
-    customers
-ADD
-    COLUMN isdeleted TINYINT(1) DEFAULT 0 NOT NULL
-AFTER
-    STATUS;
+-- Add is_deleted to customers table
+ALTER TABLE customers
+ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0;
 
--- Add isdeleted to products table
-ALTER TABLE
-    products
-ADD
-    COLUMN isdeleted TINYINT(1) DEFAULT 0 NOT NULL
-AFTER
-    is_visible;
+-- Add is_deleted to products table
+ALTER TABLE products
+ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0;
 
--- Add isdeleted to employees table
-ALTER TABLE
-    employees
-ADD
-    COLUMN isdeleted TINYINT(1) DEFAULT 0 NOT NULL
-AFTER
-    STATUS;
+-- Add is_deleted to employees table
+ALTER TABLE employees
+ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0;
 
--- Add isdeleted to discounts table
-ALTER TABLE
-    discounts
-ADD
-    COLUMN isdeleted TINYINT(1) DEFAULT 0 NOT NULL
-AFTER
-    is_auto_apply;
+-- Add is_deleted to discounts table
+ALTER TABLE discounts
+ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0;

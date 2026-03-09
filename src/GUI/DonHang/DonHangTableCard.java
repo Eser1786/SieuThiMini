@@ -53,7 +53,6 @@ class DonHangTableCard extends JPanel {
         JComboBox<String> cbLoc = new JComboBox<>(trangThais);
         cbLoc.setPreferredSize(new Dimension(200, 36));
         UIUtils.styleComboBox(cbLoc);
-        cbLoc.addActionListener(e -> filterByStatus(cbLoc.getSelectedItem().toString()));
 
         JPanel timPanel = new JPanel(new BorderLayout());
         timPanel.setPreferredSize(new Dimension(220, 36));
@@ -116,6 +115,7 @@ class DonHangTableCard extends JPanel {
         top.add(pTim);
 
         // Date range pickers
+        Runnable[] filterRef = {null};
         dcFrom = new JDateChooser();
         dcFrom.setPreferredSize(new Dimension(130, 36));
         dcFrom.setDateFormatString("dd/MM/yyyy");
@@ -161,10 +161,10 @@ class DonHangTableCard extends JPanel {
                 return;
             }
             filterByDateRange(from, to);
+            if (filterRef[0] != null) filterRef[0].run();
         });
 
-        JButton btnResetNgay = new JButton("✕");
-        btnResetNgay.setToolTipText("Xóa bộ lọc ngày");
+        JButton btnResetNgay = new JButton("Reset");
         btnResetNgay.setFocusPainted(false);
         btnResetNgay.setBackground(new Color(0xD9D9D9));
         btnResetNgay.setFont(new Font("Arial", Font.BOLD, 13));
@@ -176,7 +176,7 @@ class DonHangTableCard extends JPanel {
             public void mouseEntered(java.awt.event.MouseEvent e) { btnResetNgay.setBackground(new Color(0xEF9A9A)); }
             public void mouseExited(java.awt.event.MouseEvent e)  { btnResetNgay.setBackground(new Color(0xD9D9D9)); }
         });
-        btnResetNgay.addActionListener(e -> { dcFrom.setDate(null); dcTo.setDate(null); loadSalesFromDatabase(); });
+        btnResetNgay.addActionListener(e -> { dcFrom.setDate(null); dcTo.setDate(null); cbLoc.setSelectedIndex(0); tfTim.setText(""); loadSalesFromDatabase(); });
 
         top.add(pFrom);
         top.add(pTo);
@@ -272,6 +272,7 @@ class DonHangTableCard extends JPanel {
             public void removeUpdate(javax.swing.event.DocumentEvent e)  { applyFilter.run(); }
             public void changedUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
         });
+        filterRef[0] = applyFilter;
 
         JScrollPane scroll = new JScrollPane(bang);
         scroll.setBorder(BorderFactory.createEmptyBorder());

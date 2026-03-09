@@ -36,7 +36,7 @@ public class CustomerDAO {
         ArrayList<CustomerDTO> arr = new ArrayList<CustomerDTO>();
         if(openConnection()){
             try{
-                String sql = "SELECT * FROM customers WHERE isdeleted = 0";
+                String sql = "SELECT * FROM customers WHERE is_deleted = 0";
                 Statement stmt = con.createStatement();
                 ResultSet rs = stmt.executeQuery(sql);
                 while(rs.next()){
@@ -224,15 +224,15 @@ public class CustomerDAO {
         return result;
     }
 
-    public boolean deleteCustomer(int id) {
+    public boolean softDeleteCustomer(int id) {
         boolean result = false;
         if (openConnection()) {
             try {
-                PreparedStatement pstm = con.prepareStatement("UPDATE customers SET isdeleted = 1 WHERE customer_id=?");
+                PreparedStatement pstm = con.prepareStatement("UPDATE customers SET is_deleted=1 WHERE customer_id=?");
                 pstm.setInt(1, id);
                 result = pstm.executeUpdate() >= 1;
             } catch (SQLException e) {
-                System.out.println("Kh\u00f4ng th\u1ec3 x\u00f3a kh\u00e1ch h\u00e0ng! CustomerDAO - deleteCustomer");
+                System.out.println("Không thể xóa mềm khách hàng! CustomerDAO - softDeleteCustomer");
                 e.printStackTrace();
             } finally {
                 closeConnection();

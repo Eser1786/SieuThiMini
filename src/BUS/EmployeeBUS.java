@@ -57,6 +57,10 @@ public class EmployeeBUS {
         return dao.getRoleByEmployeeID(employeeId);
     }
 
+    public boolean softDeleteEmployee(int id) {
+        return dao.softDeleteEmployee(id);
+    }
+
     public boolean hasPermission(Long employeeId, String permissionName) {
         RoleDTO role = getRole(employeeId);
         if (role == null) return false;

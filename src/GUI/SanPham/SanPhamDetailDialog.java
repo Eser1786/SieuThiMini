@@ -65,32 +65,21 @@ class SanPhamDetailDialog {
         JButton btnXoa = new JButton("Xóa");
         styleBtn(btnXoa, new Color(0xB83434), 110, 40);
         btnXoa.addActionListener(e -> {
-            // First confirmation
-            int confirm1 = JOptionPane.showConfirmDialog(detail,
+            int c1 = JOptionPane.showConfirmDialog(detail,
                 "Bạn có chắc muốn xóa sản phẩm \"" + model.getValueAt(modelRow, 2) + "\"?",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            
-            if (confirm1 == JOptionPane.YES_OPTION) {
-                // Second confirmation
-                int confirm2 = JOptionPane.showConfirmDialog(detail,
-                    "Hành động này không thể hoàn tác. Bạn thực sự muốn xóa sản phẩm này?",
-                    "Xác nhận lần cuối", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
-                
-                if (confirm2 == JOptionPane.YES_OPTION) {
-                    try {
-                        BUS.ProductBUS productBUS = new BUS.ProductBUS();
-                        int productId = (Integer) model.getValueAt(modelRow, 0);
-                        if (productBUS.deleteProduct(productId)) {
-                            model.removeRow(modelRow);
-                            JOptionPane.showMessageDialog(detail, "Đã xóa sản phẩm thành công!");
-                        } else {
-                            JOptionPane.showMessageDialog(detail, "Không thể xóa sản phẩm!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                        }
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(detail, "Lỗi khi xóa sản phẩm: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-                    }
-                    detail.dispose();
-                }
+            if (c1 != JOptionPane.YES_OPTION) return;
+            int c2 = JOptionPane.showConfirmDialog(detail,
+                "Xác nhận lần cuối: Sản phẩm sẽ bị ẩn vĩnh viễn. Tiếp tục?",
+                "Xác nhận lần 2", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (c2 != JOptionPane.YES_OPTION) return;
+            Object idObj = model.getValueAt(modelRow, 19);
+            if (idObj != null) {
+                new BUS.ProductBUS().softDeleteProduct((Integer) idObj);
+            }
+            detail.dispose();
+            if (parent instanceof SanPhamPanel) {
+                ((SanPhamPanel) parent).loadProducts();
             }
         });
 

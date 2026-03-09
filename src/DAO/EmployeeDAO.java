@@ -35,7 +35,7 @@ public class EmployeeDAO {
         ArrayList<EmployeeDTO> list = new ArrayList<>();
         if(openConnection()){
             try{
-                String sql = "SELECT * FROM employees";
+                String sql = "SELECT * FROM employees WHERE is_deleted = 0";
                 Statement stmt = con.createStatement();
                 ResultSet rs = stmt.executeQuery(sql);
                 while(rs.next()){
@@ -60,6 +60,20 @@ public class EmployeeDAO {
             }
         }
         return list;
+    }
+
+    public boolean softDeleteEmployee(int id) {
+        if (!openConnection()) return false;
+        try {
+            PreparedStatement pstmt = con.prepareStatement("UPDATE employees SET is_deleted=1 WHERE employee_id=?");
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            closeConnection();
+        }
     }
 
     public boolean addEmployee(EmployeeDTO emp){

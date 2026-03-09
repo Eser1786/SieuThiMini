@@ -60,7 +60,7 @@ public class CustomerBUS {
         return customerDAO.updateCustomer(customer);
     }
 
-    public boolean deleteCustomer(int id) {
-        return customerDAO.deleteCustomer(id);
+    public boolean softDeleteCustomer(int id) {
+        return customerDAO.softDeleteCustomer(id);
     }
 }

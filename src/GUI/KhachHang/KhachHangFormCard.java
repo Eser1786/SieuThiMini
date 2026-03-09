@@ -2,6 +2,7 @@ package GUI.KhachHang;
 
 import javax.swing.*;
 import java.awt.*;
+import BUS.CustomerBUS;
 
 class KhachHangFormCard extends JPanel {
 
@@ -114,16 +115,21 @@ class KhachHangFormCard extends JPanel {
 
         btnXoa.addActionListener(e -> {
             if (parent.editingRow >= 0) {
-                int confirm = JOptionPane.showConfirmDialog(parent,
+                int c1 = JOptionPane.showConfirmDialog(parent,
                     "Bạn có chắc muốn xóa khách hàng này?",
                     "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    parent.tableModel.removeRow(parent.editingRow);
-                    parent.clearForm();
-                    parent.enableFormFields(true);
-                    parent.editingRow = -1;
-                    parent.innerCard.show(parent, KhachHangPanel.CARD_TABLE);
-                }
+                if (c1 != JOptionPane.YES_OPTION) return;
+                int c2 = JOptionPane.showConfirmDialog(parent,
+                    "Xác nhận lần cuối: Dữ liệu sẽ bị ẩn vĩnh viễn. Tiếp tục?",
+                    "Xác nhận lần 2", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (c2 != JOptionPane.YES_OPTION) return;
+                int customerId = (Integer) parent.tableModel.getValueAt(parent.editingRow, KhachHangPanel.COL_ID);
+                new CustomerBUS().softDeleteCustomer(customerId);
+                parent.clearForm();
+                parent.enableFormFields(true);
+                parent.editingRow = -1;
+                parent.innerCard.show(parent, KhachHangPanel.CARD_TABLE);
+                parent.loadCustomers();
             }
         });
 

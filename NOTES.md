@@ -10,7 +10,6 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 - Xuất hóa đơn PDF, xuất danh sách Excel/CSV
 
 ### Tính năng cần làm tiếp
-- [ ] Kết nối thực tế với DB cho DiscountDAO (bảng khuyến mãi)
 - [ ] Chức năng tìm kiếm & phân trang cho tất cả bảng
 - [ ] Phân quyền người dùng (Admin vs nhân viên)
 - [ ] Thống kê doanh thu trên TrangChuPanel
@@ -85,6 +84,28 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 - **Vấn đề cũ**: Tạo đơn hàng dùng chung CardLayout, nhấn "Tạo đơn hàng" thay toàn bộ màn hình.
 - **Giải pháp mới**: Dùng `JDialog` (APPLICATION_MODAL) để mở form tạo đơn hàng như popup riêng biệt.
 - **Lưu ý**: `showCard(CARD_TABLE)` phải kiểm tra nếu có dialog đang mở thì `dispose()` thay vì switch card.
+
+---
+
+## Tính năng đã hoàn thành
+
+### Soft-delete (is_deleted)
+- Bảng: `customers`, `products`, `employees`, `discounts`
+- DAO: `getAllXxx()` filter `WHERE is_deleted = 0`; `deleteXxx()` set `is_deleted = 1` (+ `status = 'INACTIVE'` cho discounts)
+- GUI: Nút xóa hiện confirm 2 bước (1 lần `JOptionPane.showConfirmDialog`, 1 lần `JOptionPane.showInputDialog` yêu cầu nhập "XOA")
+- NhanVienPanel crash fix: mảng `cols[]` thiếu entry `"employee_id"` gây `ArrayIndexOutOfBoundsException` (7 >= 7)
+
+### DonHangTableCard — Bộ lọc kết hợp
+- Nút **Reset** (thay cho "✕") reset toàn bộ: clear date pickers, `cbLoc.setSelectedIndex(0)`, `tfTim.setText("")`, reload DB
+- Nút **Lọc ngày** sau khi tải dữ liệu theo khoảng ngày còn chạy thêm `applyFilter` để áp trạng thái + tìm kiếm lên trên kết quả đó
+- `cbLoc` và `tfTim` filter qua `TableRowSorter` (`applyFilter` Runnable) — không reload DB
+- Đã xóa listener `cbLoc.addActionListener(e -> filterByStatus(...))` dư thừa (filterByStatus reload DB toàn bộ, không cần thiết)
+
+### DonHangCreateCard — Combobox mã khuyến mãi
+- Thay `JTextField + JButton` bằng `JComboBox<String>` load từ `DiscountBUS.getAllDiscounts()` (chỉ lấy status=ACTIVE)
+- Hiển thị thêm `lbDiscStatus` (JLabel italic) mô tả discount: "Giảm 10% → -50,000đ" hoặc "Giảm cố định -X" hoặc "⚠ Đơn tối thiểu: Xđ"
+- Hỗ trợ cả `PERCENT` và `FIXED` discount type; kiểm tra `minOrderAmount`
+- Khi nhấn Hủy/reset: `cbMaKM.setSelectedIndex(0)` tự động clear label và reset discAmt về 0
 
 ---
 
