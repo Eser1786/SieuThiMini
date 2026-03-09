@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
+import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
 public class PurchaseInvoicesBUS {
     private PurchaseInvoicesDAO purchaseInvoicesDAO;
     private final ProductBUS productBUS = new ProductBUS();
@@ -68,18 +68,32 @@ public class PurchaseInvoicesBUS {
 
     /** Xác nhận phiếu nhập: status PENDING → RECEIVED, cộng tồn kho */
     public boolean confirmPurchaseInvoice(Long invoiceId) {
-        PurchaseInvoicesDTO inv = getPurchaseInvoiceById(invoiceId);
-        if (inv == null || !"PENDING".equals(inv.getStatus())) return false;
-        boolean ok = purchaseInvoicesDAO.updateStatus(invoiceId, "RECEIVED");
-        if (ok && inv.getItems() != null) {
-            for (PurchaseInvoiceItemsDTO item : inv.getItems()) {
-                if (item.getProductId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
-                    productBUS.updateStock(item.getProductId(), item.getQuantity());
-                }
+
+    PurchaseInvoicesDTO inv = getPurchaseInvoiceById(invoiceId);
+
+    if (inv == null || inv.getStatus() != PurchaseInvoicesStatus.PENDING)
+        return false;
+
+    boolean ok = purchaseInvoicesDAO.updateStatus(invoiceId, "RECEIVED");
+
+    if (ok && inv.getItems() != null) {
+
+        for (PurchaseInvoiceItemsDTO item : inv.getItems()) {
+
+            if (item.getProductId() != null &&
+                item.getQuantity() != null &&
+                item.getQuantity() > 0) {
+
+                productBUS.updateStock(
+                        item.getProductId(),
+                        item.getQuantity()
+                );
             }
         }
-        return ok;
     }
+
+    return ok;
+}
 
     public boolean updatePurchaseInvoice(PurchaseInvoicesDTO invoice) {
         if (invoice == null || invoice.getInvoiceId() == null) return false;
@@ -155,4 +169,7 @@ public class PurchaseInvoicesBUS {
         BigDecimal total = subtotal.subtract(discount).add(tax);
         invoice.setTotalAmount(total);
     }
+    public boolean cancelPurchaseInvoice(long invoiceId) throws Exception {
+    return new PurchaseInvoicesDAO().cancelPurchaseInvoice(invoiceId);
+}
 }

@@ -276,4 +276,19 @@ public class PurchaseInvoicesDAO {
             ps.executeUpdate();
         }
     }
+    public boolean cancelPurchaseInvoice(long invoiceId) throws Exception {
+
+    String sql = """
+        UPDATE purchase_invoices
+        SET status = 'CANCELLED'
+        WHERE invoice_id = ?
+    """;
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setLong(1, invoiceId);
+        return ps.executeUpdate() > 0;
+    }
+}
 }

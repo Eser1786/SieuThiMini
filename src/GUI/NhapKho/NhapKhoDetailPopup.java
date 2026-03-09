@@ -150,9 +150,12 @@ class NhapKhoDetailPopup extends JDialog {
         JButton btnConfirm = makeBtn("X\u00e1c nh\u1eadn nh\u1eadp kho", new Color(0x388E3C));
         btnConfirm.addActionListener(e -> handleConfirm());
         btnConfirm.setVisible(canEdit);
-
+        JButton btnCancel = makeBtn("Hủy phiếu", new Color(0xE53935));
+                btnCancel.addActionListener(e -> handleCancel());
+                btnCancel.setVisible(canEdit);
         footer.add(btnEdit);
         footer.add(btnConfirm);
+        footer.add(btnCancel);
         footer.add(btnClose);
 
         root.add(footer, BorderLayout.SOUTH);
@@ -182,7 +185,57 @@ class NhapKhoDetailPopup extends JDialog {
                     "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
         }
     }
+    private void handleCancel() {
 
+    int choice = JOptionPane.showConfirmDialog(
+            this,
+            "Bạn có chắc muốn hủy phiếu nhập này?",
+            "Xác nhận hủy",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+    );
+
+    if (choice != JOptionPane.YES_OPTION) return;
+
+    try {
+
+        boolean ok = new PurchaseInvoicesBUS()
+                .cancelPurchaseInvoice(invoice.getInvoiceId());
+
+        if (ok) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Đã hủy phiếu nhập thành công!",
+                    "Thành công",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            dispose();
+            parentPanel.showTable();
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Hủy phiếu thất bại.",
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+
+    } catch (Exception ex) {
+
+        ex.printStackTrace();
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Lỗi: " + ex.getMessage(),
+                "Lỗi",
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+}
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static void addInfo(JPanel p, String key, String value) {

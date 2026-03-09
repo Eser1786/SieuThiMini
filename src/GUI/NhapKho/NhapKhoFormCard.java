@@ -92,16 +92,20 @@ class NhapKhoFormCard extends JPanel {
 
         // Pre-fill dropdowns for edit mode (combos are built inside buildBody)
         if (existing != null) {
+            isLoadingData = true;
             for (int i = 0; i < allEmployees.size(); i++) {
                 if ((long) allEmployees.get(i).getId() == existing.getEmployeeId()) {
                     cbEmployee.setSelectedIndex(i + 1); break;
                 }
             }
+            
+
             for (int i = 0; i < allSuppliers.size(); i++) {
                 if ((long) allSuppliers.get(i).getID() == existing.getSupplierId()) {
                     cbSupplier.setSelectedIndex(i + 1); break;
                 }
             }
+            isLoadingData = false;
             if (existing.getNotes() != null) txtNote.setText(existing.getNotes());
             if (existing.getDateIn() != null) {
                 Date existingDate = Date.from(existing.getDateIn().atZone(ZoneId.systemDefault()).toInstant());
@@ -360,8 +364,10 @@ class NhapKhoFormCard extends JPanel {
         JPanel supplierCard = makeRightCard("Nh\u00e0 cung c\u1ea5p");
         cbSupplier = new JComboBox<>();
         cbSupplier.addActionListener(e -> {
+    if (!isLoadingData) {
         onSupplierChanged();
-    });
+    }
+});
         cbSupplier.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cbSupplier.addItem("-- Ch\u1ecdn nh\u00e0 cung c\u1ea5p --");
         for (SupplierDTO s : allSuppliers) cbSupplier.addItem(s.getName());
@@ -712,21 +718,22 @@ if (purchaseId <= 0) {
     }
     private void onSupplierChanged() {
 
-    if (!items.isEmpty()) {
+    if (isLoadingData) return;   // 🔴 chặn khi load
 
-        int confirm = JOptionPane.showConfirmDialog(
-            this,
-            "Đổi nhà cung cấp sẽ xoá sản phẩm đã chọn. Tiếp tục?",
-            "Xác nhận",
-            JOptionPane.YES_NO_OPTION
-        );
+    if (items.isEmpty()) return; // 🔴 không cần hỏi nếu chưa có SP
 
-        if (confirm != JOptionPane.YES_OPTION) {
-            return;
-        }
+    int confirm = JOptionPane.showConfirmDialog(
+        this,
+        "Đổi nhà cung cấp sẽ xoá sản phẩm đã chọn. Tiếp tục?",
+        "Xác nhận",
+        JOptionPane.YES_NO_OPTION
+    );
+
+    if (confirm != JOptionPane.YES_OPTION) {
+        return;
     }
 
-    items.clear();     // xoá danh sách sản phẩm
-    rebuildList();     // rebuild lại UI list
+    items.clear();
+    rebuildList();
 }
 }
