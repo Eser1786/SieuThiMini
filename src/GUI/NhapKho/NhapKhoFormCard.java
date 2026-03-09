@@ -5,6 +5,7 @@ import BUS.ProductBUS;
 import BUS.PurchaseInvoicesBUS;
 import BUS.SupplierBUS;
 import DTO.*;
+import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
 
 import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
@@ -609,6 +610,7 @@ class NhapKhoFormCard extends JPanel {
             inv.setNotes(txtNote.getText().trim());
             inv.setPaymentMethod("DEBT");
             inv.setPaymentStatus("PENDING");
+            inv.setStatus(PurchaseInvoicesStatus.PENDING);
             inv.setItems(invItems);
             inv.setTotalAmount(total);
             inv.setDiscountAmount(BigDecimal.ZERO);

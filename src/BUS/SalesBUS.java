@@ -5,6 +5,7 @@ import DAO.DBConnection;
 import DTO.SaleDTO;
 import DTO.enums.SaleEnum.SaleStatus;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.sql.*;
 
@@ -17,6 +18,10 @@ public class SalesBUS {
 
     public ArrayList<SaleDTO> getAllSales() {
         return saleDAO.getAllSales();
+    }
+
+    public ArrayList<SaleDTO> getSalesByDateRange(LocalDate from, LocalDate to) {
+        return saleDAO.getAllSalesByDateRange(from, to);
     }
 
     public ArrayList<SaleDTO> getSalesByStatus(SaleStatus status) {
