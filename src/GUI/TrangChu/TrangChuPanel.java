@@ -22,6 +22,12 @@ import java.time.temporal.TemporalAdjusters;
 public class TrangChuPanel extends JPanel {
     
     private JPanel topCards;
+    private JPanel orderCard;
+    private JTable orderTable;
+    private DefaultTableModel orderModel;
+    private JComboBox<String> statusFilter;
+    private JComboBox<String> paymentFilter;
+    
     private int[] chartValues;
     private String[] chartLabels;
     private JPanel chartPanel;
@@ -39,19 +45,23 @@ public class TrangChuPanel extends JPanel {
         
         loadDashboardData();
 
-        // center area with 3 charts
-        JPanel centerPanel = new JPanel(new GridLayout(3, 1, 0, 14));
+        // center area with 3 charts on left and orders table on right
+        JPanel centerPanel = new JPanel(new GridLayout(1, 2, 14, 0));
         centerPanel.setBackground(new Color(0xF8F7FF));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(0, 18, 18, 18));
+
+        // ===== LEFT PANEL: 3 Charts =====
+        JPanel chartsPanel = new JPanel(new GridLayout(3, 1, 0, 14));
+        chartsPanel.setBackground(new Color(0xF8F7FF));
 
         // ===== Chart 1: Revenue Chart =====
         JPanel revenueCard = UIUtils.createCard();
         JPanel revenueHeader = new JPanel(new BorderLayout());
         revenueHeader.setOpaque(false);
         JLabel revenueTitle = new JLabel("Doanh thu tuần này");
-        revenueTitle.setFont(new Font("Playfair Display", Font.BOLD, 18));
+        revenueTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
         JButton btnRefresh1 = new JButton("🔄 Làm mới");
-        btnRefresh1.setFont(new Font("Arial", Font.PLAIN, 11));
+        btnRefresh1.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh1.setFocusPainted(false);
         btnRefresh1.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnRefresh1.addActionListener(e -> refreshChart());
@@ -72,9 +82,9 @@ public class TrangChuPanel extends JPanel {
         JPanel customerHeaderPanel = new JPanel(new BorderLayout());
         customerHeaderPanel.setOpaque(false);
         JLabel customerTitle = new JLabel("Khách hàng mới (tuần này)");
-        customerTitle.setFont(new Font("Playfair Display", Font.BOLD, 18));
+        customerTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
         JButton btnRefresh2 = new JButton("🔄 Làm mới");
-        btnRefresh2.setFont(new Font("Arial", Font.PLAIN, 11));
+        btnRefresh2.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh2.setFocusPainted(false);
         btnRefresh2.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnRefresh2.addActionListener(e -> refreshCustomerChart());
@@ -91,9 +101,9 @@ public class TrangChuPanel extends JPanel {
         JPanel orderChartHeaderPanel = new JPanel(new BorderLayout());
         orderChartHeaderPanel.setOpaque(false);
         JLabel orderChartTitle = new JLabel("Đơn hàng (tuần này)");
-        orderChartTitle.setFont(new Font("Playfair Display", Font.BOLD, 18));
+        orderChartTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
         JButton btnRefresh3 = new JButton("🔄 Làm mới");
-        btnRefresh3.setFont(new Font("Arial", Font.PLAIN, 11));
+        btnRefresh3.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh3.setFocusPainted(false);
         btnRefresh3.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnRefresh3.addActionListener(e -> refreshOrderChart());
@@ -105,12 +115,130 @@ public class TrangChuPanel extends JPanel {
         orderChartCard.add(orderChartHeaderPanel, BorderLayout.NORTH);
         orderChartCard.add(orderChart, BorderLayout.CENTER);
 
-        centerPanel.add(revenueCard);
-        centerPanel.add(customerCard);
-        centerPanel.add(orderChartCard);
+        // Add 3 charts to left panel
+        chartsPanel.add(revenueCard);
+        chartsPanel.add(customerCard);
+        chartsPanel.add(orderChartCard);
+
+        // ===== RIGHT PANEL: Recent Orders Table =====
+        orderCard = UIUtils.createCard();
+        JPanel orderHeader = new JPanel(new BorderLayout());
+        orderHeader.setOpaque(false);
+        
+        JLabel orderTitle = new JLabel("Đơn hàng gần đây");
+        orderTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
+        
+        // Filter controls
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        filterPanel.setOpaque(false);
+        
+        filterPanel.add(new JLabel("Trạng thái:"));
+        statusFilter = new JComboBox<>(new String[]{"Tất cả", "PENDING", "CONFIRMED", "SHIPPING", "DELIVERING", "COMPLETED", "CANCELLED"});
+        statusFilter.addActionListener(e -> loadRecentOrders());
+        filterPanel.add(statusFilter);
+        
+        filterPanel.add(new JLabel("Thanh toán:"));
+        paymentFilter = new JComboBox<>(new String[]{"Tất cả", "CASH", "CARD", "TRANSFER"});
+        paymentFilter.addActionListener(e -> loadRecentOrders());
+        filterPanel.add(paymentFilter);
+        
+        orderHeader.add(orderTitle, BorderLayout.WEST);
+        orderHeader.add(filterPanel, BorderLayout.EAST);
+        
+        orderHeader.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+
+        String[] orderCols = { "Mã đơn", "Khách hàng", "Trạng thái", "Thanh toán", "Tổng tiền" };
+        orderModel = new DefaultTableModel(orderCols, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+        orderTable = new JTable(orderModel);
+        orderTable.setFont(new Font("Arial", Font.PLAIN, 12));
+        orderTable.setRowHeight(30);
+        orderTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        orderTable.getTableHeader().setBackground(new Color(0xAF9FCB));
+        orderTable.getTableHeader().setForeground(Color.WHITE);
+        orderTable.setShowVerticalLines(false);
+        orderTable.setGridColor(new Color(0xEEEEEE));
+
+        DefaultTableCellRenderer statusRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object v,
+                    boolean sel, boolean foc, int row, int col) {
+                super.getTableCellRendererComponent(t, v, sel, foc, row, col);
+                setHorizontalAlignment(SwingConstants.CENTER);
+                if (!sel) {
+                    setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
+                }
+                if (col == 2) { // Status column
+                    String val = v == null ? "" : v.toString();
+                    switch (val) {
+                        case "PENDING" -> { setForeground(new Color(0xFF9800)); setText("Chờ xác nhận"); }
+                        case "CONFIRMED" -> { setForeground(new Color(0x2196F3)); setText("Đã xác nhận"); }
+                        case "SHIPPING" -> { setForeground(new Color(0x9C27B0)); setText("Đang giao"); }
+                        case "DELIVERING" -> { setForeground(new Color(0xFF5722)); setText("Đang vận chuyển"); }
+                        case "COMPLETED" -> { setForeground(new Color(0x4CAF50)); setText("Hoàn thành"); }
+                        case "CANCELLED" -> { setForeground(new Color(0xF44336)); setText("Đã hủy"); }
+                        default -> setForeground(Color.BLACK);
+                    }
+                } else if (col == 3) { // Payment column
+                    String val = v == null ? "" : v.toString();
+                    switch (val) {
+                        case "CASH" -> setText("Tiền mặt");
+                        case "CARD" -> setText("Thẻ");
+                        case "TRANSFER" -> setText("Chuyển khoản");
+                        default -> setText(val);
+                    }
+                    setForeground(Color.BLACK);
+                } else {
+                    setForeground(Color.BLACK);
+                }
+                return this;
+            }
+        };
+        
+        DefaultTableCellRenderer moneyRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object v,
+                    boolean sel, boolean foc, int row, int col) {
+                super.getTableCellRendererComponent(t, v, sel, foc, row, col);
+                setHorizontalAlignment(SwingConstants.RIGHT);
+                if (!sel) {
+                    setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
+                }
+                if (col == 4 && v != null) { // Money column
+                    try {
+                        double amount = Double.parseDouble(v.toString());
+                        setText(String.format("%,.0f đ", amount));
+                    } catch (NumberFormatException e) {
+                        setText(v.toString());
+                    }
+                }
+                setForeground(Color.BLACK);
+                return this;
+            }
+        };
+
+        orderTable.getColumnModel().getColumn(0).setCellRenderer(statusRenderer); // Code
+        orderTable.getColumnModel().getColumn(1).setCellRenderer(statusRenderer); // Customer
+        orderTable.getColumnModel().getColumn(2).setCellRenderer(statusRenderer); // Status
+        orderTable.getColumnModel().getColumn(3).setCellRenderer(statusRenderer); // Payment
+        orderTable.getColumnModel().getColumn(4).setCellRenderer(moneyRenderer);  // Amount
+
+        orderCard.add(orderHeader, BorderLayout.NORTH);
+        orderCard.add(new JScrollPane(orderTable), BorderLayout.CENTER);
+
+        // Add left and right panels to center
+        centerPanel.add(chartsPanel);
+        centerPanel.add(orderCard);
 
         add(topCards, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
+        
+        // Load initial data
+        loadRecentOrders();
     }
     
     private void loadDashboardData() {
@@ -551,6 +679,55 @@ public class TrangChuPanel extends JPanel {
     
     private void refreshOrderChart() {
         orderChartPanel.repaint();
+    }
+
+    private void loadRecentOrders() {
+        try {
+            SalesBUS salesBUS = new SalesBUS();
+            List<SaleDTO> sales = salesBUS.getAllSales();
+            
+            // Apply filters
+            String statusFilterValue = (String) statusFilter.getSelectedItem();
+            String paymentFilterValue = (String) paymentFilter.getSelectedItem();
+            
+            if (!"Tất cả".equals(statusFilterValue)) {
+                sales = sales.stream()
+                    .filter(s -> statusFilterValue.equals(s.getSaleStatus().name()))
+                    .toList();
+            }
+            
+            if (!"Tất cả".equals(paymentFilterValue)) {
+                sales = sales.stream()
+                    .filter(s -> paymentFilterValue.equals(s.getSalePaymentMethod().name()))
+                    .toList();
+            }
+            
+            // Sort by date (newest first) and limit to 10
+            sales = sales.stream()
+                .filter(s -> s.getSaleDate() != null) // Filter out null dates
+                .sorted((a, b) -> b.getSaleDate().compareTo(a.getSaleDate()))
+                .limit(10)
+                .toList();
+            
+            // Clear table
+            orderModel.setRowCount(0);
+            
+            // Add data to table
+            for (SaleDTO sale : sales) {
+                String customerName = sale.getCustomerName() != null ? sale.getCustomerName() : "Khách lẻ";
+                orderModel.addRow(new Object[]{
+                    sale.getSaleCode(),
+                    customerName,
+                    sale.getSaleStatus().name(),
+                    sale.getSalePaymentMethod().name(),
+                    sale.getTotalAmount()
+                });
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi tải danh sách đơn hàng: " + e.getMessage());
+        }
     }
 
     public static void main(String[] args) {
