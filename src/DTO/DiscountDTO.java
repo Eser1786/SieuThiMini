@@ -10,6 +10,7 @@ import DTO.enums.DiscountEnum.DiscountType;
 import DTO.enums.DiscountEnum.DiscountStatus;
 public class DiscountDTO {
     private int id;
+    private String discountCode;
     private String name;
     private DiscountType discountType;
     private BigDecimal value;
@@ -46,6 +47,14 @@ public DiscountDTO(int id, String name, DiscountType discountType, BigDecimal va
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getDiscountCode() {
+        return discountCode;
+    }
+
+    public void setDiscountCode(String discountCode) {
+        this.discountCode = discountCode;
     }
 
     public String getName() {

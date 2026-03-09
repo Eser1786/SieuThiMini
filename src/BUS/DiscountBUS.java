@@ -66,6 +66,13 @@ public class DiscountBUS {
         return "Loại giảm chỉ được là PERCENT hoặc FIXED";
     }
 
+    // ===== SCOPE VALIDATION =====
+    if (discountType == DiscountType.PERCENT && productId != null)
+        return "Khŋyến mãi PERCENT áp dụng cho toàn hóa đơn, không gắn với sản phẩm cụ thể";
+
+    if (discountType == DiscountType.FIXED && productId == null)
+        return "Khŋyến mãi FIXED phải chọn sản phẩm áp dụng";
+
     DiscountStatus discountStatus;
 
 try{
@@ -126,15 +133,16 @@ if(discountId <= 0)
 
 if(discountType == DiscountType.FIXED){
 
-    if(productId == null)
-        return "Chưa chọn sản phẩm";
-
     DiscountProductBUS dp = new DiscountProductBUS();
     dp.addDiscountProduct(discountId, productId);
 }
 
 return "SUCCESS";
 
+    }
+
+    public DiscountDTO getDiscountByCode(String code) {
+        return discountDAO.getDiscountByCode(code);
     }
 
 

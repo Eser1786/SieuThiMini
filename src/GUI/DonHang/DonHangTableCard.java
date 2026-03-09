@@ -5,15 +5,19 @@ import DTO.SaleDTO;
 import DTO.enums.SaleEnum.SaleStatus;
 import GUI.ExportUtils;
 import GUI.UIUtils;
+import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.time.LocalDate;
 import java.util.List;
 
 class DonHangTableCard extends JPanel {
 
     private final SalesBUS salesBUS = new SalesBUS();
     private final DonHangPanel parent;
+    private JDateChooser dcFrom;
+    private JDateChooser dcTo;
 
     DonHangTableCard(DonHangPanel parent) {
         this.parent = parent;
@@ -110,6 +114,74 @@ class DonHangTableCard extends JPanel {
 
         top.add(pLoc);
         top.add(pTim);
+
+        // Date range pickers
+        dcFrom = new JDateChooser();
+        dcFrom.setPreferredSize(new Dimension(130, 36));
+        dcFrom.setDateFormatString("dd/MM/yyyy");
+        dcTo = new JDateChooser();
+        dcTo.setPreferredSize(new Dimension(130, 36));
+        dcTo.setDateFormatString("dd/MM/yyyy");
+
+        JLabel lbTuNgay = new JLabel("Từ ngày:");
+        lbTuNgay.setFont(new Font("Arial", Font.PLAIN, 13));
+        JLabel lbDenNgay = new JLabel("Đến ngày:");
+        lbDenNgay.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        JPanel pFrom = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        pFrom.setOpaque(false); pFrom.add(lbTuNgay); pFrom.add(dcFrom);
+        JPanel pTo = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        pTo.setOpaque(false); pTo.add(lbDenNgay); pTo.add(dcTo);
+
+        JButton btnLocNgay = new JButton("Lọc ngày");
+        btnLocNgay.setFocusPainted(false);
+        btnLocNgay.setBackground(new Color(0xD9D9D9));
+        btnLocNgay.setFont(new Font("Arial", Font.BOLD, 13));
+        btnLocNgay.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnLocNgay.setOpaque(true);
+        btnLocNgay.setBorderPainted(false);
+        btnLocNgay.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLocNgay.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnLocNgay.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnLocNgay.setBackground(new Color(0xD9D9D9)); }
+        });
+        btnLocNgay.addActionListener(e -> {
+            if (dcFrom.getDate() == null || dcTo.getDate() == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn cả ngày bắt đầu và ngày kết thúc.",
+                        "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            LocalDate from = dcFrom.getDate().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+            LocalDate to = dcTo.getDate().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+            if (to.isBefore(from)) {
+                JOptionPane.showMessageDialog(this, "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.",
+                        "Lỗi ngày", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            filterByDateRange(from, to);
+        });
+
+        JButton btnResetNgay = new JButton("✕");
+        btnResetNgay.setToolTipText("Xóa bộ lọc ngày");
+        btnResetNgay.setFocusPainted(false);
+        btnResetNgay.setBackground(new Color(0xD9D9D9));
+        btnResetNgay.setFont(new Font("Arial", Font.BOLD, 13));
+        btnResetNgay.setBorder(BorderFactory.createEmptyBorder(9, 10, 9, 10));
+        btnResetNgay.setOpaque(true);
+        btnResetNgay.setBorderPainted(false);
+        btnResetNgay.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnResetNgay.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnResetNgay.setBackground(new Color(0xEF9A9A)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnResetNgay.setBackground(new Color(0xD9D9D9)); }
+        });
+        btnResetNgay.addActionListener(e -> { dcFrom.setDate(null); dcTo.setDate(null); loadSalesFromDatabase(); });
+
+        top.add(pFrom);
+        top.add(pTo);
+        top.add(btnLocNgay);
+        top.add(btnResetNgay);
         top.add(btnTao);
         top.add(btnPDF);
         top.add(btnExcel);
@@ -277,6 +349,30 @@ class DonHangTableCard extends JPanel {
         e.printStackTrace();
     }
 }
+    private void filterByDateRange(LocalDate from, LocalDate to) {
+        parent.tableModel.setRowCount(0);
+        try {
+            List<SaleDTO> sales = salesBUS.getSalesByDateRange(from, to);
+            if (sales == null) return;
+            for (SaleDTO s : sales) {
+                String maDon     = s.getSaleCode();
+                String nguoiMua  = s.getCustomerName() != null ? s.getCustomerName() : "";
+                int    soLuong   = s.getTotalQuantity();
+                String giamGia   = "-";
+                if (s.getDiscountAmount() != null && s.getDiscountAmount().signum() != 0)
+                    giamGia = "-" + String.format("%,.0fđ", s.getDiscountAmount());
+                String tongTien  = "-";
+                if (s.getTotalAmount() != null)
+                    tongTien = String.format("%,.0fđ", s.getTotalAmount());
+                String trangThai  = mapStatus(s.getSaleStatus());
+                String phuongThuc = s.getSalePaymentMethod() != null ? s.getSalePaymentMethod().getValue() : "-";
+                parent.tableModel.addRow(new Object[]{ maDon, nguoiMua, soLuong, giamGia, tongTien, phuongThuc, trangThai, "" });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private String mapStatus(SaleStatus status) {
         if (status == null) return "";
         return switch (status) {

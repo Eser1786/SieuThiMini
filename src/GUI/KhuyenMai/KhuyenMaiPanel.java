@@ -289,7 +289,7 @@ public class KhuyenMaiPanel extends JPanel {
             continue;
 
         tableModel.addRow(new Object[]{
-            d.getId(),
+            d.getDiscountCode() != null ? d.getDiscountCode() : String.valueOf(d.getId()),
             d.getName(),
             d.getValue(),
             d.getDiscountType().name(),
@@ -314,7 +314,7 @@ public class KhuyenMaiPanel extends JPanel {
         String trangThai = cell(modelRow, 6);
 
         DiscountDTO d = null;
-        try { int id = Integer.parseInt(ma); d = discountBUS.getDiscountById(id); } catch (Exception ignored) {}
+        try { d = discountBUS.getDiscountByCode(ma); } catch (Exception ignored) {}
 
         String moTa     = d != null && d.getDescription() != null ? d.getDescription() : "-";
         String minOrder = d != null ? String.valueOf(d.getMinOrderAmount()) : "-";
