@@ -18,7 +18,8 @@ public class CustomerDTO {
     private LocalDateTime lastPurchaseAt;
     private BigDecimal totalSpent;
     private CustomerType type;
-    private CustomerStatus status; 
+    private CustomerStatus status;
+    private boolean isdeleted;
 
     public int getId(){return id;}
     public String getCode(){return code;}
@@ -31,7 +32,8 @@ public class CustomerDTO {
     public LocalDateTime getLastPurchaseAt(){return lastPurchaseAt;}
     public BigDecimal getTotalSpent(){return totalSpent;}
     public CustomerType getType(){return type;}
-    public CustomerStatus getStatus(){return status;} 
+    public CustomerStatus getStatus(){return status;}
+    public boolean isIsdeleted(){return isdeleted;}
 
     public void setId(int id){this.id = id;}
     public void setCode(String code){this.code = code;}
@@ -45,6 +47,7 @@ public class CustomerDTO {
     public void setTotalSpent(BigDecimal totalSpent){this.totalSpent = totalSpent;}
     public void setType(CustomerType type){this.type = type;}
     public void setStatus(CustomerStatus status){this.status = status;}
+    public void setIsdeleted(boolean isdeleted){this.isdeleted = isdeleted;}
 
     @Override
     public String toString(){
@@ -55,6 +58,7 @@ public class CustomerDTO {
                 ", phone='" + phone + '\'' +
                 ", type=" + type +
                 ", status=" + status +
+                ", isdeleted=" + isdeleted +
                 '}';
     }
 }

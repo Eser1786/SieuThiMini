@@ -35,6 +35,7 @@ public class ProductDAO {
                 FROM products p
                 LEFT JOIN suppliers s 
                 ON p.supplier_id = s.supplier_id
+                WHERE p.isdeleted = 0
             """;
 
             Statement stmt = con.createStatement();
@@ -76,6 +77,7 @@ public class ProductDAO {
                 p.setUnit(rs.getString("unit"));
                 p.setStatus(rs.getString("status"));
                 p.setIsVisible(rs.getBoolean("is_visible"));
+                p.setIsdeleted(rs.getBoolean("isdeleted"));
 
                 Timestamp ct = rs.getTimestamp("created_at");
                 if(ct!=null) p.setCreatedAt(ct.toLocalDateTime());
@@ -191,6 +193,23 @@ public class ProductDAO {
             e.printStackTrace();
         }
         return 0L;
+    }
+
+    public boolean deleteProduct(int id) {
+        boolean result = false;
+        if (openConnection()) {
+            try {
+                PreparedStatement pstm = con.prepareStatement("UPDATE products SET isdeleted = 1 WHERE product_id=?");
+                pstm.setInt(1, id);
+                result = pstm.executeUpdate() >= 1;
+            } catch (SQLException e) {
+                System.out.println("Không thể xóa sản phẩm! ProductDAO - deleteProduct");
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return result;
     }
 
 }

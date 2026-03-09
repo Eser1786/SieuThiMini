@@ -14,6 +14,8 @@ public class EmployeeDTO {
     private java.time.LocalDateTime hireDate;
     private java.math.BigDecimal salary;
     private int roleId;       // foreign key to roles
+    private String status;
+    private boolean isdeleted;
 
     // getters/setters
     public void setId(int id) { this.id = id; }
@@ -36,6 +38,10 @@ public class EmployeeDTO {
     public BigDecimal getSalary() { return salary; }
     public void setRoleId(int roleId) { this.roleId = roleId; }
     public int getRoleId() { return roleId; }
+    public void setStatus(String status) { this.status = status; }
+    public String getStatus() { return status; }
+    public void setIsdeleted(boolean isdeleted) { this.isdeleted = isdeleted; }
+    public boolean isIsdeleted() { return isdeleted; }
 
     @Override
     public String toString() {
@@ -45,6 +51,8 @@ public class EmployeeDTO {
                 ", fullName='" + fullName + '\'' +
                 ", username='" + username + '\'' +
                 ", roleId=" + roleId +
+                ", status='" + status + '\'' +
+                ", isdeleted=" + isdeleted +
                 '}';
     }
 }

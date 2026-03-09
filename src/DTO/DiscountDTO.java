@@ -20,6 +20,7 @@ public class DiscountDTO {
     private String description;
     private DiscountStatus status;
     private Boolean isAutoApply;
+    private boolean isdeleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 public DiscountDTO() {
@@ -129,6 +130,14 @@ public DiscountDTO(int id, String name, DiscountType discountType, BigDecimal va
         this.isAutoApply = isAutoApply;
     }
 
+    public boolean isIsdeleted() {
+        return isdeleted;
+    }
+
+    public void setIsdeleted(boolean isdeleted) {
+        this.isdeleted = isdeleted;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -167,6 +176,7 @@ public DiscountDTO(int id, String name, DiscountType discountType, BigDecimal va
                 ", description='" + description + '\'' +
                 ", status=" + status +
                 ", isAutoApply=" + isAutoApply +
+                ", isdeleted=" + isdeleted +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';

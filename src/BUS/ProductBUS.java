@@ -59,5 +59,9 @@ public class ProductBUS {
         }
         return "default";  // Default nếu lỗi
     }
+
+    public boolean deleteProduct(int id) {
+        return dao.deleteProduct(id);
+    }
     
 }

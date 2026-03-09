@@ -19,6 +19,7 @@ public class ProductDTO {
     private String unit;
     private String status;        // store enum as string
     private boolean isVisible;
+    private boolean isdeleted;
     private java.time.LocalDateTime createdAt;
     private java.time.LocalDateTime updatedAt;
 
@@ -59,6 +60,8 @@ public class ProductDTO {
     public void setStatus(String status) { this.status = status; }
     public boolean getIsVisible() { return isVisible; }
     public void setIsVisible(boolean isVisible) { this.isVisible = isVisible; }
+    public boolean isIsdeleted() { return isdeleted; }
+    public void setIsdeleted(boolean isdeleted) { this.isdeleted = isdeleted; }
     public java.time.LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
     public java.time.LocalDateTime getUpdatedAt() { return updatedAt; }
@@ -74,6 +77,7 @@ public class ProductDTO {
                 ", category=" + (category != null ? category.getName() : "null") +
                 ", supplier=" + (supplier != null ? supplier.getName() : "null") +
                 ", status='" + status + '\'' +
+                ", isdeleted=" + isdeleted +
                 '}';
     }
 }

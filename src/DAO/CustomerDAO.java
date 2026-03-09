@@ -36,7 +36,7 @@ public class CustomerDAO {
         ArrayList<CustomerDTO> arr = new ArrayList<CustomerDTO>();
         if(openConnection()){
             try{
-                String sql = "SELECT * FROM customers";
+                String sql = "SELECT * FROM customers WHERE isdeleted = 0";
                 Statement stmt = con.createStatement();
                 ResultSet rs = stmt.executeQuery(sql);
                 while(rs.next()){
@@ -58,6 +58,7 @@ public class CustomerDAO {
                     customer.setTotalSpent(rs.getBigDecimal("total_spent"));
                     customer.setType(CustomerType.fromString(rs.getString("customer_type")));
                     customer.setStatus(CustomerStatus.fromString(rs.getString("status")));
+                    customer.setIsdeleted(rs.getBoolean("isdeleted"));
                     
                     arr.add(customer);
                 }
@@ -75,7 +76,7 @@ public class CustomerDAO {
         boolean result = false;
         if(openConnection()){
             try{
-                String sql = "INSERT INTO customers(`customer_code`,`full_name`,`phone`,`email`,`address`,`loyalty_points`,`created_at`,`last_purchase`,`total_spent`,`customer_type`,`status`) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+                String sql = "INSERT INTO customers(`customer_code`,`full_name`,`phone`,`email`,`address`,`loyalty_points`,`created_at`,`last_purchase`,`total_spent`,`customer_type`,`status`,`isdeleted`) VALUES(?,?,?,?,?,?,?,?,?,?,?,0)";
                 PreparedStatement pstm = con.prepareStatement(sql);
                 pstm.setString(1,customer.getCode());
                 pstm.setString(2,customer.getFullName());
@@ -227,7 +228,7 @@ public class CustomerDAO {
         boolean result = false;
         if (openConnection()) {
             try {
-                PreparedStatement pstm = con.prepareStatement("DELETE FROM customers WHERE customer_id=?");
+                PreparedStatement pstm = con.prepareStatement("UPDATE customers SET isdeleted = 1 WHERE customer_id=?");
                 pstm.setInt(1, id);
                 result = pstm.executeUpdate() >= 1;
             } catch (SQLException e) {

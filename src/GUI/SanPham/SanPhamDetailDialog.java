@@ -65,10 +65,33 @@ class SanPhamDetailDialog {
         JButton btnXoa = new JButton("Xóa");
         styleBtn(btnXoa, new Color(0xB83434), 110, 40);
         btnXoa.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(detail,
+            // First confirmation
+            int confirm1 = JOptionPane.showConfirmDialog(detail,
                 "Bạn có chắc muốn xóa sản phẩm \"" + model.getValueAt(modelRow, 2) + "\"?",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (confirm == JOptionPane.YES_OPTION) { model.removeRow(modelRow); detail.dispose(); }
+            
+            if (confirm1 == JOptionPane.YES_OPTION) {
+                // Second confirmation
+                int confirm2 = JOptionPane.showConfirmDialog(detail,
+                    "Hành động này không thể hoàn tác. Bạn thực sự muốn xóa sản phẩm này?",
+                    "Xác nhận lần cuối", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+                
+                if (confirm2 == JOptionPane.YES_OPTION) {
+                    try {
+                        BUS.ProductBUS productBUS = new BUS.ProductBUS();
+                        int productId = (Integer) model.getValueAt(modelRow, 0);
+                        if (productBUS.deleteProduct(productId)) {
+                            model.removeRow(modelRow);
+                            JOptionPane.showMessageDialog(detail, "Đã xóa sản phẩm thành công!");
+                        } else {
+                            JOptionPane.showMessageDialog(detail, "Không thể xóa sản phẩm!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(detail, "Lỗi khi xóa sản phẩm: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
+                    detail.dispose();
+                }
+            }
         });
 
         JButton btnDong = new JButton("Đóng");
