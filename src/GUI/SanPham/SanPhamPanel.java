@@ -1,26 +1,19 @@
 package GUI.SanPham;
 
+import BUS.ProductBUS;
+import DTO.ProductDTO;
+import GUI.ExportUtils;
+import GUI.UIUtils;
+import java.awt.*;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
-import javax.swing.AbstractCellEditor;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
-
-import BUS.CategoryBUS;
-import BUS.SupplierBUS;
-import DTO.CategoryDTO;
-import DTO.SupplierDTO;
-import java.util.ArrayList;
-import java.util.List;
-
-import java.awt.*;
-import BUS.ProductBUS;
-import DTO.ProductDTO;
-import GUI.ExportUtils;
-import GUI.UIUtils;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Panel for product management. Contains a card layout switching between
@@ -83,7 +76,6 @@ public class SanPhamPanel extends JPanel {
         productModel = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int col) { return col == 8; }
         };
-        loadProducts();
         loadProducts();
 
         // ---- Table card ----
@@ -395,15 +387,15 @@ public class SanPhamPanel extends JPanel {
                 String giaVon  = p.getCostPrice() != null ? String.format("%,.0fđ", p.getCostPrice()) : "-";
                 String ngaySX  = p.getProductionDate() != null ? p.getProductionDate().format(fmt) : "-";
                 ImageIcon icon = null;
-if (p.getImagePath() != null && !p.getImagePath().isEmpty()) {
-    ImageIcon img = new ImageIcon(p.getImagePath());
-    Image scaled = img.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
-    icon = new ImageIcon(scaled);
-}
+                if (p.getImagePath() != null && !p.getImagePath().isEmpty()) {
+                    ImageIcon img = new ImageIcon(p.getImagePath());
+                    Image scaled = img.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
+                    icon = new ImageIcon(scaled);
+                }
                 productModel.addRow(new Object[]{
                     p.getCode(),
                     icon,
-                    p.getName(), giaBan, qty, kho, ngayHH, "-", "",
+                    p.getName(), giaBan, qty, kho, ngayHH, dm, "",
                     p.getDescription() != null ? p.getDescription() : "-",
                     ncc, dm, giaVon,
                     p.getMinStockLevel(),

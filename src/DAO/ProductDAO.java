@@ -1,6 +1,5 @@
 package DAO;
 
-import DAO.DBConnection;
 import java.sql.*;
 
 public class ProductDAO {
@@ -31,10 +30,12 @@ public class ProductDAO {
     if(openConnection()){
         try{
             String sql = """
-                SELECT p.*, s.name AS supplier_name
+                SELECT p.*, s.name AS supplier_name, c.name AS category_name
                 FROM products p
                 LEFT JOIN suppliers s 
-                ON p.supplier_id = s.supplier_id
+                  ON p.supplier_id = s.supplier_id
+                LEFT JOIN categories c
+                  ON p.category_id = c.category_id
                 WHERE p.isdeleted = 0
             """;
 
@@ -59,6 +60,7 @@ public class ProductDAO {
                 // Category giữ nguyên nếu chưa cần name
                 DTO.CategoryDTO cat = new DTO.CategoryDTO();
                 cat.setID(rs.getInt("category_id"));
+                cat.setName(rs.getString("category_name"));
                 p.setCategory(cat);
 
                 p.setCostPrice(rs.getBigDecimal("cost_price"));

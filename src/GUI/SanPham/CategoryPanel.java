@@ -3,12 +3,12 @@ package GUI.SanPham;
 import BUS.CategoryBUS;
 import DTO.CategoryDTO;
 import GUI.UIUtils;
+import java.awt.*;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
-import java.awt.*;
-import java.util.List;
 
 /**
  * Panel for category management within product management.
@@ -101,7 +101,7 @@ public class CategoryPanel extends JPanel {
             if (keyword.isEmpty()) {
                 sorter.setRowFilter(null);
             } else {
-                sorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword, 1)); // Search in name column
+                sorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword, 2)); // Search in name column (now index 2)
             }
         };
 
@@ -117,11 +117,11 @@ public class CategoryPanel extends JPanel {
         top.add(addBtn);
 
         // Table setup
-        String[] columns = {"ID", "Tên danh mục", "Mô tả", "Thao tác"};
+        String[] columns = {"STT", "ID", "Tên danh mục", "Mô tả", "Thao tác"};
         model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int col) {
-                return col == 3; // Only action column is editable
+                return col == 4; // Only action column is editable
             }
         };
 
@@ -139,15 +139,16 @@ public class CategoryPanel extends JPanel {
         table.setGridColor(new Color(0xEEEEEE));
         table.setIntercellSpacing(new Dimension(0, 1));
 
-        // Hide ID column
-        table.getColumnModel().getColumn(0).setMinWidth(0);
-        table.getColumnModel().getColumn(0).setMaxWidth(0);
-        table.getColumnModel().getColumn(0).setWidth(0);
+        // Hide ID column (now index 1)
+        table.getColumnModel().getColumn(1).setMinWidth(0);
+        table.getColumnModel().getColumn(1).setMaxWidth(0);
+        table.getColumnModel().getColumn(1).setWidth(0);
 
         // Set column widths
-        table.getColumnModel().getColumn(1).setPreferredWidth(200);
-        table.getColumnModel().getColumn(2).setPreferredWidth(300);
-        table.getColumnModel().getColumn(3).setPreferredWidth(120);
+        table.getColumnModel().getColumn(0).setPreferredWidth(50);   // STT
+        table.getColumnModel().getColumn(2).setPreferredWidth(200);  // Name
+        table.getColumnModel().getColumn(3).setPreferredWidth(300);  // Description
+        table.getColumnModel().getColumn(4).setPreferredWidth(120);  // Action
 
         // Custom renderer for alternating rows
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
@@ -167,8 +168,24 @@ public class CategoryPanel extends JPanel {
             table.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
 
-        // Action column editor
-        table.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+        // Action column renderer (always visible)
+        table.getColumnModel().getColumn(4).setCellRenderer((t, val, sel, foc, r, c) -> {
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
+            panel.setOpaque(true);
+            JButton editBtn = UIUtils.makeActionButton("Sửa", new Color(0x6677C8));
+            editBtn.setPreferredSize(new Dimension(80, 28));
+            panel.add(editBtn);
+            panel.setBackground(r % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
+            int viewRow = r;
+            editBtn.addActionListener(e -> {
+                int modelRow = table.convertRowIndexToModel(viewRow);
+                editCategory(modelRow);
+            });
+            return panel;
+        });
+
+        // Action column editor (for keyboard navigation)
+        table.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
             private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
             private final JButton editBtn = UIUtils.makeActionButton("Sửa", new Color(0x6677C8));
             private int currentRow = -1;
@@ -197,7 +214,6 @@ public class CategoryPanel extends JPanel {
                 return "";
             }
         });
-
         JScrollPane scrollPane = new JScrollPane(table);
         UIUtils.styleScrollPane(scrollPane);
 
@@ -220,8 +236,10 @@ public class CategoryPanel extends JPanel {
             CategoryBUS categoryBUS = new CategoryBUS();
             List<CategoryDTO> categories = categoryBUS.getAllCategories();
 
-            for (CategoryDTO category : categories) {
+            int idx = 1;
+        for (CategoryDTO category : categories) {
                 model.addRow(new Object[]{
+                    idx++,
                     category.getID(),
                     category.getName(),
                     category.getDescription() != null ? category.getDescription() : "",
