@@ -3,17 +3,22 @@
 USE sieuthiminiv2;
 
 -- Add is_deleted to customers table
-ALTER TABLE customers
-ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE
+    customers
+ADD
+    COLUMN isdeleted TINYINT(1) NOT NULL DEFAULT 0;
 
--- Add is_deleted to products table
-ALTER TABLE products
-ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE
+    products
+ADD
+    COLUMN isdeleted TINYINT(1) NOT NULL DEFAULT 0;
 
--- Add is_deleted to employees table
-ALTER TABLE employees
-ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE
+    employees
+ADD
+    COLUMN isdeleted TINYINT(1) NOT NULL DEFAULT 0;
 
--- Add is_deleted to discounts table
-ALTER TABLE discounts
-ADD COLUMN is_deleted TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE
+    discounts
+ADD
+    COLUMN isdeleted TINYINT(1) NOT NULL DEFAULT 0;

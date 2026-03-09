@@ -35,7 +35,7 @@ public class ProductDAO {
                 FROM products p
                 LEFT JOIN suppliers s 
                 ON p.supplier_id = s.supplier_id
-                WHERE p.is_deleted = 0
+                WHERE p.isdeleted = 0
             """;
 
             Statement stmt = con.createStatement();
@@ -98,7 +98,7 @@ public class ProductDAO {
 }
 
     public boolean softDeleteProduct(int id) {
-        String sql = "UPDATE products SET is_deleted=1 WHERE product_id=?";
+        String sql = "UPDATE products SET isdeleted=1 WHERE product_id=?";
         try (java.sql.Connection conn = DAO.DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);

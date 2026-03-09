@@ -36,7 +36,7 @@ public class CustomerDAO {
         ArrayList<CustomerDTO> arr = new ArrayList<CustomerDTO>();
         if(openConnection()){
             try{
-                String sql = "SELECT * FROM customers WHERE is_deleted = 0";
+                String sql = "SELECT * FROM customers WHERE isdeleted = 0";
                 Statement stmt = con.createStatement();
                 ResultSet rs = stmt.executeQuery(sql);
                 while(rs.next()){
@@ -228,7 +228,7 @@ public class CustomerDAO {
         boolean result = false;
         if (openConnection()) {
             try {
-                PreparedStatement pstm = con.prepareStatement("UPDATE customers SET is_deleted=1 WHERE customer_id=?");
+                PreparedStatement pstm = con.prepareStatement("UPDATE customers SET isdeleted=1 WHERE customer_id=?");
                 pstm.setInt(1, id);
                 result = pstm.executeUpdate() >= 1;
             } catch (SQLException e) {
