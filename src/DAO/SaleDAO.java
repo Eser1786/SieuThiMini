@@ -186,6 +186,12 @@ public class SaleDAO {
 
         sale.setSaleID(rs.getInt("sale_id"));
         sale.setSaleCode(rs.getString("sale_code"));
+        
+        // Set sale date
+        Date saleDate = rs.getDate("sale_date");
+        if (saleDate != null) {
+            sale.setSaleDate(saleDate.toLocalDate());
+        }
 
         sale.setCustomerID(rs.getInt("customer_id"));
         sale.setCustomerCode(fixEncoding(rs.getString("customer_code")));

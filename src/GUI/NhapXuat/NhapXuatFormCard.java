@@ -1,4 +1,4 @@
-﻿package GUI.NhapXuat;
+package GUI.NhapXuat;
 
 import BUS.EmployeeBUS;
 import BUS.ProductBUS;
@@ -19,7 +19,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-/** Form tạo / sửa phiếu nhập kho. Layout 2 cột giống DonHangCreateCard. */
+/** Form t?o / s?a phi?u nh?p kho. Layout 2 c?t gi?ng DonHangCreateCard. */
 public class NhapXuatFormCard extends JPanel {
 
     private final Window dialogOwner;
@@ -49,3 +49,5 @@ public class NhapXuatFormCard extends JPanel {
         add(btnClose, BorderLayout.SOUTH);
     }
 }
+
+
