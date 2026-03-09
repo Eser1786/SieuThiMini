@@ -235,7 +235,44 @@ public class PurchaseInvoicesDAO {
 
         return result;
     }
+    public boolean confirmInvoice(Long invoiceId) {
 
+    String sqlInvoice = """
+        UPDATE purchase_invoices
+        SET status = 'RECEIVED'
+        WHERE invoice_id = ?
+    """;
+
+    String sqlPurchase = """
+        UPDATE purchases
+        SET status = 'CONFIRM'
+        WHERE purchase_id = (
+            SELECT purchase_id
+            FROM purchase_invoices
+            WHERE invoice_id = ?
+        )
+    """;
+
+    try (Connection conn = DBConnection.getConnection()) {
+
+        conn.setAutoCommit(false);
+
+        PreparedStatement ps1 = conn.prepareStatement(sqlInvoice);
+        ps1.setLong(1, invoiceId);
+        ps1.executeUpdate();
+
+        PreparedStatement ps2 = conn.prepareStatement(sqlPurchase);
+        ps2.setLong(1, invoiceId);
+        ps2.executeUpdate();
+
+        conn.commit();
+        return true;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
     public boolean updateStatus(Long invoiceId, String status) {
         String sql = "UPDATE purchase_invoices SET status = ?, updated_at = NOW() WHERE invoice_id = ?";
         try (Connection conn = getConnection();
@@ -276,19 +313,42 @@ public class PurchaseInvoicesDAO {
             ps.executeUpdate();
         }
     }
-    public boolean cancelPurchaseInvoice(long invoiceId) throws Exception {
+    public boolean cancelPurchaseInvoice(Long invoiceId) {
 
-    String sql = """
+    String sqlInvoice = """
         UPDATE purchase_invoices
         SET status = 'CANCELLED'
         WHERE invoice_id = ?
     """;
 
-    try (Connection conn = DBConnection.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
+    String sqlPurchase = """
+        UPDATE purchases
+        SET status = 'CANCELLED'
+        WHERE purchase_id = (
+            SELECT purchase_id
+            FROM purchase_invoices
+            WHERE invoice_id = ?
+        )
+    """;
 
-        ps.setLong(1, invoiceId);
-        return ps.executeUpdate() > 0;
+    try (Connection conn = DBConnection.getConnection()) {
+
+        conn.setAutoCommit(false);
+
+        PreparedStatement ps1 = conn.prepareStatement(sqlInvoice);
+        ps1.setLong(1, invoiceId);
+        ps1.executeUpdate();
+
+        PreparedStatement ps2 = conn.prepareStatement(sqlPurchase);
+        ps2.setLong(1, invoiceId);
+        ps2.executeUpdate();
+
+        conn.commit();
+        return true;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
     }
 }
 }

@@ -74,7 +74,8 @@ public class PurchaseInvoicesBUS {
     if (inv == null || inv.getStatus() != PurchaseInvoicesStatus.PENDING)
         return false;
 
-    boolean ok = purchaseInvoicesDAO.updateStatus(invoiceId, "RECEIVED");
+    // update invoice + purchase
+    boolean ok = purchaseInvoicesDAO.confirmInvoice(invoiceId);
 
     if (ok && inv.getItems() != null) {
 
@@ -94,7 +95,6 @@ public class PurchaseInvoicesBUS {
 
     return ok;
 }
-
     public boolean updatePurchaseInvoice(PurchaseInvoicesDTO invoice) {
         if (invoice == null || invoice.getInvoiceId() == null) return false;
 
