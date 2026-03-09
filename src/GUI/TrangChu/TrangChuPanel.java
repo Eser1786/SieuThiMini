@@ -4,12 +4,17 @@ import BUS.CustomerBUS;
 import BUS.ProductBUS;
 import BUS.SalesBUS;
 import DTO.SaleDTO;
+import DTO.CustomerDTO;
 import GUI.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalAdjusters;
 
 /**
  * Dashboard / home panel with summary cards and a small chart.
@@ -17,12 +22,6 @@ import java.util.List;
 public class TrangChuPanel extends JPanel {
     
     private JPanel topCards;
-    private JPanel orderCard;
-    private JTable orderTable;
-    private DefaultTableModel orderModel;
-    private JComboBox<String> statusFilter;
-    private JComboBox<String> paymentFilter;
-
     private int[] chartValues;
     private String[] chartLabels;
     private JPanel chartPanel;
@@ -40,158 +39,78 @@ public class TrangChuPanel extends JPanel {
         
         loadDashboardData();
 
-        // center area with chart and recent orders
-        JPanel centerPanel = new JPanel(new GridLayout(1, 2, 14, 0));
+        // center area with 3 charts
+        JPanel centerPanel = new JPanel(new GridLayout(3, 1, 0, 14));
         centerPanel.setBackground(new Color(0xF8F7FF));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(0, 18, 18, 18));
 
-        // chart card
-        JPanel chartCard = UIUtils.createCard();
-        // Tạo header cho chart với nút refresh
-        JPanel chartHeader = new JPanel(new BorderLayout());
-        chartHeader.setOpaque(false);
-
-        JLabel chartTitle = new JLabel("Doanh thu tuần này");
-        chartTitle.setFont(new Font("Playfair Display", Font.BOLD, 20));
-
-        JButton btnRefresh = new JButton("🔄 Làm mới");
-        btnRefresh.setFont(new Font("Arial", Font.PLAIN, 12));
-        btnRefresh.setFocusPainted(false);
-        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnRefresh.addActionListener(e -> refreshChart());
-
-        chartHeader.add(chartTitle, BorderLayout.WEST);
-        chartHeader.add(btnRefresh, BorderLayout.EAST);
-        chartHeader.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-
-        // Lấy dữ liệu doanh thu tuần từ database
+        // ===== Chart 1: Revenue Chart =====
+        JPanel revenueCard = UIUtils.createCard();
+        JPanel revenueHeader = new JPanel(new BorderLayout());
+        revenueHeader.setOpaque(false);
+        JLabel revenueTitle = new JLabel("Doanh thu tuần này");
+        revenueTitle.setFont(new Font("Playfair Display", Font.BOLD, 18));
+        JButton btnRefresh1 = new JButton("🔄 Làm mới");
+        btnRefresh1.setFont(new Font("Arial", Font.PLAIN, 11));
+        btnRefresh1.setFocusPainted(false);
+        btnRefresh1.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRefresh1.addActionListener(e -> refreshChart());
+        revenueHeader.add(revenueTitle, BorderLayout.WEST);
+        revenueHeader.add(btnRefresh1, BorderLayout.EAST);
+        revenueHeader.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        
         chartLabels = new String[]{ "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
-        loadChartData(); // Load dữ liệu đồ thị
-
-        JPanel chart = createChart(); // Tạo đồ thị
-        chartPanel = chart; // Lưu lại để refresh sau
-
-        chartCard.add(chartHeader, BorderLayout.NORTH);
-        chartCard.add(chartPanel, BorderLayout.CENTER);
-
-        // recent orders table
-        orderCard = UIUtils.createCard();
-        JPanel orderHeader = new JPanel(new BorderLayout());
-        orderHeader.setOpaque(false);
+        loadChartData();
+        JPanel chart = createChart();
+        chartPanel = chart;
         
-        JLabel orderTitle = new JLabel("Đơn hàng gần đây");
-        orderTitle.setFont(new Font("Playfair Display", Font.BOLD, 20));
-        
-        // Filter controls
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        filterPanel.setOpaque(false);
-        
-        filterPanel.add(new JLabel("Trạng thái:"));
-        statusFilter = new JComboBox<>(new String[]{"Tất cả", "PENDING", "CONFIRMED", "SHIPPING", "DELIVERING", "COMPLETED", "CANCELLED"});
-        statusFilter.addActionListener(e -> loadRecentOrders());
-        filterPanel.add(statusFilter);
-        
-        filterPanel.add(new JLabel("Thanh toán:"));
-        paymentFilter = new JComboBox<>(new String[]{"Tất cả", "CASH", "CARD", "TRANSFER"});
-        paymentFilter.addActionListener(e -> loadRecentOrders());
-        filterPanel.add(paymentFilter);
-        
-        orderHeader.add(orderTitle, BorderLayout.WEST);
-        orderHeader.add(filterPanel, BorderLayout.EAST);
-        
-        orderHeader.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        revenueCard.add(revenueHeader, BorderLayout.NORTH);
+        revenueCard.add(chartPanel, BorderLayout.CENTER);
 
-        String[] orderCols = { "Mã đơn", "Khách hàng", "Trạng thái", "Thanh toán", "Tổng tiền" };
-        orderModel = new DefaultTableModel(orderCols, 0) {
-            @Override
-            public boolean isCellEditable(int r, int c) {
-                return false;
-            }
-        };
-        orderTable = new JTable(orderModel);
-        orderTable.setFont(new Font("Arial", Font.PLAIN, 14));
-        orderTable.setRowHeight(35);
-        orderTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-        orderTable.getTableHeader().setBackground(new Color(0xAF9FCB));
-        orderTable.getTableHeader().setForeground(Color.WHITE);
-        orderTable.setShowVerticalLines(false);
-        orderTable.setGridColor(new Color(0xEEEEEE));
-
-        DefaultTableCellRenderer statusRenderer = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable t, Object v,
-                    boolean sel, boolean foc, int row, int col) {
-                super.getTableCellRendererComponent(t, v, sel, foc, row, col);
-                setHorizontalAlignment(SwingConstants.CENTER);
-                if (!sel) {
-                    setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
-                }
-                if (col == 2) { // Status column
-                    String val = v == null ? "" : v.toString();
-                    switch (val) {
-                        case "PENDING" -> { setForeground(new Color(0xFF9800)); setText("Chờ xác nhận"); }
-                        case "CONFIRMED" -> { setForeground(new Color(0x2196F3)); setText("Đã xác nhận"); }
-                        case "SHIPPING" -> { setForeground(new Color(0x9C27B0)); setText("Đang giao"); }
-                        case "DELIVERING" -> { setForeground(new Color(0xFF5722)); setText("Đang vận chuyển"); }
-                        case "COMPLETED" -> { setForeground(new Color(0x4CAF50)); setText("Hoàn thành"); }
-                        case "CANCELLED" -> { setForeground(new Color(0xF44336)); setText("Đã hủy"); }
-                        default -> setForeground(Color.BLACK);
-                    }
-                } else if (col == 3) { // Payment column
-                    String val = v == null ? "" : v.toString();
-                    switch (val) {
-                        case "CASH" -> setText("Tiền mặt");
-                        case "CARD" -> setText("Thẻ");
-                        case "TRANSFER" -> setText("Chuyển khoản");
-                        default -> setText(val);
-                    }
-                    setForeground(Color.BLACK);
-                } else {
-                    setForeground(Color.BLACK);
-                }
-                return this;
-            }
-        };
+        // ===== Chart 2: Customer Chart=====
+        JPanel customerCard = UIUtils.createCard();
+        JPanel customerHeaderPanel = new JPanel(new BorderLayout());
+        customerHeaderPanel.setOpaque(false);
+        JLabel customerTitle = new JLabel("Khách hàng mới (tuần này)");
+        customerTitle.setFont(new Font("Playfair Display", Font.BOLD, 18));
+        JButton btnRefresh2 = new JButton("🔄 Làm mới");
+        btnRefresh2.setFont(new Font("Arial", Font.PLAIN, 11));
+        btnRefresh2.setFocusPainted(false);
+        btnRefresh2.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRefresh2.addActionListener(e -> refreshCustomerChart());
+        customerHeaderPanel.add(customerTitle, BorderLayout.WEST);
+        customerHeaderPanel.add(btnRefresh2, BorderLayout.EAST);
+        customerHeaderPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         
-        DefaultTableCellRenderer moneyRenderer = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable t, Object v,
-                    boolean sel, boolean foc, int row, int col) {
-                super.getTableCellRendererComponent(t, v, sel, foc, row, col);
-                setHorizontalAlignment(SwingConstants.RIGHT);
-                if (!sel) {
-                    setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
-                }
-                if (col == 4 && v != null) { // Money column
-                    try {
-                        double amount = Double.parseDouble(v.toString());
-                        setText(String.format("%,.0f đ", amount));
-                    } catch (NumberFormatException e) {
-                        setText(v.toString());
-                    }
-                }
-                setForeground(Color.BLACK);
-                return this;
-            }
-        };
+        JPanel customerChart = createCustomerChart();
+        customerCard.add(customerHeaderPanel, BorderLayout.NORTH);
+        customerCard.add(customerChart, BorderLayout.CENTER);
 
-        orderTable.getColumnModel().getColumn(0).setCellRenderer(statusRenderer); // Code
-        orderTable.getColumnModel().getColumn(1).setCellRenderer(statusRenderer); // Customer
-        orderTable.getColumnModel().getColumn(2).setCellRenderer(statusRenderer); // Status
-        orderTable.getColumnModel().getColumn(3).setCellRenderer(statusRenderer); // Payment
-        orderTable.getColumnModel().getColumn(4).setCellRenderer(moneyRenderer);  // Amount
+        // ===== Chart 3: Orders Chart =====
+        JPanel orderChartCard = UIUtils.createCard();
+        JPanel orderChartHeaderPanel = new JPanel(new BorderLayout());
+        orderChartHeaderPanel.setOpaque(false);
+        JLabel orderChartTitle = new JLabel("Đơn hàng (tuần này)");
+        orderChartTitle.setFont(new Font("Playfair Display", Font.BOLD, 18));
+        JButton btnRefresh3 = new JButton("🔄 Làm mới");
+        btnRefresh3.setFont(new Font("Arial", Font.PLAIN, 11));
+        btnRefresh3.setFocusPainted(false);
+        btnRefresh3.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRefresh3.addActionListener(e -> refreshOrderChart());
+        orderChartHeaderPanel.add(orderChartTitle, BorderLayout.WEST);
+        orderChartHeaderPanel.add(btnRefresh3, BorderLayout.EAST);
+        orderChartHeaderPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        
+        JPanel orderChart = createOrderChart();
+        orderChartCard.add(orderChartHeaderPanel, BorderLayout.NORTH);
+        orderChartCard.add(orderChart, BorderLayout.CENTER);
 
-        orderCard.add(orderHeader, BorderLayout.NORTH);
-        orderCard.add(new JScrollPane(orderTable), BorderLayout.CENTER);
-
-        centerPanel.add(chartCard);
-        centerPanel.add(orderCard);
+        centerPanel.add(revenueCard);
+        centerPanel.add(customerCard);
+        centerPanel.add(orderChartCard);
 
         add(topCards, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
-        
-        // Load initial data
-        loadRecentOrders();
     }
     
     private void loadDashboardData() {
@@ -286,55 +205,6 @@ public class TrangChuPanel extends JPanel {
         }
     }
     
-    private void loadRecentOrders() {
-        try {
-            SalesBUS salesBUS = new SalesBUS();
-            List<SaleDTO> sales = salesBUS.getAllSales();
-            
-            // Apply filters
-            String statusFilterValue = (String) statusFilter.getSelectedItem();
-            String paymentFilterValue = (String) paymentFilter.getSelectedItem();
-            
-            if (!"Tất cả".equals(statusFilterValue)) {
-                sales = sales.stream()
-                    .filter(s -> statusFilterValue.equals(s.getSaleStatus().name()))
-                    .toList();
-            }
-            
-            if (!"Tất cả".equals(paymentFilterValue)) {
-                sales = sales.stream()
-                    .filter(s -> paymentFilterValue.equals(s.getSalePaymentMethod().name()))
-                    .toList();
-            }
-            
-            // Sort by date (newest first) and limit to 10
-            sales = sales.stream()
-                .filter(s -> s.getSaleDate() != null) // Filter out null dates
-                .sorted((a, b) -> b.getSaleDate().compareTo(a.getSaleDate()))
-                .limit(10)
-                .toList();
-            
-            // Clear table
-            orderModel.setRowCount(0);
-            
-            // Add data to table
-            for (SaleDTO sale : sales) {
-                String customerName = sale.getCustomerName() != null ? sale.getCustomerName() : "Khách lẻ";
-                orderModel.addRow(new Object[]{
-                    sale.getSaleCode(),
-                    customerName,
-                    sale.getSaleStatus().name(),
-                    sale.getSalePaymentMethod().name(),
-                    sale.getTotalAmount()
-                });
-            }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi tải danh sách đơn hàng: " + e.getMessage());
-        }
-    }
-
     /**
     * Load dữ liệu doanh thu tuần và chuyển sang phần trăm cho đồ thị
     */
@@ -450,6 +320,237 @@ public class TrangChuPanel extends JPanel {
     private void refreshChart() {
         loadChartData(); // Load lại dữ liệu
         chartPanel.repaint(); // Vẽ lại đồ thị
+    }
+
+    // ===== CUSTOMER CHART =====
+    private int[] customerChartValues;
+    private JPanel customerChartPanel;
+    
+    private void loadCustomerChartData() {
+        try {
+            CustomerBUS customerBUS = new CustomerBUS();
+            ArrayList<CustomerDTO> allCustomers = customerBUS.getAllCustomers();
+            
+            LocalDate today = LocalDate.now();
+            LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            
+            // Tính số khách hàng mới từng ngày trong tuần
+            customerChartValues = new int[7];
+            int maxCustomers = 0;
+            
+            for (int i = 0; i < 7; i++) {
+                LocalDate currentDay = monday.plusDays(i);
+                
+                int dailyCustomers = (int) allCustomers.stream()
+                    .filter(c -> c.getCreatedAt() != null)
+                    .filter(c -> c.getCreatedAt().toLocalDate().equals(currentDay))
+                    .count();
+                
+                customerChartValues[i] = dailyCustomers;
+                if (dailyCustomers > maxCustomers) {
+                    maxCustomers = dailyCustomers;
+                }
+            }
+            
+            // Nếu không có khách hàng mới, set về 0
+            if (maxCustomers == 0) {
+                for (int i = 0; i < 7; i++) {
+                    customerChartValues[i] = 0;
+                }
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            customerChartValues = new int[7];
+        }
+    }
+    
+    private JPanel createCustomerChart() {
+        loadCustomerChartData();
+        
+        JPanel chart = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                int w = getWidth(), h = getHeight();
+                int padL = 40, padR = 20, padT = 20, padB = 30;
+                int chartW = w - padL - padR;
+                int chartH = h - padT - padB;
+                int n = customerChartValues.length;
+                
+                // Tìm max value
+                int maxVal = 0;
+                for (int v : customerChartValues) {
+                    if (v > maxVal) maxVal = v;
+                }
+                if (maxVal == 0) maxVal = 10; // Default max nếu không có data
+
+                // Vẽ lưới ngang
+                g2.setColor(new Color(0xDDDDDD));
+                g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 4 }, 0));
+                for (int i = 0; i <= 4; i++) {
+                    int y = padT + chartH * i / 4;
+                    g2.drawLine(padL, y, padL + chartW, y);
+                    g2.setColor(new Color(0x999999));
+                    g2.setFont(new Font("Arial", Font.PLAIN, 11));
+                    int gridVal = maxVal - (maxVal * i / 4);
+                    g2.drawString(String.valueOf(gridVal), 2, y + 4);
+                    g2.setColor(new Color(0xDDDDDD));
+                }
+
+                // Vẽ cột biểu đồ
+                int barWidth = chartW / (n * 2);
+                g2.setColor(new Color(0x66BB6A));
+                for (int i = 0; i < n; i++) {
+                    int x = padL + (i * 2 + 1) * chartW / (n * 2);
+                    int barHeight = maxVal > 0 ? customerChartValues[i] * chartH / maxVal : 0;
+                    int y = padT + chartH - barHeight;
+                    
+                    g2.fillRoundRect(x - barWidth / 2, y, barWidth, barHeight, 4, 4);
+                    
+                    // Hiển thị giá trị trên cột
+                    g2.setColor(Color.BLACK);
+                    g2.setFont(new Font("Arial", Font.BOLD, 10));
+                    String valStr = String.valueOf(customerChartValues[i]);
+                    int strWidth = g2.getFontMetrics().stringWidth(valStr);
+                    g2.drawString(valStr, x - strWidth / 2, y - 5);
+                    g2.setColor(new Color(0x66BB6A));
+                }
+
+                // Vẽ nhãn ngày
+                g2.setColor(new Color(0x666666));
+                g2.setFont(new Font("Arial", Font.PLAIN, 11));
+                for (int i = 0; i < chartLabels.length; i++) {
+                    int xi = padL + (i * 2 + 1) * chartW / (n * 2);
+                    String label = chartLabels[i];
+                    int strWidth = g2.getFontMetrics().stringWidth(label);
+                    g2.drawString(label, xi - strWidth / 2, h - 6);
+                }
+            }
+        };
+        chart.setOpaque(false);
+        chart.setPreferredSize(new Dimension(0, 200));
+        customerChartPanel = chart;
+        return chart;
+    }
+    
+    private void refreshCustomerChart() {
+        customerChartPanel.repaint();
+    }
+
+    // ===== ORDER CHART =====
+    private int[] orderChartValues;
+    private JPanel orderChartPanel;
+    
+    private void loadOrderChartData() {
+        try {
+            SalesBUS salesBUS = new SalesBUS();
+            ArrayList<SaleDTO> allSales = salesBUS.getAllSales();
+            
+            LocalDate today = LocalDate.now();
+            LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            
+            // Tính số đơn hàng từng ngày trong tuần
+            orderChartValues = new int[7];
+            int maxOrders = 0;
+            
+            for (int i = 0; i < 7; i++) {
+                LocalDate currentDay = monday.plusDays(i);
+                
+                int dailyOrders = (int) allSales.stream()
+                    .filter(s -> s.getSaleDate() != null)
+                    .filter(s -> s.getSaleDate().equals(currentDay))
+                    .count();
+                
+                orderChartValues[i] = dailyOrders;
+                if (dailyOrders > maxOrders) {
+                    maxOrders = dailyOrders;
+                }
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            orderChartValues = new int[7];
+        }
+    }
+    
+    private JPanel createOrderChart() {
+        loadOrderChartData();
+        
+        JPanel chart = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                int w = getWidth(), h = getHeight();
+                int padL = 40, padR = 20, padT = 20, padB = 30;
+                int chartW = w - padL - padR;
+                int chartH = h - padT - padB;
+                int n = orderChartValues.length;
+                
+                // Tìm max value
+                int maxVal = 0;
+                for (int v : orderChartValues) {
+                    if (v > maxVal) maxVal = v;
+                }
+                if (maxVal == 0) maxVal = 10; // Default max nếu không có data
+
+                // Vẽ lưới ngang
+                g2.setColor(new Color(0xDDDDDD));
+                g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 4 }, 0));
+                for (int i = 0; i <= 4; i++) {
+                    int y = padT + chartH * i / 4;
+                    g2.drawLine(padL, y, padL + chartW, y);
+                    g2.setColor(new Color(0x999999));
+                    g2.setFont(new Font("Arial", Font.PLAIN, 11));
+                    int gridVal = maxVal - (maxVal * i / 4);
+                    g2.drawString(String.valueOf(gridVal), 2, y + 4);
+                    g2.setColor(new Color(0xDDDDDD));
+                }
+
+                // Vẽ cột biểu đồ
+                int barWidth = chartW / (n * 2);
+                g2.setColor(new Color(0x42A5F5));
+                for (int i = 0; i < n; i++) {
+                    int x = padL + (i * 2 + 1) * chartW / (n * 2);
+                    int barHeight = maxVal > 0 ? orderChartValues[i] * chartH / maxVal : 0;
+                    int y = padT + chartH - barHeight;
+                    
+                    g2.fillRoundRect(x - barWidth / 2, y, barWidth, barHeight, 4, 4);
+                    
+                    // Hiển thị giá trị trên cột
+                    g2.setColor(Color.BLACK);
+                    g2.setFont(new Font("Arial", Font.BOLD, 10));
+                    String valStr = String.valueOf(orderChartValues[i]);
+                    int strWidth = g2.getFontMetrics().stringWidth(valStr);
+                    g2.drawString(valStr, x - strWidth / 2, y - 5);
+                    g2.setColor(new Color(0x42A5F5));
+                }
+
+                // Vẽ nhãn ngày
+                g2.setColor(new Color(0x666666));
+                g2.setFont(new Font("Arial", Font.PLAIN, 11));
+                for (int i = 0; i < chartLabels.length; i++) {
+                    int xi = padL + (i * 2 + 1) * chartW / (n * 2);
+                    String label = chartLabels[i];
+                    int strWidth = g2.getFontMetrics().stringWidth(label);
+                    g2.drawString(label, xi - strWidth / 2, h - 6);
+                }
+            }
+        };
+        chart.setOpaque(false);
+        chart.setPreferredSize(new Dimension(0, 200));
+        orderChartPanel = chart;
+        return chart;
+    }
+    
+    private void refreshOrderChart() {
+        orderChartPanel.repaint();
     }
 
     public static void main(String[] args) {
