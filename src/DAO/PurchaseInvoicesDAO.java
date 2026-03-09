@@ -2,6 +2,7 @@ package DAO;
 
 import DTO.PurchaseInvoicesDTO;
 import DTO.PurchaseInvoiceItemsDTO;
+import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -41,7 +42,7 @@ public class PurchaseInvoicesDAO {
                 invoice.setTotalAmount(rs.getBigDecimal("total_amount"));
                 invoice.setPaymentMethod(rs.getString("payment_method"));
                 invoice.setPaymentStatus(rs.getString("payment_status"));
-                invoice.setStatus(rs.getString("status"));
+                invoice.setStatusString(rs.getString("status"));
                 invoice.setNotes(rs.getString("notes"));
                 invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 invoice.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
@@ -120,7 +121,7 @@ public class PurchaseInvoicesDAO {
                 invoice.setTotalAmount(rs.getBigDecimal("total_amount"));
                 invoice.setPaymentMethod(rs.getString("payment_method"));
                 invoice.setPaymentStatus(rs.getString("payment_status"));
-                invoice.setStatus(rs.getString("status"));
+                invoice.setStatusString(rs.getString("status"));
                 invoice.setNotes(rs.getString("notes"));
                 invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 invoice.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
@@ -154,7 +155,7 @@ public class PurchaseInvoicesDAO {
             ps.setBigDecimal(9, invoice.getTotalAmount());
             ps.setString(10, invoice.getPaymentMethod());
             ps.setString(11, invoice.getPaymentStatus());
-            ps.setString(12, invoice.getStatus());
+            ps.setString(12, invoice.getStatusString());
             ps.setString(13, invoice.getNotes());
 
             int affectedRows = ps.executeUpdate();
@@ -216,7 +217,7 @@ public class PurchaseInvoicesDAO {
             ps.setBigDecimal(9, invoice.getTotalAmount());
             ps.setString(10, invoice.getPaymentMethod());
             ps.setString(11, invoice.getPaymentStatus());
-            ps.setString(12, invoice.getStatus());
+            ps.setString(12, invoice.getStatusString());
             ps.setString(13, invoice.getNotes());
             ps.setTimestamp(14, Timestamp.valueOf(LocalDateTime.now()));
             ps.setLong(15, invoice.getInvoiceId());

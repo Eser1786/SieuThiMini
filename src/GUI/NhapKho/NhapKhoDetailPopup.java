@@ -3,6 +3,7 @@ package GUI.NhapKho;
 import BUS.PurchaseInvoicesBUS;
 import DTO.PurchaseInvoiceItemsDTO;
 import DTO.PurchaseInvoicesDTO;
+import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -195,13 +196,13 @@ class NhapKhoDetailPopup extends JDialog {
 
     private static String nvl(String s) { return s != null ? s : ""; }
 
-    private static String mapStatus(String s) {
+    private static String mapStatus(PurchaseInvoicesStatus s) {
         if (s == null) return "Ch\u1edd x\u00e1c nh\u1eadn";
         return switch (s) {
-            case "PENDING"   -> "Ch\u1edd x\u00e1c nh\u1eadn";
-            case "RECEIVED"  -> "\u0110\u00e3 nh\u1eadp";
-            case "CANCELLED" -> "\u0110\u00e3 h\u1ee7y";
-            default          -> "Ch\u1edd x\u00e1c nh\u1eadn";
+            case PENDING   -> "Ch\u1edd x\u00e1c nh\u1eadn";
+            case RECEIVED  -> "\u0110\u00e3 nh\u1eadp";
+            case CANCELLED -> "\u0110\u00e3 h\u1ee7y";
+            default        -> "Ch\u1edd x\u00e1c nh\u1eadn";
         };
     }
 

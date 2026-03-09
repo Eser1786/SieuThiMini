@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import GUI.MainPanel;
+// import GUI.MainPanel;
 
 class DonHangCreateCard extends JPanel {
 
@@ -463,8 +463,9 @@ class DonHangCreateCard extends JPanel {
         btnTaoKH.setFocusPainted(false); btnTaoKH.setBorderPainted(false); btnTaoKH.setOpaque(true);
         btnTaoKH.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnTaoKH.addActionListener(e -> {
-            java.awt.Container mp = SwingUtilities.getAncestorOfClass(MainPanel.class, DonHangCreateCard.this);
-            if (mp instanceof MainPanel mainPanel) mainPanel.showKhachHangCreate();
+            // java.awt.Container mp = SwingUtilities.getAncestorOfClass(MainPanel.class, DonHangCreateCard.this);
+            // if (mp instanceof MainPanel mainPanel) mainPanel.showKhachHangCreate();
+            JOptionPane.showMessageDialog(this, "Tính năng tạo khách hàng mới chưa được implement.");
         });
         JPanel custCard = makeRightCard("Kh\u00e1ch h\u00e0ng");
         addFieldToCard(custCard, "Ch\u1ecdn kh\u00e1ch:", cbKhachHang);
@@ -620,7 +621,17 @@ class DonHangCreateCard extends JPanel {
             sale.setTotalQuantity(totalQty);
             sale.setSaleStatus(SaleStatus.PENDING);
             sale.setPaymentMethod(SalePaymentMethod.CASH); // Default
-            sale.setNote(taNotes.getText().trim());
+            
+            // Tạo note từ items
+            StringBuilder itemsNote = new StringBuilder();
+            for (OrderItem it : items) {
+                itemsNote.append(it.code).append("|").append(it.name).append("|").append(it.unitPrice).append("|").append(it.qty).append(";");
+            }
+            String userNote = taNotes.getText().trim();
+            if (!userNote.isEmpty()) {
+                itemsNote.append("NOTE:").append(userNote);
+            }
+            sale.setNote(itemsNote.toString());
             
             // Lưu vào database
             boolean saved = salesBUS.addSale(sale);
@@ -871,7 +882,8 @@ class DonHangCreateCard extends JPanel {
         EmployeeBUS employeeBUS = new EmployeeBUS();
         java.util.ArrayList<EmployeeDTO> employees = employeeBUS.getAllEmployees();
         for (EmployeeDTO e : employees) {
-            if (name.equals(e.getFullName())) {
+            String displayName = e.getCode() + " - " + e.getFullName();
+            if (name.equals(displayName)) {
                 return e;
             }
         }

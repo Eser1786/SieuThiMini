@@ -262,11 +262,17 @@ class DonHangDetailCard extends JPanel {
                 "Chờ xác nhận", "Đã xác nhận", "Chờ vận chuyển",
                 "Đang giao", "Đã giao", "Đã hủy"}));
         cbTrangThai.setSelectedItem(trangThai);
-        if (lbNhanVien != null)
-            lbNhanVien.setText(parent.nhanVienMap.getOrDefault(maDon, "Nguyễn Thị Thẹo"));
 
         SalesBUS salesBUS = new SalesBUS();
         SaleDTO sale = salesBUS.getSaleByCode(maDon);
+        if (lbNhanVien != null) {
+            if (sale != null && sale.getEmployeeName() != null) {
+                lbNhanVien.setText(sale.getEmployeeName());
+            } else {
+                lbNhanVien.setText(parent.nhanVienMap.getOrDefault(maDon, "Nguyễn Thị Thẹo"));
+            }
+        }
+
         if (sale != null) {
             lbNgayDat.setText(sale.getSaleDate() != null ? sale.getSaleDate().toString() : "-");
             lbNgayGiao.setText("Dự kiến giao sau 1-3 ngày");
@@ -301,6 +307,20 @@ class DonHangDetailCard extends JPanel {
                 lbPhiVC.setText("Miễn phí");
                 tfTongTT.setText(String.format("%,.0fđ", (double) finalTot));
             } else {
+                // Try to parse items from note
+                String note = sale.getNote();
+                if (note != null && !note.isEmpty()) {
+                    parseItemsFromNote(note);
+                } else {
+                    // Mock item
+                    if (sale.getTotalQuantity() > 0) {
+                        long unitPrice = sale.getTotalAmount().divide(java.math.BigDecimal.valueOf(sale.getTotalQuantity())).longValue();
+                        chitietModel.addRow(new Object[]{ "1",
+                            "SP001 - Sản phẩm mẫu", sale.getTotalQuantity(),
+                            String.format("%,.0fđ", (double) unitPrice),
+                            String.format("%,.0fđ", (double) sale.getTotalAmount().longValue()) });
+                    }
+                }
                 lbTongCong.setText(String.format("%,.0fđ", (double) (sale.getSubTotal() != null ? sale.getSubTotal().longValue() : sale.getTotalAmount().longValue())));
                 lbVAT.setText("0đ");
                 lbPhiVC.setText("Miễn phí");
@@ -357,6 +377,39 @@ class DonHangDetailCard extends JPanel {
             }
         }
         setDetailEditable(false);
+    }
+
+    private void parseItemsFromNote(String note) {
+        chitietModel.setRowCount(0);
+        if (note == null || note.isEmpty()) return;
+
+        String[] parts = note.split(";");
+        int stt = 1;
+        for (String part : parts) {
+            if (part.startsWith("NOTE:")) {
+                // User note, skip for items
+                continue;
+            }
+            String[] itemParts = part.split("\\|");
+            if (itemParts.length >= 4) {
+                try {
+                    String code = itemParts[0];
+                    String name = itemParts[1];
+                    long unitPrice = Long.parseLong(itemParts[2]);
+                    int qty = Integer.parseInt(itemParts[3]);
+                    long line = unitPrice * qty;
+                    chitietModel.addRow(new Object[]{
+                        String.valueOf(stt++),
+                        code + " - " + name,
+                        qty,
+                        String.format("%,.0fđ", (double) unitPrice),
+                        String.format("%,.0fđ", (double) line)
+                    });
+                } catch (NumberFormatException e) {
+                    // Skip invalid item
+                }
+            }
+        }
     }
 
     void setDetailEditable(boolean editable) {

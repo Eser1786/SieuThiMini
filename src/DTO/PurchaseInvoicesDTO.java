@@ -1,5 +1,6 @@
 package DTO;
 
+import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +20,7 @@ public class PurchaseInvoicesDTO {
     private BigDecimal totalAmount;
     private String paymentMethod;
     private String paymentStatus;
-    private String status;
+    private PurchaseInvoicesStatus status;
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -138,12 +139,21 @@ public class PurchaseInvoicesDTO {
         this.paymentStatus = paymentStatus;
     }
 
-    public String getStatus() {
+    public PurchaseInvoicesStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(PurchaseInvoicesStatus status) {
         this.status = status;
+    }
+
+    // Backward compatibility methods
+    public String getStatusString() {
+        return status != null ? status.getValue() : null;
+    }
+
+    public void setStatusString(String status) {
+        this.status = PurchaseInvoicesStatus.fromString(status);
     }
 
     public String getNotes() {

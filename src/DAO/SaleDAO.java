@@ -188,10 +188,10 @@ public class SaleDAO {
         sale.setSaleCode(rs.getString("sale_code"));
 
         sale.setCustomerID(rs.getInt("customer_id"));
-        sale.setCustomerCode(rs.getString("customer_code"));
-        sale.setCustomerName(rs.getString("customer_name"));
-        sale.setCustomerPhone(rs.getString("customer_phone"));
-        sale.setCustomerAddress(rs.getString("customer_address"));
+        sale.setCustomerCode(fixEncoding(rs.getString("customer_code")));
+        sale.setCustomerName(fixEncoding(rs.getString("customer_name")));
+        sale.setCustomerPhone(fixEncoding(rs.getString("customer_phone")));
+        sale.setCustomerAddress(fixEncoding(rs.getString("customer_address")));
 
         sale.setEmployeeID(rs.getInt("employee_id"));
         sale.setEmployeeCode(rs.getString("employee_code"));
@@ -285,5 +285,20 @@ public class SaleDAO {
         }
 
         return false;
+    }
+
+    private static String fixEncoding(String s) {
+        if (s == null) return null;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) > 0xFF) return s; // Already proper Unicode, no fix needed
+        }
+        try {
+            String d = new String(s.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1),
+                                  java.nio.charset.StandardCharsets.UTF_8);
+            for (int i = 0; i < d.length(); i++) {
+                if (d.charAt(i) > 0xFF) return d; // Successfully decoded mojibake
+            }
+        } catch (Exception ignored) {}
+        return s;
     }
 }

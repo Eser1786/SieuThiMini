@@ -2,6 +2,7 @@ package GUI.NhapKho;
 
 import BUS.PurchaseInvoicesBUS;
 import DTO.PurchaseInvoicesDTO;
+import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
 import GUI.UIUtils;
 import GUI.WrapLayout;
 
@@ -331,13 +332,13 @@ class NhapKhoTableCard extends JPanel {
         };
     }
 
-    private static String mapStatus(String s) {
+    private static String mapStatus(PurchaseInvoicesStatus s) {
         if (s == null) return "Chờ xác nhận";
         return switch (s) {
-            case "PENDING"   -> "Chờ xác nhận";
-            case "RECEIVED"  -> "Đã nhập";
-            case "CANCELLED" -> "Đã hủy";
-            default          -> s;
+            case PENDING   -> "Chờ xác nhận";
+            case RECEIVED  -> "Đã nhập";
+            case CANCELLED -> "Đã hủy";
+            default        -> "Chờ xác nhận";
         };
     }
 }
