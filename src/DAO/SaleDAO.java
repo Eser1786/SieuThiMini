@@ -3,7 +3,6 @@ package DAO;
 import DTO.SaleDTO;
 import DTO.enums.SaleEnum.SalePaymentMethod;
 import DTO.enums.SaleEnum.SaleStatus;
-
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ public class SaleDAO {
         String sql = """
             SELECT s.sale_id, s.sale_code, s.sale_date, s.customer_id, s.employee_id,
                    s.subtotal, s.discount_amount, s.status, s.payment_method,
-                   s.total_amount, s.note,
+                   s.total_amount, s.note, s.isdeleted,
                    COALESCE((SELECT SUM(sii.quantity)
                      FROM sales_invoices si
                      JOIN sales_invoice_items sii ON si.invoice_id = sii.invoice_id
@@ -53,7 +52,7 @@ public class SaleDAO {
         String sql = """
             SELECT s.sale_id, s.sale_code, s.sale_date, s.customer_id, s.employee_id,
                    s.subtotal, s.discount_amount, s.status, s.payment_method,
-                   s.total_amount, s.note,
+                   s.total_amount, s.note, s.isdeleted,
                    COALESCE((SELECT SUM(sii.quantity)
                      FROM sales_invoices si
                      JOIN sales_invoice_items sii ON si.invoice_id = sii.invoice_id
@@ -90,7 +89,7 @@ public class SaleDAO {
         String sql = """
             SELECT s.sale_id, s.sale_code, s.sale_date, s.customer_id, s.employee_id,
                    s.subtotal, s.discount_amount, s.status, s.payment_method,
-                   s.total_amount, s.note,
+                   s.total_amount, s.note, s.isdeleted,
                    COALESCE((SELECT SUM(sii.quantity)
                      FROM sales_invoices si
                      JOIN sales_invoice_items sii ON si.invoice_id = sii.invoice_id
@@ -129,7 +128,7 @@ public class SaleDAO {
         String sql = """
             SELECT s.sale_id, s.sale_code, s.sale_date, s.customer_id, s.employee_id,
                    s.subtotal, s.discount_amount, s.status, s.payment_method,
-                   s.total_amount, s.note,
+                   s.total_amount, s.note, s.isdeleted,
                    COALESCE((SELECT SUM(sii.quantity)
                      FROM sales_invoices si
                      JOIN sales_invoice_items sii ON si.invoice_id = sii.invoice_id
@@ -166,8 +165,8 @@ public class SaleDAO {
 
         String sql = """
                 INSERT INTO sales
-                (sale_code, sale_date, customer_id, employee_id, subtotal, discount_amount, status, payment_method, total_amount, total_quantity, note)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (sale_code, sale_date, customer_id, employee_id, subtotal, discount_amount, status, payment_method, total_amount, total_quantity, note, isdeleted)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
                 """;
 
         try (Connection con = DBConnection.getConnection();
@@ -260,6 +259,7 @@ public class SaleDAO {
         sale.setTotalAmount(rs.getBigDecimal("total_amount"));
         sale.setTotalQuantity(rs.getInt("total_quantity"));
         sale.setNote(rs.getString("note"));
+        sale.setIsdeleted(rs.getBoolean("isdeleted"));
 
         return sale;
     }
@@ -268,7 +268,7 @@ public class SaleDAO {
         String sql = """
                 SELECT s.sale_id, s.sale_code, s.sale_date, s.customer_id, s.employee_id,
                        s.subtotal, s.discount_amount, s.status, s.payment_method,
-                       s.total_amount, s.note,
+                       s.total_amount, s.note, s.isdeleted,
                        COALESCE((SELECT SUM(sii.quantity)
                                  FROM sales_invoices si
                                  JOIN sales_invoice_items sii ON si.invoice_id = sii.invoice_id
@@ -279,7 +279,7 @@ public class SaleDAO {
                 FROM sales s
                 LEFT JOIN customers c ON s.customer_id = c.customer_id
                 LEFT JOIN employees e ON s.employee_id = e.employee_id
-                WHERE s.sale_code = ?
+                WHERE s.sale_code = ? AND s.isdeleted = 0
                 """;
 
         try (Connection con = DBConnection.getConnection();
@@ -318,7 +318,7 @@ public class SaleDAO {
     }
 
     public boolean deleteSale(String saleCode) {
-        String sql = "DELETE FROM sales WHERE sale_code = ?";
+        String sql = "UPDATE sales SET isdeleted = 1 WHERE sale_code = ?";
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {

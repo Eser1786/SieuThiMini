@@ -1,9 +1,8 @@
 package DTO;
 
 import DTO.enums.SaleEnum.*;
-
-import java.time.LocalDate;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 
 public class SaleDTO {
@@ -32,6 +31,7 @@ public class SaleDTO {
     private String note;
     private String customerPhone;
     private String customerAddress;
+    private boolean isdeleted;
 
 
     //GETTER
@@ -56,6 +56,7 @@ public class SaleDTO {
     public BigDecimal getTotalAmount(){return totalAmount;}
     public int getTotalQuantity(){return totalQuantity;}
     public String getNote(){return note;}
+    public boolean isIsdeleted(){return isdeleted;}
 
     
     //SETTER 
@@ -80,6 +81,7 @@ public class SaleDTO {
     public void setTotalAmount(BigDecimal totalAmount){this.totalAmount = totalAmount;}
     public void setTotalQuantity(int totalQuantity){this.totalQuantity = totalQuantity;}
     public void setNote(String note){this.note = note;}
+    public void setIsdeleted(boolean isdeleted){this.isdeleted = isdeleted;}
 
     public String toString(){
         return "SaleDTO{" + 
@@ -98,6 +100,8 @@ public class SaleDTO {
                 ", payment method:'" + paymentMethod + '\'' +
                 ", total amount:'" + totalAmount + '\'' +
                 ", total quantity:'" + totalQuantity + '\'' +
-                ", note:'" + note + '\'' + "}";
+                ", note:'" + note + '\'' +
+                ", isdeleted:" + isdeleted + "}";
+
     }
 }

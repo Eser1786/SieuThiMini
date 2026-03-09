@@ -22,3 +22,8 @@ ALTER TABLE
     discounts
 ADD
     COLUMN isdeleted TINYINT(1) NOT NULL DEFAULT 0;
+
+ALTER TABLE
+    sales
+ADD
+    COLUMN isdeleted TINYINT(1) NOT NULL DEFAULT 0;
