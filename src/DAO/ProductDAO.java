@@ -77,7 +77,7 @@ public class ProductDAO {
                 p.setUnit(rs.getString("unit"));
                 p.setStatus(rs.getString("status"));
                 p.setIsVisible(rs.getBoolean("is_visible"));
-                p.setIsdeleted(rs.getBoolean("is_deleted"));
+                p.setIsdeleted(rs.getBoolean("isdeleted"));
 
                 Timestamp ct = rs.getTimestamp("created_at");
                 if(ct!=null) p.setCreatedAt(ct.toLocalDateTime());
@@ -112,7 +112,7 @@ public class ProductDAO {
     public boolean addProduct(DTO.ProductDTO p){
         if(!openConnection()) return false;
         try{
-            String sql = "INSERT INTO products(product_code,image_path,name,description,category_id,supplier_id,cost_price,selling_price,total_quantity,min_stock_level,made_in,production_date,expire_date,position,unit,status,is_visible,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO products(product_code,image_path,name,description,category_id,supplier_id,cost_price,selling_price,total_quantity,min_stock_level,made_in,production_date,expire_date,position,unit,status,is_visible,isdeleted,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement pstmt = con.prepareStatement(sql);
             pstmt.setString(1, p.getCode());
             pstmt.setString(2, p.getImagePath()); // đường dẫn hình
@@ -131,8 +131,9 @@ public class ProductDAO {
             pstmt.setString(15, p.getUnit());
             pstmt.setString(16, p.getStatus());
             pstmt.setBoolean(17, p.getIsVisible());
-            pstmt.setTimestamp(18, p.getCreatedAt()!=null ? Timestamp.valueOf(p.getCreatedAt()) : null);
-            pstmt.setTimestamp(19, p.getUpdatedAt()!=null ? Timestamp.valueOf(p.getUpdatedAt()) : null);
+            pstmt.setBoolean(18, p.getIsdeleted());
+            pstmt.setTimestamp(19, p.getCreatedAt()!=null ? Timestamp.valueOf(p.getCreatedAt()) : null);
+            pstmt.setTimestamp(20, p.getUpdatedAt()!=null ? Timestamp.valueOf(p.getUpdatedAt()) : null);
             return pstmt.executeUpdate() > 0;
         }catch(SQLException e){
             e.printStackTrace();
