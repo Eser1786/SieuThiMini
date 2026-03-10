@@ -56,6 +56,10 @@ public class EmployeeBUS {
         return dao.getRoleByEmployeeID(employeeId);
     }
 
+    public boolean updateEmployee(EmployeeDTO emp) {
+        return dao.updateEmployee(emp);
+    }
+
     public boolean softDeleteEmployee(int id) {
         return dao.softDeleteEmployee(id);
     }
