@@ -133,6 +133,22 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 - **SupplierPanel.java**: Fix layout (2 `add(NORTH)` → `BoxLayout northPanel`); `showSupplierDialog()` restyle đầy đủ (header tím, `UIUtils.makeField()`, footer nút styled); `ActionRenderer`/`ActionEditor` dùng `UIUtils.makeActionButton()`; table header tím `0xAF9FCB`; alternating rows; styled combobox
 - **Emoji fix**: Tất cả `🔄`/`🔍`/`\uD83D\uDD0D` → text thường trên 10 file (TrangChuPanel, CategoryPanel, SupplierPanel, SanPhamPanel, NhanVienPanel, NhapXuatTableCard, DonHangTableCard, KhachHangTableCard, NhapKhoTableCard, KhuyenMaiPanel)
 
+## Session 2026-03-10 (phần 2) — Bug fixes & UI polish
+
+### Bug fixes & thay đổi
+
+- **DonHangDetailCard.java**: Fix VAT hiển thị 0đ — khi `inv.getTaxAmount()` null thì tính theo `finalTot * 10 / 110` thay vì bỏ trống
+- **TrangChuPanel.java**: Fix 3 nút "Lam moi" → "Làm mới" (dấu tiếng Việt đầy đủ)
+- **SanPhamPanel.java**: Fix tab bar hover — khi hover qua tab inactive, text đổi sang màu tối `0x2E2640` thay vì để màu nhạt khó thấy; restore khi mouseExited
+- **CategoryPanel.java**: Fix dialog fields — thay `UIUtils.makeField()` (font 20, height 32 → text bị cắt) bằng fields font 13, height 36 như KhuyenMaiPanel; thêm nút Xuất PDF/Excel, Nhập CSV
+- **SupplierPanel.java**: Fix dialog fields — tương tự CategoryPanel; thêm nút Xuất PDF/Excel, Nhập CSV
+
+### Pattern quan trọng
+
+- **Dialog field sizing**: Dùng `new JTextField()` + `font 13` + `border compound(lineBorder 0xBBBBBB, empty 4,8,4,8)` + `Dimension(260, 36)` — KHÔNG dùng `UIUtils.makeField()` trong dialog vì font 20 cần height >= 44px
+- **UIUtils.makeField()**: Chỉ dùng khi muốn field lớn (font 20) với height tối thiểu 44px
+- **Tab hover contrast**: Khi hover tab button trên nền tối, phải set cả background VÀ foreground (tối/sáng tùy bg hover)
+
 ---
 
 ## Cấu trúc thư mục quan trọng
