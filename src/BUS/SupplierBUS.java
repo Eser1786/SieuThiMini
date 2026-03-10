@@ -19,6 +19,10 @@ public class SupplierBUS {
         return supplierDAO.getAllSuppliers();
     }
 
+    public SupplierDTO getSupplierById(int id) {
+        return supplierDAO.getSupplierById(id);
+    }
+
     public boolean addSupplier(SupplierDTO supplier) {
         if(supplier.getName() == null || supplier.getName().isEmpty()){
             System.out.println("Tên nhà cung cấp không được để trống.");
@@ -38,10 +42,37 @@ public class SupplierBUS {
         }
         supplier.setCreatedAt(LocalDateTime.now());
         return supplierDAO.addSupplier(supplier);
+    }
+
+    public boolean updateSupplier(SupplierDTO supplier) {
+        if(supplier.getName() == null || supplier.getName().isEmpty()){
+            return false;
+        }
+        if(supplier.getPhone() == null || supplier.getPhone().isEmpty()){
+            return false;
+        }
+        if(supplier.getEmail() == null || supplier.getEmail().isEmpty()){
+            return false;
+        }
+        if(supplier.getAddress() == null || supplier.getAddress().isEmpty()){
+            return false;
+        }
+        supplier.setUpdatedAt(LocalDateTime.now());
+        return supplierDAO.updateSupplier(supplier);
+    }
+
+    public boolean deleteSupplier(int id) {
+        return supplierDAO.deleteSupplier(id);
+    }
+
+    // helper to lookup internal id by supplier_code stored in UI table
+    public int getIdByCode(String code) {
+        return supplierDAO.getIdByCode(code);
     } 
 
-    private String generateSupplierCode() {
-        // Logic tạo code: 'NV' + số tăng dần (tìm max code từ DB + 1)
+    // make public so UI can generate new codes
+    public String generateSupplierCode() {
+        // Logic tạo code: 'NCC' + số tăng dần
         String sql = "SELECT MAX(supplier_code) FROM suppliers WHERE supplier_code LIKE 'NCC%'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -51,13 +82,13 @@ public class SupplierBUS {
                 if (maxCode == null) {
                     return "NCC001";
                 }
-                int num = Integer.parseInt(maxCode.substring(2)) + 1;
-                return "NCC" + String.format("%03d", num);  
+                int num = Integer.parseInt(maxCode.substring(3)) + 1;
+                return "NCC" + String.format("%03d", num);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "default";  // Default nếu lỗi
+        return "NCC000";  // Default nếu lỗi
     }
     
 }

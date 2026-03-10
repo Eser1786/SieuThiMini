@@ -31,6 +31,7 @@ public class SanPhamPanel extends JPanel {
     private JTabbedPane tabbedPane;
     private JPanel productPanel;
     private CategoryPanel categoryPanel;
+    private SupplierPanel supplierPanel;
     
     private CardLayout productCard;
     DefaultTableModel productModel;
@@ -53,6 +54,10 @@ public class SanPhamPanel extends JPanel {
         // Category panel
         categoryPanel = new CategoryPanel();
         tabbedPane.addTab("Danh mục", categoryPanel);
+
+        // Supplier panel
+        supplierPanel = new SupplierPanel();
+        tabbedPane.addTab("Nhà cung cấp", supplierPanel);
 
         add(tabbedPane, BorderLayout.CENTER);
     }

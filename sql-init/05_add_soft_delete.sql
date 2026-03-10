@@ -19,6 +19,11 @@ ADD
     COLUMN isdeleted TINYINT(1) NOT NULL DEFAULT 0;
 
 ALTER TABLE
+    suppliers
+ADD
+    COLUMN isdeleted TINYINT(1) NOT NULL DEFAULT 0;
+
+ALTER TABLE
     discounts
 ADD
     COLUMN isdeleted TINYINT(1) NOT NULL DEFAULT 0;

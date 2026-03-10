@@ -69,13 +69,18 @@ public class SupplierDAO {
         java.util.ArrayList<DTO.SupplierDTO> list = new java.util.ArrayList<>();
         if (openConnection()) {
             try {
-                String sql = "SELECT supplier_id, name FROM suppliers ORDER BY name";
+                String sql = "SELECT supplier_id, supplier_code, name, address, contact_person, phone, email FROM suppliers WHERE isdeleted = 0 ORDER BY name";
                 Statement stmt = con.createStatement();
                 ResultSet rs = stmt.executeQuery(sql);
                 while (rs.next()) {
                     DTO.SupplierDTO s = new DTO.SupplierDTO();
                     s.setID(rs.getInt("supplier_id"));
+                    s.setCode(rs.getString("supplier_code"));
                     s.setName(rs.getString("name"));
+                    s.setAddress(rs.getString("address"));
+                    s.setContactPerson(rs.getString("contact_person"));
+                    s.setPhone(rs.getString("phone"));
+                    s.setEmail(rs.getString("email"));
                     list.add(s);
                 }
             } catch (SQLException e) {
@@ -85,5 +90,90 @@ public class SupplierDAO {
             }
         }
         return list;
+    }
+
+    public DTO.SupplierDTO getSupplierById(int id) {
+        if (openConnection()) {
+            try {
+                String sql = "SELECT supplier_id, supplier_code, name, address, contact_person, phone, email FROM suppliers WHERE supplier_id = ? AND isdeleted = 0";
+                PreparedStatement pstmt = con.prepareStatement(sql);
+                pstmt.setInt(1, id);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    DTO.SupplierDTO s = new DTO.SupplierDTO();
+                    s.setID(rs.getInt("supplier_id"));
+                    s.setName(rs.getString("name"));
+                    s.setAddress(rs.getString("address"));
+                    s.setPhone(rs.getString("phone"));
+                    s.setEmail(rs.getString("email"));
+                    return s;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return null;
+    }
+
+    public boolean updateSupplier(DTO.SupplierDTO supplier) {
+        if (openConnection()) {
+            try {
+                String sql = "UPDATE suppliers SET name = ?, address = ?, phone = ?, email = ?, updated_at = ? WHERE supplier_id = ?";
+                PreparedStatement pstmt = con.prepareStatement(sql);
+                pstmt.setString(1, supplier.getName());
+                pstmt.setString(2, supplier.getAddress());
+                pstmt.setString(3, supplier.getPhone());
+                pstmt.setString(4, supplier.getEmail());
+                pstmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+                pstmt.setInt(6, supplier.getID());
+                int rowsAffected = pstmt.executeUpdate();
+                return rowsAffected > 0;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            } finally {
+                closeConnection();
+            }
+        }
+        return false;
+    }
+
+    public boolean deleteSupplier(int id) {
+        if (openConnection()) {
+            try {
+                String sql = "UPDATE suppliers SET isdeleted = 1 WHERE supplier_id = ?";
+                PreparedStatement pstmt = con.prepareStatement(sql);
+                pstmt.setInt(1, id);
+                int rowsAffected = pstmt.executeUpdate();
+                return rowsAffected > 0;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            } finally {
+                closeConnection();
+            }
+        }
+        return false;
+    }
+
+    public int getIdByCode(String code) {
+        if (openConnection()) {
+            try {
+                String sql = "SELECT supplier_id FROM suppliers WHERE supplier_code = ? AND isdeleted = 0";
+                PreparedStatement pstmt = con.prepareStatement(sql);
+                pstmt.setString(1, code);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt("supplier_id");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return -1;
     }
 }
