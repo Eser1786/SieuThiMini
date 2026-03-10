@@ -176,6 +176,35 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 
 ---
 
+## Session 2026-03-10 (phần 3) — Employee photo DB + SanPham dialogs + Conflict resolve
+
+### Thay đổi (phần 3)
+
+- **sql-init/07_add_employee_photo.sql**: `ALTER TABLE employees ADD COLUMN photo_path VARCHAR(255) DEFAULT NULL`
+- **EmployeeDTO.java**: Thêm field `photoPath` + getter/setter
+- **EmployeeDAO.java**: Tất cả SELECT đọc `photo_path` → `emp.setPhotoPath(...)`; INSERT/UPDATE ghi `photo_path` (tham số 10/9)
+- **NhanVienEmployeeDialog.java**:
+  - `JSpinner` → `JDateChooser` (`com.toedter.calendar`) cho field ngày sinh
+  - Khi chọn ảnh mới: xóa file cũ (`new File(originalPhotoPath).delete()`), lưu `finalPhotoPath`
+  - Khi lưu: `emp.setPhotoPath(finalPhotoPath)` trước khi gọi `empBUS.addEmployee()`/`updateEmployee()`
+- **NhanVienPanel.java**: `loadEmployees()` gọi `photoPathMap.put(e.getCode(), e.getPhotoPath())` từ DB thay vì scan file-system
+- **UserPanel.java**: Đọc ảnh từ `user.getPhotoPath()` (DB) trước, fallback sang `loadEmployeePhoto(code)` (scan thư mục); `hireDate` format `dd/MM/yyyy`; card max-width 640px
+- **SanPhamAddDialog.java**: Thêm `UIUtils.styleComboBox(cbNCC/cbDM/cbTT)` sau khi sync với remote (remote đã xóa `fKM`, thêm `ProductBUS.addProduct()` save)
+- **SanPhamDetailDialog.java**:
+  - Rewrite `showEdit()` — photo section (load/pick/preview 80×80) + 2-col `GridBagLayout` matching AddDialog + `JDateChooser` cho ngaySX/ngayHH + `UIUtils.styleComboBox(cbNCC/cbDM/cbTT)`
+  - Xóa `fKM` (field declaration, rows array, model.setValueAt save) để đồng bộ với remote
+  - Footer: nút Hủy `0x9B8EA8` + Lưu `0x5C4A7F`
+- **Merge conflict**: remote pull `ea16fd4` gây conflict SanPhamAddDialog + SanPhamDetailDialog; giải quyết bằng cách giữ code remote làm base, adapt các thay đổi UI của mình lên trên
+
+### Pattern — ảnh nhân viên
+
+- DB lưu path tuyệt đối (hoặc tương đối từ thư mục project) vào `employees.photo_path`
+- Khi upload ảnh mới: xóa file cũ ngay (tránh orphan files), copy file mới vào `img/employees/`
+- Load ảnh vòng: `DB path → fallback scan img/employees/MSNV.*`
+- Photo preview dùng `ImageIO.read()` → scale `SCALE_SMOOTH` → `ImageIcon`
+
+---
+
 ## Cấu trúc thư mục quan trọng
 
 ```text
