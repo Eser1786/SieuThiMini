@@ -4,6 +4,7 @@ import BUS.EmployeeBUS;
 import DTO.EmployeeDTO;
 import DTO.RoleDTO;
 import GUI.UIUtils;
+import com.toedter.calendar.JDateChooser;
 import java.math.BigDecimal;
 import javax.swing.*;
 import java.awt.*;
@@ -11,7 +12,6 @@ import java.awt.Dialog;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import javax.imageio.ImageIO;
 
 /**
@@ -139,10 +139,8 @@ class NhanVienEmployeeDialog {
         }
         UIUtils.attachMoneyFormatter(tfs[4]);
 
-        SpinnerDateModel dateModel = new SpinnerDateModel();
-        JSpinner spNgay = new JSpinner(dateModel);
-        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spNgay, "dd/MM/yyyy");
-        spNgay.setEditor(dateEditor);
+        JDateChooser spNgay = new JDateChooser();
+        spNgay.setDateFormatString("dd/MM/yyyy");
         spNgay.setPreferredSize(new Dimension(200, 36));
         spNgay.setFont(new Font("Arial", Font.PLAIN, 13));
 
@@ -189,10 +187,8 @@ class NhanVienEmployeeDialog {
             tfs[2].setText(parent.tableModel.getValueAt(prefilledRow, COL_SDT).toString());
             tfs[3].setText(parent.tableModel.getValueAt(prefilledRow, COL_EMAIL).toString());
             String ngayStr = parent.tableModel.getValueAt(prefilledRow, COL_NGAY).toString();
-            if (!ngayStr.isEmpty()) {
-                try { dateModel.setValue(new SimpleDateFormat("dd/MM/yyyy").parse(ngayStr)); }
+            try { if (!ngayStr.isEmpty()) spNgay.setDate(new SimpleDateFormat("dd/MM/yyyy").parse(ngayStr)); }
                 catch (Exception ignored) {}
-            }
             String currentRole = parent.tableModel.getValueAt(prefilledRow, COL_CHUCVU).toString();
             for (int i = 0; i < cbRole.getItemCount(); i++) {
                 if (cbRole.getItemAt(i).equals(currentRole)) { cbRole.setSelectedIndex(i); break; }
@@ -276,7 +272,7 @@ class NhanVienEmployeeDialog {
             String sdt   = tfs[2].getText().trim();
             String email = tfs[3].getText().trim();
             String pass  = new String(pfPass.getPassword()).trim();
-            String ngay  = new SimpleDateFormat("dd/MM/yyyy").format((Date) spNgay.getValue());
+            String ngay  = spNgay.getDate() != null ? new SimpleDateFormat("dd/MM/yyyy").format(spNgay.getDate()) : "";
 
             if (ten.isEmpty()) {
                 JOptionPane.showMessageDialog(dlg, "Vui lòng nhập họ và tên.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
@@ -324,7 +320,21 @@ class NhanVienEmployeeDialog {
 
             String ma = isEdit ? parent.tableModel.getValueAt(prefilledRow, COL_MA).toString() : parent.generateMaNV();
 
-            if (tmpPhotoPath[0] != null && !tmpPhotoPath[0].isEmpty()) {
+            // Resolve final photo path (copy new image, delete old if changed)
+            String originalPhotoPath = isEdit ? parent.photoPathMap.get(ma) : null;
+            String finalPhotoPath = originalPhotoPath; // default: keep existing
+            if (tmpPhotoPath[0] != null && !tmpPhotoPath[0].isEmpty()
+                    && !tmpPhotoPath[0].equals(originalPhotoPath)) {
+                // User selected a new photo — delete old file first
+                if (originalPhotoPath != null) {
+                    new File(originalPhotoPath).delete();
+                } else if (isEdit) {
+                    // Fallback: delete any existing file matching the employee code
+                    for (String ext : new String[]{".jpg", ".jpeg", ".png"}) {
+                        new File("img/employees/" + ma + ext).delete();
+                    }
+                }
+                // Copy new photo to img/employees/
                 try {
                     File src = new File(tmpPhotoPath[0]);
                     String ext = tmpPhotoPath[0].contains(".") ? tmpPhotoPath[0].substring(tmpPhotoPath[0].lastIndexOf('.')) : ".png";
@@ -332,10 +342,13 @@ class NhanVienEmployeeDialog {
                     dest.getParentFile().mkdirs();
                     java.nio.file.Files.copy(src.toPath(), dest.toPath(),
                             java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                    parent.photoPathMap.put(ma, dest.getAbsolutePath());
+                    finalPhotoPath = dest.getAbsolutePath();
+                    parent.photoPathMap.put(ma, finalPhotoPath);
                 } catch (Exception ex) {
                     System.err.println("Photo copy failed: " + ex.getMessage());
                 }
+            } else if (finalPhotoPath != null) {
+                parent.photoPathMap.put(ma, finalPhotoPath);
             }
 
             String finalPass = (pass.isEmpty() && isEdit)
@@ -370,6 +383,7 @@ class NhanVienEmployeeDialog {
                 } catch (Exception ignored) {}
                 emp.setSalary(salaryVal);
                 emp.setRoleId(selectedRoleId);
+                emp.setPhotoPath(finalPhotoPath);
                 if (!bus.updateEmployee(emp)) {
                     JOptionPane.showMessageDialog(dlg, "L\u01b0u th\u1ea5t b\u1ea1i. Vui l\u00f2ng th\u1eed l\u1ea1i.", "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
                     return;
@@ -395,6 +409,7 @@ class NhanVienEmployeeDialog {
                 } catch (Exception ignored) {}
                 emp.setSalary(salaryVal);
                 emp.setRoleId(selectedRoleId);
+                emp.setPhotoPath(finalPhotoPath);
                 if (!bus.addEmployee(emp)) {
                     JOptionPane.showMessageDialog(dlg, "Th\u00eam th\u1ea5t b\u1ea1i. Vui l\u00f2ng th\u1eed l\u1ea1i.", "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
                     return;

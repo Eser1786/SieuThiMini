@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import GUI.UIUtils;
 import com.toedter.calendar.JDateChooser;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 
 /** Dialog add San Pham mới — tách từ SanPhamPanel.showThemPopup */
@@ -126,9 +125,11 @@ class SanPhamAddDialog {
         // Combo boxes for category, supplier, and status
         JComboBox<String> cbNCC = new JComboBox<>();
         cbNCC.setPreferredSize(fd);
+        UIUtils.styleComboBox(cbNCC);
         
         JComboBox<String> cbDM = new JComboBox<>();
         cbDM.setPreferredSize(fd);
+        UIUtils.styleComboBox(cbDM);
         
         JTextField fGiaVon = UIUtils.makeField(); fGiaVon.setPreferredSize(fd);
         JTextField fGiaBan = UIUtils.makeField(); fGiaBan.setPreferredSize(fd);
@@ -145,6 +146,7 @@ class SanPhamAddDialog {
         JComboBox<String> cbTT = new JComboBox<>(new String[]{"ACTIVE", "INACTIVE", "DISCONTINUED"});
         cbTT.setPreferredSize(fd);
         cbTT.setSelectedItem("ACTIVE"); // Default to ACTIVE for new products
+        UIUtils.styleComboBox(cbTT);
 
         JDateChooser dcNgaySX = new JDateChooser();
         dcNgaySX.setDateFormatString("dd/MM/yyyy");

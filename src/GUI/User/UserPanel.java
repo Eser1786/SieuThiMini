@@ -10,6 +10,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.time.format.DateTimeFormatter;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class UserPanel extends JPanel {
@@ -75,13 +78,28 @@ public class UserPanel extends JPanel {
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBorder(BorderFactory.createEmptyBorder(24, 32, 20, 32));
 
-        // Circular avatar placeholder
-        JLabel avatar = new JLabel(makeCircleIcon(90, ACCENT));
+        EmployeeDTO user = UserSession.getCurrentUser();
+
+        // Try to load real employee photo: DB path first, then file-system scan
+        JLabel avatar;
+        if (user != null) {
+            String dbPath = user.getPhotoPath();
+            BufferedImage photo = null;
+            if (dbPath != null && !dbPath.isEmpty()) {
+                try { photo = ImageIO.read(new File(dbPath)); } catch (Exception ignored) {}
+            }
+            if (photo == null) photo = loadEmployeePhoto(user.getCode());
+            if (photo != null) {
+                BufferedImage circled = makeCircularImage(photo, 90);
+                avatar = new JLabel(new ImageIcon(circled));
+            } else {
+                avatar = new JLabel(makeCircleIcon(90, ACCENT));
+            }
+        } else {
+            avatar = new JLabel(makeCircleIcon(90, ACCENT));
+        }
         avatar.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Camera icon overlay hint
-
-        EmployeeDTO user = UserSession.getCurrentUser();
         String displayName = user != null ? user.getFullName() : "Chưa đăng nhập";
         JLabel name = new JLabel(displayName);
         name.setFont(new Font("Arial", Font.BOLD, 22));
@@ -92,9 +110,7 @@ public class UserPanel extends JPanel {
         if (user != null) {
             EmployeeBUS empBUS = new EmployeeBUS();
             RoleDTO role = empBUS.getRole((long) user.getId());
-            if (role != null) {
-                roleName = role.getName();
-            }
+            if (role != null) roleName = role.getName();
         }
         JLabel role = makeRoleBadge(roleName);
         role.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -121,7 +137,14 @@ public class UserPanel extends JPanel {
         String username = user != null ? user.getUsername() : "N/A";
         String email = user != null ? user.getEmail() : "N/A";
         String phone = user != null ? user.getPhone() : "N/A";
-        String hireDate = user != null && user.getHireDate() != null ? user.getHireDate().toString() : "N/A";
+        String hireDate = "N/A";
+        if (user != null && user.getHireDate() != null) {
+            try {
+                hireDate = user.getHireDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            } catch (Exception ignored) {
+                hireDate = user.getHireDate().toString();
+            }
+        }
         String roleName = "N/A";
         if (user != null) {
             EmployeeBUS empBUS = new EmployeeBUS();
@@ -185,7 +208,7 @@ public class UserPanel extends JPanel {
         p.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(DIVIDER, 1),
             BorderFactory.createEmptyBorder(0, 0, 0, 0)));
-        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        p.setMaximumSize(new Dimension(640, Integer.MAX_VALUE));
         return p;
     }
 
@@ -263,7 +286,31 @@ public class UserPanel extends JPanel {
         return b;
     }
 
-    /** Circular icon placeholder with person silhouette initials */
+    /** Try to load employee photo from img/employees/<code>.<ext> */
+    private BufferedImage loadEmployeePhoto(String employeeCode) {
+        if (employeeCode == null || employeeCode.isEmpty()) return null;
+        String[] exts = {".jpg", ".jpeg", ".png"};
+        for (String ext : exts) {
+            File f = new File("img/employees/" + employeeCode + ext);
+            if (f.exists()) {
+                try { return ImageIO.read(f); } catch (Exception ignored) {}
+            }
+        }
+        return null;
+    }
+
+    /** Crop a BufferedImage into a circular shape at given size */
+    private BufferedImage makeCircularImage(BufferedImage src, int size) {
+        BufferedImage out = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = out.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setClip(new Ellipse2D.Float(0, 0, size, size));
+        g2.drawImage(src, 0, 0, size, size, null);
+        g2.dispose();
+        return out;
+    }
+
+    /** Circular icon placeholder with person silhouette */
     private ImageIcon makeCircleIcon(int size, Color bg) {
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = img.createGraphics();
