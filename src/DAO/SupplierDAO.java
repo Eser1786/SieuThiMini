@@ -101,8 +101,10 @@ public class SupplierDAO {
                 if (rs.next()) {
                     DTO.SupplierDTO s = new DTO.SupplierDTO();
                     s.setID(rs.getInt("supplier_id"));
+                    s.setCode(rs.getString("supplier_code"));
                     s.setName(rs.getString("name"));
                     s.setAddress(rs.getString("address"));
+                    s.setContactPerson(rs.getString("contact_person"));
                     s.setPhone(rs.getString("phone"));
                     s.setEmail(rs.getString("email"));
                     return s;
@@ -119,14 +121,15 @@ public class SupplierDAO {
     public boolean updateSupplier(DTO.SupplierDTO supplier) {
         if (openConnection()) {
             try {
-                String sql = "UPDATE suppliers SET name = ?, address = ?, phone = ?, email = ?, updated_at = ? WHERE supplier_id = ?";
+                String sql = "UPDATE suppliers SET name = ?, address = ?, contact_person = ?, phone = ?, email = ?, updated_at = ? WHERE supplier_id = ?";
                 PreparedStatement pstmt = con.prepareStatement(sql);
                 pstmt.setString(1, supplier.getName());
                 pstmt.setString(2, supplier.getAddress());
-                pstmt.setString(3, supplier.getPhone());
-                pstmt.setString(4, supplier.getEmail());
-                pstmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
-                pstmt.setInt(6, supplier.getID());
+                pstmt.setString(3, supplier.getContactPerson());
+                pstmt.setString(4, supplier.getPhone());
+                pstmt.setString(5, supplier.getEmail());
+                pstmt.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+                pstmt.setInt(7, supplier.getID());
                 int rowsAffected = pstmt.executeUpdate();
                 return rowsAffected > 0;
             } catch (SQLException e) {

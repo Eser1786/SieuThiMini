@@ -35,23 +35,23 @@ INSERT IGNORE INTO products (
     cost_price, selling_price, total_quantity, min_stock_level,
     unit, made_in, production_date, expire_date, STATUS, is_visible
 ) VALUES
-    ('SP001', '7 Up',                      'img\\7up.png',               1, 1,  22000.00,  32000.00, 120, 20, 'Lon',   'Việt Nam', '2026-02-01', '2026-08-01', 'ACTIVE', 1),
-    ('SP002', 'Mì Hảo Hảo tôm chua cay',  'img\\mitrontrung.png',       2, 3,   3500.00,   5000.00, 400, 50, 'Gói',   'Việt Nam', '2026-01-15', '2026-07-15', 'ACTIVE', 1),
-    ('SP003', 'Fanta Việt Quất',           'img\\Fanta Viet Quat.png',   1, 1,   4000.00,   7000.00, 250, 30, 'Chai',  'Việt Nam', '2026-02-10', '2027-02-10', 'ACTIVE', 1),
-    ('SP004', 'Sữa Vinamilk Tươi Tiệt Trùng', NULL,                     3, 1,  12000.00,  18000.00, 200, 30, 'Hộp',   'Việt Nam', '2026-03-01', '2026-09-01', 'ACTIVE', 1),
-    ('SP005', 'Pepsi lon 330ml',           NULL,                         1, 1,   8000.00,  12000.00, 180, 30, 'Lon',   'Việt Nam', '2026-02-20', '2026-08-20', 'ACTIVE', 1),
-    ('SP006', 'Snack Oishi tôm',           NULL,                         2, 6,   4500.00,   7500.00, 300, 40, 'Gói',   'Việt Nam', '2026-01-10', '2026-10-10', 'ACTIVE', 1),
-    ('SP007', 'Nước rửa chén Sunlight',    NULL,                         4, 2,  18000.00,  25000.00,  80, 10, 'Chai',  'Việt Nam', '2025-12-01', '2027-12-01', 'ACTIVE', 1),
-    ('SP008', 'Bột giặt OMO 3kg',         NULL,                         4, 2,  95000.00, 135000.00,  50, 10, 'Túi',   'Việt Nam', '2025-11-01', '2027-11-01', 'ACTIVE', 1),
-    ('SP009', 'Xúc xích CP',              NULL,                         5, 5,  22000.00,  30000.00, 100, 15, 'Gói',   'Việt Nam', '2026-03-01', '2026-04-15', 'ACTIVE', 1),
-    ('SP010', 'Dầu gội Clear bạc hà',     NULL,                         6, 7,  45000.00,  65000.00,  60, 10, 'Chai',  'Việt Nam', '2025-10-01', '2027-10-01', 'ACTIVE', 1),
-    ('SP011', 'Pin AA Energizer (vỉ 2)',   NULL,                         7, 8,  20000.00,  30000.00, 150, 20, 'Vỉ',    'Nhật Bản', '2025-01-01', '2030-01-01', 'ACTIVE', 1),
-    ('SP012', 'Vở học sinh 200 trang',     NULL,                         8, 4,   7000.00,  11000.00, 500, 50, 'Quyển', 'Việt Nam', '2025-06-01', '2028-06-01', 'ACTIVE', 1);
+    ('SP001', '7 Up',                      'img/products/7up.png',               1, 1,  22000.00,  32000.00, 120, 20, 'Lon',   'Việt Nam', '2026-02-01', '2026-08-01', 'ACTIVE', 1),
+    ('SP002', 'Mì Hảo Hảo tôm chua cay',  'img/products/mitrontrung.png',       2, 3,   3500.00,   5000.00, 400, 50, 'Gói',   'Việt Nam', '2026-01-15', '2026-07-15', 'ACTIVE', 1),
+    ('SP003', 'Fanta Việt Quất',           'img/products/Fanta Viet Quat.png',   1, 1,   4000.00,   7000.00, 250, 30, 'Chai',  'Việt Nam', '2026-02-10', '2027-02-10', 'ACTIVE', 1),
+    ('SP004', 'Sữa Vinamilk Tươi Tiệt Trùng', 'img/products/sua.png',                     3, 1,  12000.00,  18000.00, 200, 30, 'Hộp',   'Việt Nam', '2026-03-01', '2026-09-01', 'ACTIVE', 1),
+    ('SP005', 'Pepsi lon 330ml',           'img/products/pepsi.png',                         1, 1,   8000.00,  12000.00, 180, 30, 'Lon',   'Việt Nam', '2026-02-20', '2026-08-20', 'ACTIVE', 1),
+    ('SP006', 'Snack Oishi tôm',           'img/products/khanluaf.png',                         2, 6,   4500.00,   7500.00, 300, 40, 'Gói',   'Việt Nam', '2026-01-10', '2026-10-10', 'ACTIVE', 1),
+    ('SP007', 'Nước rửa chén Sunlight',    'img/products/nuocruatay.png',                         4, 2,  18000.00,  25000.00,  80, 10, 'Chai',  'Việt Nam', '2025-12-01', '2027-12-01', 'ACTIVE', 1),
+    ('SP008', 'Bột giặt OMO 3kg',         'img/products/no-product.png',                         4, 2,  95000.00, 135000.00,  50, 10, 'Túi',   'Việt Nam', '2025-11-01', '2027-11-01', 'ACTIVE', 1),
+    ('SP009', 'Xúc xích CP',              'img/products/xucxichchebien.png',                         5, 5,  22000.00,  30000.00, 100, 15, 'Gói',   'Việt Nam', '2026-03-01', '2026-04-15', 'ACTIVE', 1),
+    ('SP010', 'Dầu gội Clear bạc hà',     'img/products/daugoiclear.png',                         6, 7,  45000.00,  65000.00,  60, 10, 'Chai',  'Việt Nam', '2025-10-01', '2027-10-01', 'ACTIVE', 1),
+    ('SP011', 'Pin AA Energizer (vỉ 2)',   'img/products/no-product.png',                         7, 8,  20000.00,  30000.00, 150, 20, 'Vỉ',    'Nhật Bản', '2025-01-01', '2030-01-01', 'ACTIVE', 1),
+    ('SP012', 'Vở học sinh 200 trang',     'img/products/no-product.png',                         8, 4,   7000.00,  11000.00, 500, 50, 'Quyển', 'Việt Nam', '2025-06-01', '2028-06-01', 'ACTIVE', 1);
 
 -- ─── 4. CUSTOMERS (7 khách hàng) ────────────────────────────────────────────
 INSERT IGNORE INTO customers (customer_code, full_name, phone, email, address, loyalty_points, total_spent, customer_type, STATUS) VALUES
     ('KH001', 'Nguyễn Văn An',   '0987654321', 'an.nguyen@gmail.com',   'Quận 1, TP.HCM',  1250,  4500000.00, 'GOLD',    'ACTIVE'),
-    ('KH002', 'Trần Thị Bình',   '0909123456', NULL,                    'Quận 4, TP.HCM',   320,   980000.00, 'SILVER',  'ACTIVE'),
+    ('KH002', 'Trần Thị Bình',   '0909123456', 'binhbong@gmail.com',                    'Quận 4, TP.HCM',   320,   980000.00, 'SILVER',  'ACTIVE'),
     ('KH003', 'Đoàn Văn Sáng',   '0123456789', 'sang@gmail.com',        'Thủ Đức, TP.HCM',  150,  1200000.00, 'SILVER',  'ACTIVE'),
     ('KH004', 'Gao Đỏ',          '0987654000', 'gao@gmail.com',         'Sao Hỏa',         1920, 20000000.00, 'DIAMOND', 'ACTIVE'),
     ('KH005', 'Bát Man',         '0132456798', 'noparents@gmail.com',   'Hang Dơi',         200,   900000.00, 'REGULAR', 'ACTIVE'),

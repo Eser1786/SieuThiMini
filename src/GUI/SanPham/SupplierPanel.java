@@ -365,20 +365,6 @@ public class SupplierPanel extends JPanel {
         cancelBtn.addActionListener(e -> dialog.dispose());
 
         footer.add(saveBtn);
-        if (supplier != null) {
-            JButton deleteBtn = UIUtils.makeActionButton("Xóa", new Color(0xC62828));
-            deleteBtn.setPreferredSize(new Dimension(80, 34));
-            deleteBtn.addActionListener(e -> {
-                int opt = JOptionPane.showConfirmDialog(dialog,
-                        "Bạn có chắc muốn xóa nhà cung cấp này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
-                if (opt == JOptionPane.YES_OPTION) {
-                    supplierBUS.deleteSupplier(supplier.getID());
-                    loadSuppliers();
-                    dialog.dispose();
-                }
-            });
-            footer.add(deleteBtn);
-        }
         footer.add(cancelBtn);
 
         dialog.add(header, BorderLayout.NORTH);

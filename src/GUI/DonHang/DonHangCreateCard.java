@@ -1,37 +1,33 @@
 package GUI.DonHang;
 
 import BUS.CustomerBUS;
+import BUS.DiscountBUS;
 import BUS.EmployeeBUS;
 import BUS.ProductBUS;
-import BUS.DiscountBUS;
 import BUS.SalesBUS;
 import DAO.DBConnection;
 import DAO.ProductDAO;
 import DAO.SalesInvoiceItemDAO;
-import DTO.DiscountDTO;
 import DTO.CustomerDTO;
+import DTO.DiscountDTO;
 import DTO.EmployeeDTO;
 import DTO.ProductDTO;
 import DTO.SaleDTO;
 import DTO.SalesInvoiceItemDTO;
-import DTO.enums.SaleEnum.SaleStatus;
 import DTO.enums.SaleEnum.SalePaymentMethod;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import DTO.enums.SaleEnum.SaleStatus;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.ArrayList;
-import javax.swing.text.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.table.*;
+import javax.swing.text.*;
 // import GUI.MainPanel;
 
 class DonHangCreateCard extends JPanel {
@@ -687,9 +683,19 @@ class DonHangCreateCard extends JPanel {
     item.setSubtotal(BigDecimal.valueOf(it.unitPrice * it.qty));
 
     itemDAO.insert(item);
-
     
 }
+
+    // Cập nhật last_purchase cho khách hàng
+    if (customer != null) {
+        customer.setLastPurchaseAt(java.time.LocalDateTime.now());
+        try {
+            CustomerBUS customerBUS = new CustomerBUS();
+            customerBUS.updateCustomer(customer);
+        } catch (Exception ex) {
+            System.err.println("Lỗi cập nhật last_purchase cho khách hàng: " + ex.getMessage());
+        }
+    }
 }
             if (!saved) {
                 JOptionPane.showMessageDialog(this, "Lỗi khi lưu đơn hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);

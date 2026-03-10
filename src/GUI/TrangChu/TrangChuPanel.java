@@ -5,6 +5,7 @@ import BUS.ProductBUS;
 import BUS.SalesBUS;
 import DTO.CustomerDTO;
 import DTO.SaleDTO;
+import DTO.enums.CustomerEnum.CustomerType;
 import GUI.UIUtils;
 import java.awt.*;
 import java.time.DayOfWeek;
@@ -110,29 +111,29 @@ public class TrangChuPanel extends JPanel {
         customerCard.add(customerHeaderPanel, BorderLayout.NORTH);
         customerCard.add(customerChart, BorderLayout.CENTER);
 
-        // ===== Chart 3: Orders Chart =====
-        JPanel orderChartCard = UIUtils.createCard();
-        JPanel orderChartHeaderPanel = new JPanel(new BorderLayout());
-        orderChartHeaderPanel.setOpaque(false);
-        JLabel orderChartTitle = new JLabel("Đơn hàng (tuần này)");
-        orderChartTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
+        // ===== Chart 3: Loyalty Points Chart =====
+        JPanel loyaltyCard = UIUtils.createCard();
+        JPanel loyaltyChartHeaderPanel = new JPanel(new BorderLayout());
+        loyaltyChartHeaderPanel.setOpaque(false);
+        JLabel loyaltyChartTitle = new JLabel("Top 5 Khách Hàng (Loyalty Points)");
+        loyaltyChartTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
         JButton btnRefresh3 = new JButton("Làm mới");
         btnRefresh3.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh3.setFocusPainted(false);
         btnRefresh3.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnRefresh3.addActionListener(e -> refreshOrderChart());
-        orderChartHeaderPanel.add(orderChartTitle, BorderLayout.WEST);
-        orderChartHeaderPanel.add(btnRefresh3, BorderLayout.EAST);
-        orderChartHeaderPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        btnRefresh3.addActionListener(e -> refreshLoyaltyPointsChart());
+        loyaltyChartHeaderPanel.add(loyaltyChartTitle, BorderLayout.WEST);
+        loyaltyChartHeaderPanel.add(btnRefresh3, BorderLayout.EAST);
+        loyaltyChartHeaderPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         
-        JPanel orderChart = createOrderChart();
-        orderChartCard.add(orderChartHeaderPanel, BorderLayout.NORTH);
-        orderChartCard.add(orderChart, BorderLayout.CENTER);
+        JPanel loyaltyChart = createLoyaltyPointsChart();
+        loyaltyCard.add(loyaltyChartHeaderPanel, BorderLayout.NORTH);
+        loyaltyCard.add(loyaltyChart, BorderLayout.CENTER);
 
         // Add 3 charts to left panel
         chartsPanel.add(revenueCard);
         chartsPanel.add(customerCard);
-        chartsPanel.add(orderChartCard);
+        chartsPanel.add(loyaltyCard);
 
         // ===== RIGHT PANEL: Recent Orders Table =====
         orderCard = UIUtils.createCard();
@@ -581,6 +582,128 @@ public class TrangChuPanel extends JPanel {
     
     private void refreshCustomerChart() {
         customerChartPanel.repaint();
+    }
+
+    // ===== LOYALTY POINTS CHART =====
+    private ArrayList<CustomerDTO> topLoyaltyCustomers;
+    private JPanel loyaltyChartPanel;
+    
+    private void loadLoyaltyPointsData() {
+        try {
+            CustomerBUS customerBUS = new CustomerBUS();
+            ArrayList<CustomerDTO> allCustomers = customerBUS.getAllCustomers();
+            
+            // Sort by loyalty points and take top 5
+            topLoyaltyCustomers = allCustomers.stream()
+                .sorted((a, b) -> Integer.compare(b.getLoyaltyPoints(), a.getLoyaltyPoints()))
+                .limit(5)
+                .collect(ArrayList::new, List::add, List::addAll);
+            
+            if (topLoyaltyCustomers == null) {
+                topLoyaltyCustomers = new ArrayList<>();
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            topLoyaltyCustomers = new ArrayList<>();
+        }
+    }
+    
+    private JPanel createLoyaltyPointsChart() {
+        loadLoyaltyPointsData();
+        
+        JPanel chart = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                int w = getWidth(), h = getHeight();
+                int padL = 40, padR = 20, padT = 20, padB = 30;
+                int chartW = w - padL - padR;
+                int chartH = h - padT - padB;
+                int n = topLoyaltyCustomers.size();
+                
+                if (n == 0) {
+                    g2.setColor(new Color(0x999999));
+                    g2.setFont(new Font("Arial", Font.PLAIN, 14));
+                    g2.drawString("Không có dữ liệu khách hàng", padL + 50, padT + chartH / 2);
+                    return;
+                }
+                
+                // Tìm max loyalty points
+                int maxVal = topLoyaltyCustomers.stream()
+                    .mapToInt(CustomerDTO::getLoyaltyPoints)
+                    .max()
+                    .orElse(100);
+                if (maxVal == 0) maxVal = 100;
+
+                // Vẽ lưới ngang
+                g2.setColor(new Color(0xDDDDDD));
+                g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 4 }, 0));
+                for (int i = 0; i <= 4; i++) {
+                    int y = padT + chartH * i / 4;
+                    g2.drawLine(padL, y, padL + chartW, y);
+                    g2.setColor(new Color(0x999999));
+                    g2.setFont(new Font("Arial", Font.PLAIN, 10));
+                    int gridVal = maxVal - (maxVal * i / 4);
+                    g2.drawString(String.valueOf(gridVal), 2, y + 4);
+                    g2.setColor(new Color(0xDDDDDD));
+                }
+
+                // Vẽ cột biểu đồ với tên và màu theo rank
+                int barWidth = chartW / (n * 2);
+                for (int i = 0; i < n; i++) {
+                    CustomerDTO customer = topLoyaltyCustomers.get(i);
+                    
+                    // Chọn màu dựa trên customer type (rank)
+                    Color barColor = getColorForRank(customer.getType());
+                    g2.setColor(barColor);
+                    
+                    int x = padL + (i * 2 + 1) * chartW / (n * 2);
+                    int barHeight = customer.getLoyaltyPoints() * chartH / maxVal;
+                    int y = padT + chartH - barHeight;
+                    
+                    g2.fillRoundRect(x - barWidth / 2, y, barWidth, barHeight, 4, 4);
+                    
+                    // Hiển thị giá trị trên cột
+                    g2.setColor(Color.BLACK);
+                    g2.setFont(new Font("Arial", Font.BOLD, 9));
+                    String valStr = String.valueOf(customer.getLoyaltyPoints());
+                    int strWidth = g2.getFontMetrics().stringWidth(valStr);
+                    g2.drawString(valStr, x - strWidth / 2, y - 5);
+                    
+                    // Vẽ tên khách hàng với màu theo rank
+                    g2.setColor(barColor);
+                    g2.setFont(new Font("Arial", Font.BOLD, 10));
+                    String name = customer.getFullName();
+                    if (name.length() > 8) {
+                        name = name.substring(0, 8) + "...";
+                    }
+                    int nameWidth = g2.getFontMetrics().stringWidth(name);
+                    g2.drawString(name, x - nameWidth / 2, h - 8);
+                }
+            }
+            
+            private Color getColorForRank(CustomerType type) {
+                if (type == null) return new Color(0xB8860B); // default bronze
+                switch (type) {
+                    case DIAMOND -> { return new Color(0x00CED1); } // cyan/turquoise
+                    case GOLD -> { return new Color(0xFFD700); } // gold
+                    case SILVER -> { return new Color(0xC0C0C0); } // silver
+                    default -> { return new Color(0xB8860B); } // bronze
+                }
+            }
+        };
+        chart.setOpaque(false);
+        chart.setPreferredSize(new Dimension(0, 200));
+        loyaltyChartPanel = chart;
+        return chart;
+    }
+    
+    private void refreshLoyaltyPointsChart() {
+        loyaltyChartPanel.repaint();
     }
 
     // ===== ORDER CHART =====

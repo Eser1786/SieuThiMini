@@ -237,4 +237,35 @@ public class EmployeeDAO {
             throw new RuntimeException(e);
         }
     }
+
+    public EmployeeDTO getEmployeeById(int id) {
+        EmployeeDTO emp = null;
+        if (openConnection()) {
+            try {
+                String sql = "SELECT * FROM employees WHERE employee_id = ? AND isdeleted = 0";
+                PreparedStatement pstmt = con.prepareStatement(sql);
+                pstmt.setInt(1, id);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    emp = new EmployeeDTO();
+                    emp.setId(rs.getInt("employee_id"));
+                    emp.setCode(rs.getString("employee_code"));
+                    emp.setFullName(rs.getString("name"));
+                    emp.setUsername(rs.getString("user_name"));
+                    emp.setPasswordHash(rs.getString("password_hash"));
+                    emp.setPhone(rs.getString("phone"));
+                    emp.setEmail(rs.getString("email"));
+                    Timestamp ts = rs.getTimestamp("hire_date");
+                    emp.setHireDate(ts != null ? ts.toLocalDateTime() : null);
+                    emp.setSalary(rs.getBigDecimal("salary"));
+                    emp.setRoleId(rs.getInt("role_id"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return emp;
+    }
 }

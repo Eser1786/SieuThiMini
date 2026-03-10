@@ -7,8 +7,6 @@ import DTO.EmployeeDTO;
 import DTO.RoleDTO;
 import GUI.ExportUtils;
 import GUI.UIUtils;
-import javax.swing.*;
-import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
@@ -18,6 +16,8 @@ import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.table.*;
 
 public class NhanVienPanel extends JPanel {
 
@@ -236,17 +236,15 @@ public class NhanVienPanel extends JPanel {
         gc.insets = new Insets(5, 4, 5, 12);
         Font bf = new Font("Arial", Font.BOLD, 13);
 
-        lbMaNV = new JLabel(""); lbGioiTinh = new JLabel("");
-        lbCMND = new JLabel(""); lbNgayTG   = new JLabel("");
-        lbNgaySinh = new JLabel(""); lbEmail  = new JLabel("");
-        lbSdt  = new JLabel(""); lbSalary   = new JLabel("");
+        lbMaNV = new JLabel(""); lbNgayTG   = new JLabel("");
+        lbEmail  = new JLabel(""); lbSdt  = new JLabel("");
+        lbSalary   = new JLabel("");
 
         Font vf = new Font("Arial", Font.PLAIN, 13);
         Object[][] fieldDef = {
-            {"M\u00e3 nh\u00e2n vi\u00ean:", lbMaNV,     "Email:",             lbEmail},
-            {"Gi\u1edbi t\u00ednh:",        lbGioiTinh, "S\u0110T:",           lbSdt},
-            {"CMND:",                       lbCMND,     "Ng\u00e0y tham gia:", lbNgayTG},
-            {"Ng\u00e0y sinh:",             lbNgaySinh, "L\u01b0\u01a1ng:",    lbSalary}
+            {"Mã nhân viên:", lbMaNV,     "Email:",             lbEmail},
+            {"SĐT:",        lbSdt, "Ngày tham gia:", lbNgayTG},
+            {"Lương:",             lbSalary, "",    new JLabel("")}
         };
         for (int row = 0; row < fieldDef.length; row++) {
             gc.gridx = 0; gc.gridy = row; gc.weightx = 0.25;
@@ -294,9 +292,9 @@ public class NhanVienPanel extends JPanel {
     }
 
     private void resetDetailLabels() {
-        lbName.setText("T\u00caN NH\u00c2N VI\u00caN");
-        lbRole.setText("CH\u1ee8C V\u1ee4");
-        for (JLabel l : new JLabel[]{lbMaNV, lbGioiTinh, lbCMND, lbNgaySinh, lbNgayTG, lbEmail, lbSdt, lbSalary})
+        lbName.setText("TÊN NHÂN VIÊN");
+        lbRole.setText("CHỨC VỤ");
+        for (JLabel l : new JLabel[]{lbMaNV, lbNgayTG, lbEmail, lbSdt, lbSalary})
             l.setText("");
     }
 
@@ -574,6 +572,21 @@ public class NhanVienPanel extends JPanel {
         lbSdt.setText(tableModel.getValueAt(modelRow, COL_SDT).toString());
         lbEmail.setText(tableModel.getValueAt(modelRow, COL_EMAIL).toString());
         lbNgayTG.setText(tableModel.getValueAt(modelRow, COL_NGAY).toString());
+        
+        // Lấy lương từ database
+        int empId = (Integer) tableModel.getValueAt(modelRow, COL_ID);
+        try {
+            EmployeeDTO emp = empBUS.getEmployeeById(empId);
+            if (emp != null && emp.getSalary() != null) {
+                lbSalary.setText(String.format("%,.0f đ", emp.getSalary().doubleValue()));
+            } else {
+                lbSalary.setText("Chưa cập nhật");
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi lấy lương nhân viên: " + e.getMessage());
+            lbSalary.setText("Lỗi");
+        }
+        
         String ma = tableModel.getValueAt(modelRow, COL_MA).toString();
         String path = photoPathMap.get(ma);
         avatarImage = null;

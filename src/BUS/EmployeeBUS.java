@@ -74,4 +74,8 @@ public class EmployeeBUS {
     public EmployeeDTO login(String username, String password) {
         return dao.login(username, password);
     }
+
+    public EmployeeDTO getEmployeeById(int id) {
+        return dao.getEmployeeById(id);
+    }
 }
