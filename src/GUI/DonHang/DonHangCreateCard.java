@@ -664,9 +664,9 @@ class DonHangCreateCard extends JPanel {
             sale.setNote(itemsNote.toString());
             
             // Lưu vào database
-            boolean saved = salesBUS.addSale(sale);
-            if(saved){
+          boolean saved = salesBUS.addSale(sale);
 
+<<<<<<< Updated upstream
     // Lấy sale vừa tạo
     SaleDTO savedSale = salesBUS.getSaleByCode(maDon);
     Long saleId = savedSale.getSaleID();
@@ -685,11 +685,66 @@ invoice.setStatus("PENDING");
 Long invoiceId = invoiceDAO.addSalesInvoice(invoice); // phải return id             
     SalesInvoiceItemDAO itemDAO = new SalesInvoiceItemDAO();
     
+=======
+if(!saved){
+    JOptionPane.showMessageDialog(this, "Lỗi khi lưu đơn hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+    return;
+}
 
-    for(OrderItem it : items){
+// lấy sale vừa tạo
+SaleDTO savedSale = salesBUS.getSaleByCode(maDon);
+Long saleId = savedSale.getSaleID();
+>>>>>>> Stashed changes
+
+long subtotal = tongCong + discAmt;
+long total = tongCong;
+
+// ===== TẠO SALES INVOICE =====
+SalesInvoiceDAO invoiceDAO = new SalesInvoiceDAO();
+
+SalesInvoiceDTO invoice = new SalesInvoiceDTO();
+
+invoice.setInvoiceCode(invoiceDAO.generateInvoiceCode());
+invoice.setSaleId(saleId);
+invoice.setSubtotal(BigDecimal.valueOf(subtotal));
+invoice.setDiscountAmount(BigDecimal.valueOf(discAmt));
+invoice.setTaxAmount(BigDecimal.ZERO);
+invoice.setTotalAmount(BigDecimal.valueOf(total));
+invoice.setStatus("PENDING");
+
+// payment method
+String payment = cbHinhThuc.getSelectedItem().toString();
+
+if(payment.contains("Chuyển khoản"))
+    invoice.setPaymentMethod("TRANSFER");
+else if(payment.contains("Thẻ"))
+    invoice.setPaymentMethod("CARD");
+else
+    invoice.setPaymentMethod("CASH");
+
+
+boolean invoiceSaved = invoiceDAO.addSalesInvoice(invoice);
+
+if(!invoiceSaved){
+    JOptionPane.showMessageDialog(this,"Không tạo được hóa đơn","Lỗi",JOptionPane.ERROR_MESSAGE);
+    return;
+}
+
+// lấy invoiceId
+Long invoiceId = invoice.getInvoiceId();
+
+
+// ===== TẠO SALES INVOICE ITEMS =====
+SalesInvoiceItemDAO itemDAO = new SalesInvoiceItemDAO();
+
+for(OrderItem it : items){
 
     SalesInvoiceItemDTO item = new SalesInvoiceItemDTO();
+<<<<<<< Updated upstream
     ProductDAO productDAO = new ProductDAO();
+=======
+
+>>>>>>> Stashed changes
     item.setInvoiceId(invoiceId);
     item.setProductId(it.productId);
     item.setQuantity(it.qty);
@@ -697,6 +752,7 @@ Long invoiceId = invoiceDAO.addSalesInvoice(invoice); // phải return id
     item.setSubtotal(BigDecimal.valueOf(it.unitPrice * it.qty));
 
     itemDAO.insert(item);
+<<<<<<< Updated upstream
      productDAO.decreaseStock(it.productId, it.qty);
 }
 
@@ -710,6 +766,8 @@ Long invoiceId = invoiceDAO.addSalesInvoice(invoice); // phải return id
             System.err.println("Lỗi cập nhật last_purchase cho khách hàng: " + ex.getMessage());
         }
     }
+=======
+>>>>>>> Stashed changes
 }
             if (!saved) {
                 JOptionPane.showMessageDialog(this, "Lỗi khi lưu đơn hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);

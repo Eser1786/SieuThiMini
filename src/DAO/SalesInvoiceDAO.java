@@ -86,6 +86,7 @@ public class SalesInvoiceDAO {
         return items;
     }
 
+<<<<<<< Updated upstream
     public Long addSalesInvoice(SalesInvoiceDTO invoice) {
 
     String sql = """
@@ -123,6 +124,58 @@ public class SalesInvoiceDAO {
     return null;
 }
 
+=======
+    public boolean addSalesInvoice(SalesInvoiceDTO invoice) {
+
+    String sql = """
+        INSERT INTO sales_invoices
+        (invoice_code, sale_id, customer_id, employee_id,
+         subtotal, discount_amount, tax_amount, total_amount,
+         payment_method, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """;
+
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+        ps.setString(1, invoice.getInvoiceCode());
+        ps.setObject(2, invoice.getSaleId());
+        ps.setObject(3, invoice.getCustomerId());
+        ps.setObject(4, invoice.getEmployeeId());
+        ps.setBigDecimal(5, invoice.getSubtotal());
+        ps.setBigDecimal(6, invoice.getDiscountAmount());
+        ps.setBigDecimal(7, invoice.getTaxAmount());
+        ps.setBigDecimal(8, invoice.getTotalAmount());
+        ps.setString(9, invoice.getPaymentMethod());
+        ps.setString(10, invoice.getStatus());
+
+        int affectedRows = ps.executeUpdate();
+
+        if (affectedRows == 0) {
+            return false;
+        }
+
+        // lấy invoice_id vừa tạo
+        ResultSet rs = ps.getGeneratedKeys();
+        if (rs.next()) {
+            long invoiceId = rs.getLong(1);   // dùng nội bộ
+            invoice.setInvoiceId(invoiceId);
+            
+            if (invoice.getItems() != null && !invoice.getItems().isEmpty()) {
+                SalesInvoiceItemDAO itemDAO = new SalesInvoiceItemDAO();
+                itemDAO.addItems(invoiceId, invoice.getItems());
+            }
+        }
+
+        return true;
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+>>>>>>> Stashed changes
    
     public SalesInvoiceDTO getSalesInvoiceById(Long invoiceId) {
         SalesInvoiceDTO invoice = null;
