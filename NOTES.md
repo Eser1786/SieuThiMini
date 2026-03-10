@@ -160,7 +160,10 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 
 - **GUI.java / LoginDialog.java / MainPanel.java**: Logo split — transparent cho header/login, white background jpg cho taskbar icon
 - **NhanVienEmployeeDialog.java**: Sửa field size — thay `UIUtils.makeField()` (font 20, h32) bằng font 13, border compound, h36; password/spinner/button đều h36; `cbRole` h36
+- **NhanVienEmployeeDialog.java (session 3b)**: Prefill username/salary/password khi sửa (fetch từ DB qua `EmployeeBUS.getEmployeeById`); fix validation password trong edit mode (bỏ yêu cầu chữ+số, chỉ cần >= 6 ký tự); thêm DB persistence: cả add và edit giờ gọi `empBUS.addEmployee()` / `empBUS.updateEmployee()` — trước đây chỉ update tableModel
+- **EmployeeDAO.java + EmployeeBUS.java**: Thêm `updateEmployee(EmployeeDTO)` method
 - **KhachHangTableCard.java**: Fix NPE trong `showDetailDialog()` — thay `.toString()` bằng `Objects.toString(..., "")` null-safe cho tất cả 11 cột (email KH002 trước đây null trong DB cũ → crash Chi tiết button)
+- **04_seed_data_clean.sql**: Thêm `UPDATE customers SET email = 'binhbong@gmail.com' WHERE customer_code = 'KH002' AND (email IS NULL OR email = '')` — patch cho DB đã tồn tại không có email KH002
 - **KhoTableCard.java**: Style `btnrefresh` giống NhapKho (bg 0xD9D9D9, hover 0xC5B3E6, Arial Bold 13, border empty 9,14)
 - **TrangChuPanel.java**: Style 3 nút "Làm mới" (btnRefresh1/2/3) giống NhapKho; thêm `UIUtils.styleComboBox()` cho `cbChartPeriod`, `statusFilter`, `paymentFilter`
 - **KhuyenMaiPanel.java**: Restyle `btnReset` giống DonHang (bg 0xD9D9D9, hover 0xEF9A9A, Arial Bold 13, border empty 9,10, foreground black)

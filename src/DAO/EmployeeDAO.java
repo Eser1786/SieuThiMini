@@ -62,6 +62,29 @@ public class EmployeeDAO {
         return list;
     }
 
+    public boolean updateEmployee(EmployeeDTO emp) {
+        if (!openConnection()) return false;
+        try {
+            String sql = "UPDATE employees SET name=?, user_name=?, password_hash=?, phone=?, email=?, hire_date=?, salary=?, role_id=? WHERE employee_id=?";
+            PreparedStatement pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, emp.getFullName());
+            pstmt.setString(2, emp.getUsername());
+            pstmt.setString(3, emp.getPasswordHash());
+            pstmt.setString(4, emp.getPhone());
+            pstmt.setString(5, emp.getEmail());
+            pstmt.setTimestamp(6, emp.getHireDate() != null ? Timestamp.valueOf(emp.getHireDate()) : null);
+            pstmt.setBigDecimal(7, emp.getSalary());
+            pstmt.setInt(8, emp.getRoleId());
+            pstmt.setInt(9, emp.getId());
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            closeConnection();
+        }
+    }
+
     public boolean softDeleteEmployee(int id) {
         if (!openConnection()) return false;
         try {

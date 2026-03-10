@@ -1,7 +1,10 @@
 package GUI.NhanVien;
 
+import BUS.EmployeeBUS;
+import DTO.EmployeeDTO;
 import DTO.RoleDTO;
 import GUI.UIUtils;
+import java.math.BigDecimal;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.Dialog;
@@ -194,6 +197,15 @@ class NhanVienEmployeeDialog {
             for (int i = 0; i < cbRole.getItemCount(); i++) {
                 if (cbRole.getItemAt(i).equals(currentRole)) { cbRole.setSelectedIndex(i); break; }
             }
+            // Prefill username, salary, password from DB
+            int empId = (Integer) parent.tableModel.getValueAt(prefilledRow, NhanVienPanel.COL_ID);
+            EmployeeDTO existing = new EmployeeBUS().getEmployeeById(empId);
+            if (existing != null) {
+                tfs[1].setText(existing.getUsername() != null ? existing.getUsername() : "");
+                if (existing.getSalary() != null)
+                    tfs[4].setText(String.format("%.0f", existing.getSalary().doubleValue()));
+                pfPass.setText(existing.getPasswordHash() != null ? existing.getPasswordHash() : "");
+            }
         }
 
         JPanel form = new JPanel(new GridBagLayout());
@@ -297,7 +309,7 @@ class NhanVienEmployeeDialog {
                     JOptionPane.showMessageDialog(dlg, "Mật khẩu tối thiểu 6 ký tự.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
                     pfPass.requestFocus();
                     hasError = true;
-                } else {
+                } else if (!isEdit) {
                     boolean hasLetter = pass.chars().anyMatch(Character::isLetter);
                     boolean hasDigit  = pass.chars().anyMatch(Character::isDigit);
                     if (!hasLetter || !hasDigit) {
@@ -330,17 +342,65 @@ class NhanVienEmployeeDialog {
                 ? parent.tableModel.getValueAt(prefilledRow, COL_PASS).toString()
                 : pass;
 
+            // Resolve role ID from selected role name
+            String selectedRoleName = cbRole.getSelectedItem().toString();
+            int selectedRoleId = parent.roles.stream()
+                .filter(r -> r.getName().equals(selectedRoleName))
+                .mapToInt(DTO.RoleDTO::getId).findFirst().orElse(1);
+
+            // Parse salary (strip formatting chars)
+            BigDecimal salaryVal = BigDecimal.ZERO;
+            String salaryStr = tfs[4].getText().replaceAll("[^0-9]", "");
+            if (!salaryStr.isEmpty()) salaryVal = new BigDecimal(salaryStr);
+
+            EmployeeBUS bus = new EmployeeBUS();
             if (isEdit) {
+                int empId = (Integer) parent.tableModel.getValueAt(prefilledRow, NhanVienPanel.COL_ID);
+                EmployeeDTO emp = new EmployeeDTO();
+                emp.setId(empId);
+                emp.setCode(ma);
+                emp.setFullName(ten);
+                emp.setUsername(user);
+                emp.setPasswordHash(finalPass);
+                emp.setPhone(sdt);
+                emp.setEmail(email);
+                try {
+                    emp.setHireDate(new SimpleDateFormat("dd/MM/yyyy").parse(ngay)
+                        .toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+                } catch (Exception ignored) {}
+                emp.setSalary(salaryVal);
+                emp.setRoleId(selectedRoleId);
+                if (!bus.updateEmployee(emp)) {
+                    JOptionPane.showMessageDialog(dlg, "L\u01b0u th\u1ea5t b\u1ea1i. Vui l\u00f2ng th\u1eed l\u1ea1i.", "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
                 parent.tableModel.setValueAt(ten,  editRow, COL_TEN);
-                parent.tableModel.setValueAt(cbRole.getSelectedItem().toString(), editRow, COL_CHUCVU);
+                parent.tableModel.setValueAt(selectedRoleName, editRow, COL_CHUCVU);
                 parent.tableModel.setValueAt(sdt,  editRow, COL_SDT);
                 parent.tableModel.setValueAt(email, editRow, COL_EMAIL);
                 parent.tableModel.setValueAt(ngay, editRow, COL_NGAY);
                 parent.tableModel.setValueAt(finalPass, editRow, COL_PASS);
                 parent.fillDetail(editRow);
             } else {
+                EmployeeDTO emp = new EmployeeDTO();
+                emp.setCode(ma);
+                emp.setFullName(ten);
+                emp.setUsername(user);
+                emp.setPasswordHash(finalPass);
+                emp.setPhone(sdt);
+                emp.setEmail(email);
+                try {
+                    emp.setHireDate(new SimpleDateFormat("dd/MM/yyyy").parse(ngay)
+                        .toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+                } catch (Exception ignored) {}
+                emp.setSalary(salaryVal);
+                emp.setRoleId(selectedRoleId);
+                if (!bus.addEmployee(emp)) {
+                    JOptionPane.showMessageDialog(dlg, "Th\u00eam th\u1ea5t b\u1ea1i. Vui l\u00f2ng th\u1eed l\u1ea1i.", "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
                 parent.tableModel.addRow(new Object[]{
-                    ma, ten, cbRole.getSelectedItem().toString(), sdt, email, ngay, finalPass
+                    ma, ten, selectedRoleName, sdt, email, ngay, finalPass
                 });
             }
             dlg.dispose();
