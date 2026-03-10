@@ -179,4 +179,50 @@ System.out.println("Items size: " + items.size());
         }
         return max;
     }
+
+    /**
+     * Doanh thu theo tuần của tháng hiện tại (4 tuần)
+     * Trả về mảng 4 phần tử: [Tuần 1, Tuần 2, Tuần 3, Tuần 4]
+     */
+    public double[] getMonthlyRevenue() {
+        double[] monthRevenue = new double[4];
+        try {
+            ArrayList<SaleDTO> allSales = getAllSales();
+            LocalDate today = LocalDate.now();
+            LocalDate firstOfMonth = today.with(TemporalAdjusters.firstDayOfMonth());
+            for (int week = 0; week < 4; week++) {
+                LocalDate weekStart = firstOfMonth.plusDays(week * 7L);
+                LocalDate weekEnd   = weekStart.plusDays(6);
+                monthRevenue[week] = allSales.stream()
+                    .filter(s -> s.getSaleDate() != null)
+                    .filter(s -> s.getSaleStatus() == SaleStatus.COMPLETED)
+                    .filter(s -> !s.getSaleDate().isBefore(weekStart) && !s.getSaleDate().isAfter(weekEnd))
+                    .mapToDouble(s -> s.getTotalAmount().doubleValue())
+                    .sum();
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return monthRevenue;
+    }
+
+    /**
+     * Doanh thu theo tháng của năm hiện tại (12 tháng)
+     * Trả về mảng 12 phần tử: [T1, T2, ..., T12]
+     */
+    public double[] getYearlyRevenue() {
+        double[] yearRevenue = new double[12];
+        try {
+            ArrayList<SaleDTO> allSales = getAllSales();
+            int year = LocalDate.now().getYear();
+            for (int month = 1; month <= 12; month++) {
+                final int m = month;
+                yearRevenue[month - 1] = allSales.stream()
+                    .filter(s -> s.getSaleDate() != null)
+                    .filter(s -> s.getSaleStatus() == SaleStatus.COMPLETED)
+                    .filter(s -> s.getSaleDate().getYear() == year && s.getSaleDate().getMonthValue() == m)
+                    .mapToDouble(s -> s.getTotalAmount().doubleValue())
+                    .sum();
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return yearRevenue;
+    }
 }

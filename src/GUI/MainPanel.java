@@ -9,6 +9,7 @@ import GUI.KhachHang.KhachHangPanel;
 import GUI.Kho.KhoPanel;
 import GUI.KhuyenMai.KhuyenMaiPanel;
 import GUI.NhapKho.NhapKhoPanel;
+import GUI.NhanVien.NhanVienPanel;
 import GUI.SanPham.SanPhamPanel;
 import GUI.TrangChu.TrangChuPanel;
 import GUI.User.UserPanel;
@@ -54,16 +55,35 @@ public class MainPanel extends JPanel {
         header.setBackground(new Color(0x2F2C35));
         header.setPreferredSize(new Dimension(0, 60));
 
-        JPanel headerLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
+        JPanel headerLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
         headerLeft.setBackground(new Color(0x2F2C35));
-        JLabel ava = new JLabel("~Khu vực để avata~");
-        JLabel tenShop = new JLabel("Tên Sốp");
+
+        // Logo
+        try {
+            java.io.File logoFile = new java.io.File("img/logo.png");
+            if (!logoFile.exists()) logoFile = new java.io.File("img/logo.jpg");
+            if (logoFile.exists()) {
+                Image logoImg = new ImageIcon(logoFile.getAbsolutePath()).getImage()
+                        .getScaledInstance(44, 44, Image.SCALE_SMOOTH);
+                headerLeft.add(new JLabel(new ImageIcon(logoImg)));
+            }
+        } catch (Exception ignored) {}
+
+        JPanel shopNamePanel = new JPanel(new GridLayout(2, 1, 0, 0));
+        shopNamePanel.setOpaque(false);
+        JLabel tenShop = new JLabel("SIÊU THỊ 36");
         tenShop.setForeground(Color.WHITE);
-        headerLeft.add(ava);
-        headerLeft.add(tenShop);
+        tenShop.setFont(new Font("Arial", Font.BOLD, 16));
+        JLabel slogan = new JLabel("Tiện Lợi & Sống Khỏe");
+        slogan.setForeground(new Color(0xCCBBEE));
+        slogan.setFont(new Font("Arial", Font.ITALIC, 11));
+        shopNamePanel.add(tenShop);
+        shopNamePanel.add(slogan);
+        headerLeft.add(shopNamePanel);
 
         JLabel sdt = new JLabel("SDT liên hệ: 0345435108");
         sdt.setForeground(Color.WHITE);
+        sdt.setFont(new Font("Arial", Font.PLAIN, 13));
         sdt.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
 
         header.add(headerLeft, BorderLayout.WEST);
@@ -108,25 +128,48 @@ public class MainPanel extends JPanel {
         mainCards = new JPanel(cardLayout);
 
         // Add panels và nút dựa trên role
-        if (mainCards == null) {
-            cardLayout = new CardLayout();
-            mainCards = new JPanel(cardLayout);
-        }
+        // ADMIN: tất cả
+        // MANAGER: TrangChu, SanPham, NhanVien
+        // CASHIER: TrangChu, DonHang
+        // WAREHOUSE: TrangChu, Kho, NhapKho
+        // SUPPORT: TrangChu, KhachHang
         mainCards.add(new TrangChuPanel(), TRANG_CHU); // Trang chủ luôn có
 
-        if ("ADMIN".equals(roleName) || "MANAGER".equals(roleName) || "CASHIER".equals(roleName)) {
+        boolean isAdmin     = "ADMIN".equals(roleName);
+        boolean isManager   = "MANAGER".equals(roleName);
+        boolean isCashier   = "CASHIER".equals(roleName);
+        boolean isWarehouse = "WAREHOUSE".equals(roleName);
+        boolean isSupport   = "SUPPORT".equals(roleName);
+
+        // Sản phẩm: ADMIN, MANAGER
+        if (isAdmin || isManager) {
             mainCards.add(new SanPhamPanel(), SAN_PHAM);
             btnSanPham = createNavButton("Sản phẩm");
             btnSanPham.addActionListener(e -> navigate(mainCards, SAN_PHAM, btnSanPham));
             nav.add(btnSanPham);
             nav.add(Box.createVerticalStrut(12));
+        }
 
+        // Khách hàng: ADMIN, SUPPORT
+        if (isAdmin || isSupport) {
             mainCards.add(new KhachHangPanel(), KHACH_HANG);
             btnKhachHang = createNavButton("Khách hàng");
             btnKhachHang.addActionListener(e -> navigate(mainCards, KHACH_HANG, btnKhachHang));
             nav.add(btnKhachHang);
             nav.add(Box.createVerticalStrut(12));
+        }
 
+        // Nhân viên: ADMIN, MANAGER
+        if (isAdmin || isManager) {
+            mainCards.add(new NhanVienPanel(), NHAN_VIEN);
+            btnNhanVien = createNavButton("Nhân viên");
+            btnNhanVien.addActionListener(e -> navigate(mainCards, NHAN_VIEN, btnNhanVien));
+            nav.add(btnNhanVien);
+            nav.add(Box.createVerticalStrut(12));
+        }
+
+        // Đơn hàng: ADMIN, CASHIER
+        if (isAdmin || isCashier) {
             mainCards.add(new DonHangPanel(), DON_HANG);
             btnDonHang = createNavButton("Đơn hàng");
             btnDonHang.addActionListener(e -> navigate(mainCards, DON_HANG, btnDonHang));
@@ -134,13 +177,8 @@ public class MainPanel extends JPanel {
             nav.add(Box.createVerticalStrut(12));
         }
 
-        if ("ADMIN".equals(roleName) || "MANAGER".equals(roleName)) {
-            // mainCards.add(new NhanVienPanel(), NHAN_VIEN);
-            // btnNhanVien = createNavButton("Nhân viên");
-            // btnNhanVien.addActionListener(e -> navigate(mainCards, NHAN_VIEN, btnNhanVien));
-            // nav.add(btnNhanVien);
-            // nav.add(Box.createVerticalStrut(12));
-
+        // Kho + Nhập kho: ADMIN, WAREHOUSE
+        if (isAdmin || isWarehouse) {
             mainCards.add(new KhoPanel(), KHO);
             JButton btnKho = createNavButton("Kho");
             btnKho.addActionListener(e -> navigate(mainCards, KHO, btnKho));
@@ -152,25 +190,14 @@ public class MainPanel extends JPanel {
             btnNhapXuat.addActionListener(e -> navigate(mainCards, NHAP_XUAT, btnNhapXuat));
             nav.add(btnNhapXuat);
             nav.add(Box.createVerticalStrut(12));
+        }
 
+        // Khuyến mãi: ADMIN
+        if (isAdmin) {
             mainCards.add(new KhuyenMaiPanel(), KHUYEN_MAI);
             btnKhuyenMai = createNavButton("Khuyến mãi");
             btnKhuyenMai.addActionListener(e -> navigate(mainCards, KHUYEN_MAI, btnKhuyenMai));
             nav.add(btnKhuyenMai);
-            nav.add(Box.createVerticalStrut(12));
-        }
-
-        if ("WAREHOUSE".equals(roleName)) {
-            mainCards.add(new KhoPanel(), KHO);
-            JButton btnKho = createNavButton("Kho");
-            btnKho.addActionListener(e -> navigate(mainCards, KHO, btnKho));
-            nav.add(btnKho);
-            nav.add(Box.createVerticalStrut(12));
-
-            mainCards.add(new NhapKhoPanel(), NHAP_XUAT);
-            btnNhapXuat = createNavButton("Nhập kho");
-            btnNhapXuat.addActionListener(e -> navigate(mainCards, NHAP_XUAT, btnNhapXuat));
-            nav.add(btnNhapXuat);
             nav.add(Box.createVerticalStrut(12));
         }
 

@@ -30,11 +30,26 @@ public class DiscountBUS {
         String desc,
         String value,
         String type,
-        String status, // thêm tham số trạng thái
+        String status,
         String start,
         String end,
         String minOrder,
         Integer productId
+) {
+        return addDiscount(name, desc, value, type, status, start, end, minOrder, productId, null);
+    }
+
+    public String addDiscount(
+        String name,
+        String desc,
+        String value,
+        String type,
+        String status,
+        String start,
+        String end,
+        String minOrder,
+        Integer productId,
+        String code
 ){
 
     // ===== VALIDATE =====
@@ -149,7 +164,8 @@ try{
     d.setMinOrderAmount(min);
     d.setIsAutoApply(false);
     d.setCreatedAt(LocalDateTime.now());
-d.setUpdatedAt(LocalDateTime.now());
+    d.setUpdatedAt(LocalDateTime.now());
+    if (code != null && !code.trim().isEmpty()) d.setDiscountCode(code.trim().toUpperCase());
     int discountId = discountDAO.addDiscount(d);
 
 if(discountId <= 0)

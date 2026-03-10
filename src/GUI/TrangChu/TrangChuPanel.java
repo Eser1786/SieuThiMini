@@ -31,6 +31,8 @@ public class TrangChuPanel extends JPanel {
     private int[] chartValues;
     private String[] chartLabels;
     private JPanel chartPanel;
+    private JComboBox<String> cbChartPeriod;
+    private JLabel revenueTitle;
     
     public TrangChuPanel() {
         setLayout(new BorderLayout(0, 0));
@@ -62,15 +64,23 @@ public class TrangChuPanel extends JPanel {
         JPanel revenueCard = UIUtils.createCard();
         JPanel revenueHeader = new JPanel(new BorderLayout());
         revenueHeader.setOpaque(false);
-        JLabel revenueTitle = new JLabel("Doanh thu tuần này");
+        revenueTitle = new JLabel("Doanh thu tuần này");
         revenueTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
-        JButton btnRefresh1 = new JButton("🔄 Làm mới");
+        cbChartPeriod = new JComboBox<>(new String[]{"Tuần", "Tháng", "Năm"});
+        cbChartPeriod.setFont(new Font("Arial", Font.PLAIN, 11));
+        cbChartPeriod.setPreferredSize(new Dimension(80, 24));
+        cbChartPeriod.addActionListener(e -> refreshChart());
+        JButton btnRefresh1 = new JButton("🔄");
         btnRefresh1.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh1.setFocusPainted(false);
         btnRefresh1.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnRefresh1.addActionListener(e -> refreshChart());
+        JPanel revenueRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        revenueRight.setOpaque(false);
+        revenueRight.add(cbChartPeriod);
+        revenueRight.add(btnRefresh1);
         revenueHeader.add(revenueTitle, BorderLayout.WEST);
-        revenueHeader.add(btnRefresh1, BorderLayout.EAST);
+        revenueHeader.add(revenueRight, BorderLayout.EAST);
         revenueHeader.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         
         chartLabels = new String[]{ "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
@@ -338,35 +348,35 @@ public class TrangChuPanel extends JPanel {
     }
     
     /**
-    * Load dữ liệu doanh thu tuần và chuyển sang phần trăm cho đồ thị
+    * Load dữ liệu doanh thu theo kỳ được chọn và chuyển sang phần trăm cho đồ thị
     */
     private void loadChartData() {
         try {
             SalesBUS salesBUS = new SalesBUS();
-            
-            // Lấy doanh thu 7 ngày trong tuần
-            double[] weekRevenue = salesBUS.getWeeklyRevenue();
-            
-            // Tìm giá trị max
-            double maxRevenue = salesBUS.getMaxRevenue(weekRevenue);
-            
-            // Chuyển sang phần trăm (0-100) để vẽ đồ thị
-            chartValues = new int[7];
-            if (maxRevenue > 0) {
-                for (int i = 0; i < 7; i++) {
-                    chartValues[i] = (int) (weekRevenue[i] * 100 / maxRevenue);
-                }
+            String period = cbChartPeriod != null ? (String) cbChartPeriod.getSelectedItem() : "Tuần";
+            double[] raw;
+            if ("Tháng".equals(period)) {
+                raw = salesBUS.getMonthlyRevenue();
+                chartLabels = new String[]{"Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"};
+                if (revenueTitle != null) revenueTitle.setText("Doanh thu tháng này");
+            } else if ("Năm".equals(period)) {
+                raw = salesBUS.getYearlyRevenue();
+                chartLabels = new String[]{"T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12"};
+                if (revenueTitle != null) revenueTitle.setText("Doanh thu năm nay");
             } else {
-                // Nếu không có doanh thu, set về 0
-                for (int i = 0; i < 7; i++) {
-                    chartValues[i] = 0;
-                }
+                raw = salesBUS.getWeeklyRevenue();
+                chartLabels = new String[]{"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
+                if (revenueTitle != null) revenueTitle.setText("Doanh thu tuần này");
             }
-            
+            double maxRevenue = salesBUS.getMaxRevenue(raw);
+            chartValues = new int[raw.length];
+            if (maxRevenue > 0) {
+                for (int i = 0; i < raw.length; i++)
+                    chartValues[i] = (int) (raw[i] * 100 / maxRevenue);
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            // Fallback về dữ liệu mẫu nếu lỗi
-            chartValues = new int[]{ 10, 22, 38, 32, 55, 52, 88, 100 };
+            chartValues = new int[]{ 10, 22, 38, 32, 55, 52, 88 };
         }
     }
 
@@ -447,11 +457,11 @@ public class TrangChuPanel extends JPanel {
 
 
     /**
-     * Làm mới đồ thị với dữ liệu mới nhất
+     * Làm mới đồ thị với dữ liệu mới nhất theo kỳ đã chọn
      */
     private void refreshChart() {
-        loadChartData(); // Load lại dữ liệu
-        chartPanel.repaint(); // Vẽ lại đồ thị
+        loadChartData();
+        chartPanel.repaint();
     }
 
     // ===== CUSTOMER CHART =====

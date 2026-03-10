@@ -104,7 +104,9 @@ class KhachHangTableCard extends JPanel {
                 filterTim = RowFilter.orFilter(java.util.List.of(
                         RowFilter.regexFilter("(?i)" + tuKhoa, 0),
                         RowFilter.regexFilter("(?i)" + tuKhoa, 1),
-                        RowFilter.regexFilter("(?i)" + tuKhoa, 2)));
+                        RowFilter.regexFilter("(?i)" + tuKhoa, 2),
+                        RowFilter.regexFilter("(?i)" + tuKhoa, 3),
+                        RowFilter.regexFilter("(?i)" + tuKhoa, 4)));
             }
             if (filterLoc != null && filterTim != null)
                 sorter.setRowFilter(RowFilter.andFilter(java.util.List.of(filterLoc, filterTim)));

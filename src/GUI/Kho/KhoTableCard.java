@@ -217,8 +217,9 @@ class KhoTableCard extends JPanel {
         int stt = 1;
         for (ProductDTO p : list) {
             String productName = p.getName().toLowerCase();
+            String productCode = p.getCode() != null ? p.getCode().toLowerCase() : "";
             String supplierName = p.getSupplier().getName();
-            if (!productName.contains(keyword)) continue;
+            if (!productName.contains(keyword) && !productCode.contains(keyword)) continue;
             if (!selectedSupplier.equals("Tất cả") && !supplierName.equals(selectedSupplier)) continue;
             long quantity = p.getTotalQuantity();
             long minStock = p.getMinStockLevel();

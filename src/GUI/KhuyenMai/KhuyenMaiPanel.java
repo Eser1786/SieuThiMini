@@ -549,11 +549,34 @@ JPanel productPanel = new JPanel(new BorderLayout());
 productPanel.add(filterPanel, BorderLayout.NORTH);
 productPanel.add(productScroll, BorderLayout.CENTER);
 cbCategory.addActionListener(e -> applyFilter.run());
+        // ── Code row: text field + Random button ──────────────────────────────
+        JTextField fCode = formField();
+        fCode.setToolTipText("Nhập mã tùy chỉnh hoặc bấm Random");
+        JButton btnRandom = new JButton("Random");
+        btnRandom.setFont(new Font("Arial", Font.PLAIN, 12));
+        btnRandom.setBackground(new Color(0x7B52AB));
+        btnRandom.setForeground(Color.WHITE);
+        btnRandom.setFocusPainted(false);
+        btnRandom.setBorderPainted(false);
+        btnRandom.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRandom.addActionListener(e -> {
+            String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            StringBuilder sb = new StringBuilder("DIS-");
+            java.util.Random rng = new java.util.Random();
+            for (int i = 0; i < 6; i++) sb.append(chars.charAt(rng.nextInt(chars.length())));
+            fCode.setText(sb.toString());
+        });
+        JPanel codeRow = new JPanel(new BorderLayout(6, 0));
+        codeRow.setOpaque(false);
+        codeRow.add(fCode, BorderLayout.CENTER);
+        codeRow.add(btnRandom, BorderLayout.EAST);
+
         JPanel form = buildFormGrid(new Object[][]{
             {"Tên khuyến mãi *:", fName,     "Loại giảm:",       cbType},
-            {"Giá trị giảm *:",   fValue,    "Trạng thái:",      cbStatus},
-            {"Min order (VNĐ):",  fMinOrder, "Ngày bắt đầu *:",  dcStart},
-            {"Mô tả:",            fDesc,     "Ngày kết thúc *:", dcEnd},
+            {"Mã code:",          codeRow,   "Trạng thái:",      cbStatus},
+            {"Giá trị giảm *:",   fValue,    "Ngày bắt đầu *:",  dcStart},
+            {"Min order (VNĐ):",  fMinOrder, "Ngày kết thúc *:", dcEnd},
+            {"Mô tả:",            fDesc,     "",                  new JLabel("")},
             {"Sản phẩm áp dụng:", productPanel, "", new JLabel("")}
         });
         productPanel.setVisible(false);
@@ -600,7 +623,8 @@ cbCategory.addActionListener(e -> applyFilter.run());
         sdf.format(dcStart.getDate()),
         sdf.format(dcEnd.getDate()),
         fMinOrder.getText().trim(),
-        productId
+        productId,
+        fCode.getText().trim()
 );
                 if ("SUCCESS".equals(result)) {
                     JOptionPane.showMessageDialog(dlg, "Thêm khuyến mãi thành công!");
