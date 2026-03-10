@@ -3,6 +3,7 @@ package GUI.NhanVien;
 
 import BUS.EmployeeBUS;
 import BUS.RoleBUS;
+import BUS.UserSession;
 import DTO.EmployeeDTO;
 import DTO.RoleDTO;
 import GUI.ExportUtils;
@@ -407,7 +408,16 @@ public class NhanVienPanel extends JPanel {
             @Override public Component getTableCellRendererComponent(
                     JTable t, Object v, boolean sel, boolean foc, int r, int c) {
                 super.getTableCellRendererComponent(t, v, sel, foc, r, c);
-                if (!sel) setBackground(r % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
+                if (!sel) {
+                    int modelRow = t.convertRowIndexToModel(r);
+                    Object ma = tableModel.getValueAt(modelRow, COL_MA);
+                    EmployeeDTO me = UserSession.getCurrentUser();
+                    if (me != null && ma != null && ma.toString().equals(me.getCode())) {
+                        setBackground(new Color(0xC8E6C9)); // active: logged-in employee
+                    } else {
+                        setBackground(r % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
+                    }
+                }
                 return this;
             }
         };

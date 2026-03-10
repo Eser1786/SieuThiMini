@@ -90,12 +90,15 @@ class NhapKhoFormCard extends JPanel {
         add(buildBody(),   BorderLayout.CENTER);
         add(buildFooter(), BorderLayout.SOUTH);
 
-        // Auto-generate invoice ref for new invoices
+        // Auto-generate invoice ref for new invoices (read-only)
         if (existing == null) {
             String datePart = new java.text.SimpleDateFormat("yyyyMMdd").format(new Date());
             String randPart = String.format("%04d", (int)(Math.random() * 10000));
             txtInvoiceRef.setText("NK-" + datePart + "-" + randPart);
         }
+        txtInvoiceRef.setEditable(false);
+        txtInvoiceRef.setBackground(new Color(0xE8E6F0));
+        txtInvoiceRef.setForeground(new Color(0x888888));
         // Pre-fill dropdowns for edit mode (combos are built inside buildBody)
         if (existing != null) {
             isLoadingData = true;

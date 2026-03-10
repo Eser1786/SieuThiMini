@@ -373,6 +373,9 @@ class KhachHangTableCard extends JPanel {
         detail.setVisible(true);
     }
 
+    /** Gọi từ ngoài package — mở popup thêm khách hàng */
+    void triggerAdd() { showAddDialog(); }
+
     private void showAddDialog() {
         Window owner = SwingUtilities.getWindowAncestor(parent);
         JDialog dlg = new JDialog(owner, "Thêm khách hàng", Dialog.ModalityType.APPLICATION_MODAL);

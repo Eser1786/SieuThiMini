@@ -496,9 +496,10 @@ class DonHangCreateCard extends JPanel {
         btnTaoKH.setFocusPainted(false); btnTaoKH.setBorderPainted(false); btnTaoKH.setOpaque(true);
         btnTaoKH.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnTaoKH.addActionListener(e -> {
-            // java.awt.Container mp = SwingUtilities.getAncestorOfClass(MainPanel.class, DonHangCreateCard.this);
-            // if (mp instanceof MainPanel mainPanel) mainPanel.showKhachHangCreate();
-            JOptionPane.showMessageDialog(this, "Tính năng tạo khách hàng mới chưa được implement.");
+            java.awt.Container mp = SwingUtilities.getAncestorOfClass(GUI.MainPanel.class, DonHangCreateCard.this);
+            if (mp instanceof GUI.MainPanel mainPanel) {
+                mainPanel.navigateToKhachHangAndAdd();
+            }
         });
         JPanel custCard = makeRightCard("Kh\u00e1ch h\u00e0ng");
         addFieldToCard(custCard, "Ch\u1ecdn kh\u00e1ch:", cbKhachHang);

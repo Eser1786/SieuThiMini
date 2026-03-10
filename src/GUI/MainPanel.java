@@ -41,6 +41,7 @@ public class MainPanel extends JPanel {
     // Theo dõi nút đang active để bỏ highlight khi chuyển tab
     private JButton activeBtn = null;
     private JButton btnKhachHang;
+    private KhachHangPanel khachHangPanel;
     private JButton btnSanPham;
     private JButton btnNhanVien;
     private JButton btnDonHang;
@@ -154,7 +155,8 @@ public class MainPanel extends JPanel {
 
         // Khách hàng: ADMIN, SUPPORT
         if (isAdmin || isSupport) {
-            mainCards.add(new KhachHangPanel(), KHACH_HANG);
+            khachHangPanel = new KhachHangPanel();
+            mainCards.add(khachHangPanel, KHACH_HANG);
             btnKhachHang = createNavButton("Khách hàng");
             btnKhachHang.addActionListener(e -> navigate(mainCards, KHACH_HANG, btnKhachHang));
             nav.add(btnKhachHang);
@@ -216,6 +218,14 @@ public class MainPanel extends JPanel {
 
         // Highlight Trang chủ mặc định khi mở app
         setActive(btnTrangChu);
+    }
+
+    /** Chuyển sang tab Khách hàng và mở popup thêm khách hàng */
+    public void navigateToKhachHangAndAdd() {
+        if (btnKhachHang == null || khachHangPanel == null) return;
+        navigate(mainCards, KHACH_HANG, btnKhachHang);
+        // Delay nhỏ để CardLayout render xong rồi mới mở popup
+        SwingUtilities.invokeLater(() -> khachHangPanel.triggerAddCustomer());
     }
 
     /** Chuyển card và highlight nút sidebar tương ứng */

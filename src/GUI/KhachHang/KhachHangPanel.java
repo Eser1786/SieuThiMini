@@ -56,9 +56,19 @@ public class KhachHangPanel extends JPanel {
         };
         loadCustomers();
 
-        add(new KhachHangTableCard(this), CARD_TABLE);
+        KhachHangTableCard tableCard = new KhachHangTableCard(this);
+        this.tableCard = tableCard;
+        add(tableCard,                    CARD_TABLE);
         add(new KhachHangFormCard(this),  CARD_THEM);
         innerCard.show(this, CARD_TABLE);
+    }
+
+    private KhachHangTableCard tableCard;
+
+    /** Dùng từ panel khác (vd: DonHang) để mở popup thêm khách hàng */
+    public void triggerAddCustomer() {
+        innerCard.show(this, CARD_TABLE);
+        if (tableCard != null) tableCard.triggerAdd();
     }
 
     void loadCustomers() {
