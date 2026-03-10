@@ -427,15 +427,7 @@ class DonHangTableCard extends JPanel {
             }
         }
 
-        if (trangThai.equals("Đã hủy")) {
-            JButton btnXoa = UIUtils.makeActionButton("Xóa", new Color(0xB83434));
-            inner.add(btnXoa);
-            if (withAction)
-                btnXoa.addActionListener(e -> {
-                    stopEdit(table);
-                    xoaDon(table, modelRow);
-                });
-        }
+        
 
         if (withAction)
             btnXem.addActionListener(e -> { stopEdit(table); parent.showDetail(modelRow); });
@@ -459,8 +451,13 @@ class DonHangTableCard extends JPanel {
     boolean ok = salesBUS.confirmSale(saleCode);
 
     if(ok){
-        parent.tableModel.setValueAt("Đã xác nhận", row, 6);
-        t.repaint();
+
+        JOptionPane.showMessageDialog(this,
+                "Xác nhận đơn hàng thành công!\nKho đã được cập nhật.",
+                "Thành công",
+                JOptionPane.INFORMATION_MESSAGE);
+
+        loadSalesFromDatabase(); // reload bảng
     }
 }
 
@@ -478,19 +475,7 @@ class DonHangTableCard extends JPanel {
         }
     }
 
-    private void xoaDon(JTable t, int row) {
-        String saleCode = parent.tableModel.getValueAt(row, 0).toString();
-        int c = JOptionPane.showConfirmDialog(this,
-                "Xóa vĩnh viễn đơn " + saleCode + "?",
-                "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
-        if (c == JOptionPane.YES_OPTION) {
-            boolean ok = salesBUS.deleteSale(saleCode);
-            if (ok) {
-                parent.tableModel.removeRow(row);
-                t.repaint();
-            }
-        }
-    }
+    
 
     private void filterByStatus(String statusText) {
         parent.tableModel.setRowCount(0);

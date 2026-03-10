@@ -226,5 +226,25 @@ public class ProductDAO {
         }
         return result;
     }
+public boolean decreaseStock(Long productId, int quantity){
 
+    String sql = """
+        UPDATE products
+        SET total_quantity = total_quantity - ?
+        WHERE product_id = ?
+    """;
+
+    try(Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)){
+
+        ps.setInt(1, quantity);
+        ps.setLong(2, productId);
+
+        return ps.executeUpdate() > 0;
+
+    }catch(Exception e){
+        e.printStackTrace();
+        return false;
+    }
+}
 }

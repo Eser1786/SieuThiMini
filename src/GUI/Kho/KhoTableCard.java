@@ -76,24 +76,12 @@ class KhoTableCard extends JPanel {
         JPanel pNCC     = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pNCC.setOpaque(false);     pNCC.add(lbNCC);        pNCC.add(cbSupplier);
         JPanel pStatus  = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pStatus.setOpaque(false);   pStatus.add(lbStatus);  pStatus.add(cbStatus);
 
-        // Right: action buttons added directly to topPanel
-        JButton btnThem = new JButton("+ Nhập hàng");
-        btnThem.setFont(new Font("Arial", Font.BOLD, 13));
-        btnThem.setBackground(new Color(0xD9D9D9));
-        btnThem.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
-        btnThem.setOpaque(true);
-        btnThem.setBorderPainted(false);
-        btnThem.setFocusPainted(false);
-        btnThem.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnThem.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent e) { btnThem.setBackground(new Color(0xC5B3E6)); }
-            public void mouseExited(java.awt.event.MouseEvent e)  { btnThem.setBackground(new Color(0xD9D9D9)); }
-        });
-        btnThem.addActionListener(e -> showNhapHangDialog());
+        
 
         JButton btnPDF    = ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
         JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
         JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
+        JButton btnrefresh = new JButton("Làm mới");
         btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, model, "Danh sách kho"));
         btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, model, "kho"));
         btnImport.addActionListener(e -> {
@@ -102,8 +90,9 @@ class KhoTableCard extends JPanel {
             for (String[] r : rows) { if (r.length < 7) continue; model.addRow((Object[])r); }
         });
         topPanel.add(pSearch); topPanel.add(pNCC); topPanel.add(pStatus);
-        topPanel.add(btnThem); topPanel.add(btnPDF); topPanel.add(btnExcel); topPanel.add(btnImport);
-
+       topPanel.add(btnPDF); topPanel.add(btnExcel); topPanel.add(btnImport);
+        topPanel.add(btnrefresh);
+        btnrefresh.addActionListener(e -> loadData());
         // Stack header + toolbar in NORTH
         JPanel northArea = new JPanel();
         northArea.setLayout(new BoxLayout(northArea, BoxLayout.Y_AXIS));
@@ -290,133 +279,5 @@ class KhoTableCard extends JPanel {
         cbStatus.setSelectedIndex(0);
     }
 
-    private void showNhapHangDialog() {
-        Window w = SwingUtilities.getWindowAncestor(this);
-        JDialog dlg = w instanceof Dialog
-                ? new JDialog((Dialog) w, "Nhập hàng vào kho", true)
-                : new JDialog((Frame) w, "Nhập hàng vào kho", true);
-        dlg.setLayout(new BorderLayout());
-        dlg.setResizable(false);
-
-        // Header
-        JPanel hdr = new JPanel(new BorderLayout());
-        hdr.setBackground(new Color(0xAF9FCB));
-        hdr.setBorder(BorderFactory.createEmptyBorder(14, 20, 14, 20));
-        JLabel hdrLbl = new JLabel("Nhập hàng vào kho");
-        hdrLbl.setFont(new Font("Arial", Font.BOLD, 18));
-        hdrLbl.setForeground(Color.WHITE);
-        hdr.add(hdrLbl, BorderLayout.WEST);
-        dlg.add(hdr, BorderLayout.NORTH);
-
-        // Form
-        JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(new Color(0xF0EFF8));
-        form.setBorder(BorderFactory.createEmptyBorder(18, 28, 14, 28));
-
-        String maSP = String.format("SP%03d", model.getRowCount() + 1);
-        JTextField fMa  = new JTextField(maSP);
-        fMa.setEditable(false);
-        fMa.setBackground(new Color(0xE8E6F0));
-        fMa.setForeground(new Color(0x888888));
-        fMa.setFont(new Font("Arial", Font.PLAIN, 13));
-        fMa.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
-        fMa.setPreferredSize(new Dimension(200, 36));
-
-        JTextField fTen = new JTextField();
-        fTen.setFont(new Font("Arial", Font.PLAIN, 13));
-        fTen.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
-        fTen.setPreferredSize(new Dimension(200, 36));
-
-        JTextField fSL  = new JTextField();
-        fSL.setFont(new Font("Arial", Font.PLAIN, 13));
-        fSL.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
-        fSL.setPreferredSize(new Dimension(200, 36));
-
-        String[] suppliers = new String[cbSupplier.getItemCount()];
-        for (int i = 0; i < cbSupplier.getItemCount(); i++) suppliers[i] = cbSupplier.getItemAt(i);
-        JComboBox<String> fNCC = new JComboBox<>(suppliers);
-        UIUtils.styleComboBox(fNCC);
-        fNCC.setPreferredSize(new Dimension(200, 36));
-        // default to first real supplier (skip 'Tất cả')
-        if (fNCC.getItemCount() > 1) fNCC.setSelectedIndex(1);
-
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.insets = new Insets(6, 6, 6, 6);
-        gc.fill = GridBagConstraints.HORIZONTAL;
-        gc.anchor = GridBagConstraints.WEST;
-
-        Object[][] formRows = {
-            {"Mã sản phẩm:",    fMa,  "Nhà cung cấp:", fNCC},
-            {"Tên sản phẩm *:", fTen, "Số lượng *:",    fSL},
-        };
-        for (int r = 0; r < formRows.length; r++) {
-            for (int c2 = 0; c2 < 4; c2++) {
-                gc.gridx = c2; gc.gridy = r;
-                if (c2 % 2 == 0) {
-                    gc.weightx = 0;
-                    JLabel lb = new JLabel(formRows[r][c2].toString());
-                    lb.setFont(new Font("Arial", Font.PLAIN, 13));
-                    form.add(lb, gc);
-                } else {
-                    gc.weightx = 1;
-                    form.add((Component) formRows[r][c2], gc);
-                }
-            }
-        }
-        dlg.add(form, BorderLayout.CENTER);
-
-        // Footer
-        JPanel foot = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        foot.setBackground(new Color(0xF0EFF8));
-        foot.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xD1C4E9)));
-
-        JButton btnLuu = new JButton("Lưu");
-        btnLuu.setBackground(new Color(0x5C4A7F)); btnLuu.setForeground(Color.WHITE);
-        btnLuu.setFont(new Font("Arial", Font.BOLD, 13));
-        btnLuu.setOpaque(true); btnLuu.setBorderPainted(false); btnLuu.setFocusPainted(false);
-        btnLuu.setBorder(BorderFactory.createEmptyBorder(9, 24, 9, 24));
-        btnLuu.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        JButton btnHuy = new JButton("Hủy");
-        btnHuy.setBackground(new Color(0x9B8EA8)); btnHuy.setForeground(Color.WHITE);
-        btnHuy.setFont(new Font("Arial", Font.BOLD, 13));
-        btnHuy.setOpaque(true); btnHuy.setBorderPainted(false); btnHuy.setFocusPainted(false);
-        btnHuy.setBorder(BorderFactory.createEmptyBorder(9, 24, 9, 24));
-        btnHuy.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        foot.add(btnLuu); foot.add(btnHuy);
-        dlg.add(foot, BorderLayout.SOUTH);
-
-        btnHuy.addActionListener(ev -> dlg.dispose());
-        btnLuu.addActionListener(ev -> {
-            String ten = fTen.getText().trim();
-            String slStr = fSL.getText().trim();
-            if (ten.isEmpty()) {
-                JOptionPane.showMessageDialog(dlg, "Vui lòng nhập Tên sản phẩm!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-                fTen.requestFocus(); return;
-            }
-            long sl;
-            try { sl = Long.parseLong(slStr); if (sl < 0) throw new NumberFormatException(); }
-            catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dlg, "Số lượng phải là số nguyên ≥ 0!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-                fSL.requestFocus(); return;
-            }
-            String ncc = fNCC.getSelectedItem() != null ? fNCC.getSelectedItem().toString() : "Chưa rõ";
-            if ("Tất cả".equals(ncc)) ncc = "Chưa rõ";
-            String status = sl == 0 ? "Hết hàng" : sl < 5 ? "Gần hết" : "Còn hàng";
-            model.addRow(new Object[]{null, model.getRowCount() + 1, fMa.getText(), ten, sl, ncc, status});
-            dlg.dispose();
-        });
-
-        dlg.pack();
-        dlg.setMinimumSize(new Dimension(520, dlg.getPreferredSize().height));
-        dlg.setLocationRelativeTo(this);
-        dlg.setVisible(true);
-    }
+    
 }
