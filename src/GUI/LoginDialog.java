@@ -21,6 +21,7 @@ public class LoginDialog extends JDialog {
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JButton btnLogin;
+    private JCheckBox chkShowPassword;
     private JLabel lblMessage;
 
     private boolean loginSuccess = false;
@@ -68,7 +69,19 @@ public class LoginDialog extends JDialog {
         txtPassword = new JPasswordField(15);
         center.add(txtPassword, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
+        gbc.gridx = 2; gbc.gridy = 1;
+        chkShowPassword = new JCheckBox("👁");
+        chkShowPassword.setToolTipText("Hiển thị mật khẩu");
+        chkShowPassword.addActionListener(e -> {
+            if (chkShowPassword.isSelected()) {
+                txtPassword.setEchoChar('\0');
+            } else {
+                txtPassword.setEchoChar('*');
+            }
+        });
+        center.add(chkShowPassword, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 3;
         btnLogin = new JButton("Đăng Nhập");
         btnLogin.setBackground(BTN_NORMAL);
         btnLogin.setForeground(Color.BLACK);
@@ -77,7 +90,7 @@ public class LoginDialog extends JDialog {
         btnLogin.addActionListener(new LoginAction());
         center.add(btnLogin, gbc);
 
-        gbc.gridy = 3;
+        gbc.gridy = 3; gbc.gridwidth = 3;
         lblMessage = new JLabel("");
         lblMessage.setForeground(Color.RED);
         center.add(lblMessage, gbc);

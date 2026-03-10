@@ -160,15 +160,15 @@ public class UserPanel extends JPanel {
             if (ok == JOptionPane.YES_OPTION) {
                 // Thực hiện logout
                 UserSession.logout();
-                // Đóng main frame
+                // Đóng frame hiện tại
                 JFrame mainFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
                 mainFrame.dispose();
-                // Hiển thị lại login dialog
+                // Hiển thị login dialog
                 LoginDialog loginDialog = new LoginDialog(null);
                 loginDialog.setVisible(true);
                 if (loginDialog.isLoginSuccess()) {
                     // Tạo frame mới với MainPanel
-                    JFrame newFrame = new GUI();
+                    JFrame newFrame = new GUI(false);
                     newFrame.setVisible(true);
                 }
             }
