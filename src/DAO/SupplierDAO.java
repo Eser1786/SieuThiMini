@@ -1,8 +1,7 @@
 package DAO;
 import DTO.SupplierDTO;
-import DAO.DBConnection;
-import java.time.LocalDateTime;
 import java.sql.*;
+import java.time.LocalDateTime;
 
 public class SupplierDAO {
     private Connection con;
