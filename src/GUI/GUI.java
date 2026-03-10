@@ -12,7 +12,14 @@ public class GUI extends JFrame {
     }
 
     public GUI(boolean showLogin) {
-        setTitle("Siu Thị 36");
+        setTitle("Siêu Thị 36");
+        // Set taskbar / title-bar icon
+        try {
+            java.io.File iconFile = new java.io.File("img/icons/Logo.png");
+            if (!iconFile.exists()) iconFile = new java.io.File("img/logo.png");
+            if (iconFile.exists())
+                setIconImage(new javax.swing.ImageIcon(iconFile.getAbsolutePath()).getImage());
+        } catch (Exception ignored) {}
         setSize(1440, 1024);
         setMinimumSize(new Dimension(1000, 700));
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);

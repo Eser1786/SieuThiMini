@@ -63,7 +63,7 @@ class DonHangTableCard extends JPanel {
         tfTim.setFont(new Font("Arial", Font.PLAIN, 13));
         tfTim.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
 
-        JButton btnTim = new JButton("\uD83D\uDD0D");
+        JButton btnTim = new JButton("Q");
         btnTim.setBorderPainted(false);
         btnTim.setContentAreaFilled(false);
         btnTim.setFocusPainted(false);

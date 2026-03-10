@@ -185,7 +185,7 @@ class NhapKhoTableCard extends JPanel {
             public void changedUpdate(javax.swing.event.DocumentEvent e) { applyFilter(); }
         });
 
-        JButton btnTim = new JButton("\uD83D\uDD0D");
+        JButton btnTim = new JButton("Q");
         btnTim.setBorderPainted(false);
         btnTim.setContentAreaFilled(false);
         btnTim.setFocusPainted(false);

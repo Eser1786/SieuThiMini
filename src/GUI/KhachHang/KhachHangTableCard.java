@@ -45,7 +45,7 @@ class KhachHangTableCard extends JPanel {
         tim.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
         timkiem.add(tim, BorderLayout.CENTER);
 
-        JButton nuttim = new JButton("\uD83D\uDD0D");
+        JButton nuttim = new JButton("Q");
         nuttim.setBorderPainted(false);
         nuttim.setContentAreaFilled(false);
         nuttim.setFocusPainted(false);

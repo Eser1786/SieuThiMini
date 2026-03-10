@@ -28,7 +28,14 @@ import javax.swing.table.TableRowSorter;
  *   16=Vị trí, 17=Đơn vị, 18=Trạng thái
  */
 public class SanPhamPanel extends JPanel {
-    private JTabbedPane tabbedPane;
+    private static final Color CLR_TAB_ACTIVE = new Color(0x5C4A7F);
+    private static final Color CLR_TAB_HOVER  = new Color(0xC5B3E6);
+
+    private JPanel tabBar;
+    private JButton btnTabSP, btnTabDM, btnTabNCC;
+    private JPanel contentCards;
+    private CardLayout tabCards;
+
     private JPanel productPanel;
     private CategoryPanel categoryPanel;
     private SupplierPanel supplierPanel;
@@ -43,23 +50,73 @@ public class SanPhamPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(new Color(0xF8F7FF));
 
-        tabbedPane = new JTabbedPane();
-        tabbedPane.setFont(new Font("Arial", Font.BOLD, 14));
-        tabbedPane.setBackground(new Color(0xF8F7FF));
+        // ── Custom tab bar ────────────────────────────────────────────────────
+        tabBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        tabBar.setBackground(new Color(0x2F2C35));
+        tabBar.setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 0));
 
-        // Product panel
+        btnTabSP  = makeTabBtn("Sản phẩm");
+        btnTabDM  = makeTabBtn("Danh mục");
+        btnTabNCC = makeTabBtn("Nhà cung cấp");
+        tabBar.add(btnTabSP);
+        tabBar.add(btnTabDM);
+        tabBar.add(btnTabNCC);
+        setTabActive(btnTabSP);
+
+        // ── Content panels ────────────────────────────────────────────────────
+        tabCards = new CardLayout();
+        contentCards = new JPanel(tabCards);
+
         productPanel = createProductPanel();
-        tabbedPane.addTab("Sản phẩm", productPanel);
-
-        // Category panel
         categoryPanel = new CategoryPanel();
-        tabbedPane.addTab("Danh mục", categoryPanel);
-
-        // Supplier panel
         supplierPanel = new SupplierPanel();
-        tabbedPane.addTab("Nhà cung cấp", supplierPanel);
 
-        add(tabbedPane, BorderLayout.CENTER);
+        contentCards.add(productPanel,  "SP");
+        contentCards.add(categoryPanel, "DM");
+        contentCards.add(supplierPanel, "NCC");
+
+        btnTabSP.addActionListener(e  -> { tabCards.show(contentCards, "SP");  setTabActive(btnTabSP);  });
+        btnTabDM.addActionListener(e  -> { tabCards.show(contentCards, "DM");  setTabActive(btnTabDM);  });
+        btnTabNCC.addActionListener(e -> { tabCards.show(contentCards, "NCC"); setTabActive(btnTabNCC); });
+
+        add(tabBar,       BorderLayout.NORTH);
+        add(contentCards, BorderLayout.CENTER);
+    }
+
+    private JButton makeTabBtn(String text) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Arial", Font.BOLD, 14));
+        btn.setForeground(new Color(0xCCBBEE));
+        btn.setBackground(new Color(0x3A3545));
+        btn.setBorder(BorderFactory.createEmptyBorder(10, 22, 10, 22));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(true);
+        btn.setOpaque(true);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                if (btn.getBackground() != CLR_TAB_ACTIVE)
+                    btn.setBackground(CLR_TAB_HOVER);
+            }
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                if (btn.getBackground() == CLR_TAB_HOVER)
+                    btn.setBackground(new Color(0x3A3545));
+            }
+        });
+        return btn;
+    }
+
+    private void setTabActive(JButton active) {
+        for (JButton b : new JButton[]{btnTabSP, btnTabDM, btnTabNCC}) {
+            if (b == active) {
+                b.setBackground(CLR_TAB_ACTIVE);
+                b.setForeground(Color.WHITE);
+            } else {
+                b.setBackground(new Color(0x3A3545));
+                b.setForeground(new Color(0xCCBBEE));
+            }
+        }
     }
 
     private JPanel createProductPanel() {
@@ -110,6 +167,7 @@ public class SanPhamPanel extends JPanel {
         String[] boloc = { "Tất cả", "Còn hàng", "Hết hàng", "Có khuyến mãi", "Cận date" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
         cbLoc.setPreferredSize(new Dimension(200, 36));
+        UIUtils.styleComboBox(cbLoc);
 
         JPanel timkiem = new JPanel(new BorderLayout());
         timkiem.setPreferredSize(new Dimension(220, 36));
@@ -120,7 +178,7 @@ public class SanPhamPanel extends JPanel {
         tim.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
         timkiem.add(tim, BorderLayout.CENTER);
 
-        JButton nuttim = new JButton("🔍");
+        JButton nuttim = new JButton("Q");
         nuttim.setBorderPainted(false);
         nuttim.setContentAreaFilled(false);
         nuttim.setFocusPainted(false);
@@ -356,16 +414,22 @@ public class SanPhamPanel extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            button.setBackground(isSelected ? table.getSelectionBackground() : new Color(0x6677C8));
+            JPanel cell = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 8));
+            cell.setBackground(isSelected ? table.getSelectionBackground() : (row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA)));
+            button.setBackground(new Color(0x6677C8));
             button.setForeground(Color.WHITE);
-            return button;
+            cell.add(button);
+            return cell;
         }
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            button.setBackground(isSelected ? table.getSelectionBackground() : new Color(0x6677C8));
+            JPanel cell = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 8));
+            cell.setBackground(isSelected ? table.getSelectionBackground() : (row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA)));
+            button.setBackground(new Color(0x6677C8));
             button.setForeground(Color.WHITE);
-            return button;
+            cell.add(button);
+            return cell;
         }
 
         @Override

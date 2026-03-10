@@ -48,7 +48,8 @@ public class LoginDialog extends JDialog {
     /** Load và scale logo từ img/logo.png, trả null nếu không tìm thấy */
     private ImageIcon loadLogo(int w, int h) {
         try {
-            java.io.File f = new java.io.File("img/logo.png");
+            java.io.File f = new java.io.File("img/icons/Logo.png");
+            if (!f.exists()) f = new java.io.File("img/logo.png");
             if (!f.exists()) f = new java.io.File("img/logo.jpg");
             if (!f.exists()) return null;
             Image img = new ImageIcon(f.getAbsolutePath()).getImage()

@@ -324,7 +324,7 @@ public class NhanVienPanel extends JPanel {
         JTextField tfSearch = new JTextField();
         tfSearch.setFont(new Font("Arial", Font.PLAIN, 13));
         tfSearch.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 4));
-        JButton btnSearch = new JButton("🔍");
+        JButton btnSearch = new JButton("Q");
         btnSearch.setBorderPainted(false);
         btnSearch.setContentAreaFilled(false);
         btnSearch.setFocusPainted(false);

@@ -58,7 +58,7 @@ public class CategoryPanel extends JPanel {
         searchField.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
         searchPanel.add(searchField, BorderLayout.CENTER);
 
-        JButton searchBtn = new JButton("🔍");
+        JButton searchBtn = new JButton("Q");
         searchBtn.setBorderPainted(false);
         searchBtn.setContentAreaFilled(false);
         searchBtn.setFocusPainted(false);
@@ -257,9 +257,9 @@ public class CategoryPanel extends JPanel {
     }
 
     private void editCategory(int modelRow) {
-        int id = (Integer) model.getValueAt(modelRow, 0);
-        String name = (String) model.getValueAt(modelRow, 1);
-        String description = (String) model.getValueAt(modelRow, 2);
+        int id = (Integer) model.getValueAt(modelRow, 1);
+        String name = (String) model.getValueAt(modelRow, 2);
+        String description = (String) model.getValueAt(modelRow, 3);
 
         CategoryDTO category = new CategoryDTO();
         category.setID(id);

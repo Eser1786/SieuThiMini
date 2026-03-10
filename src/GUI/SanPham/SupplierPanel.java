@@ -63,7 +63,7 @@ public class SupplierPanel extends JPanel {
         searchField.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 4));
         searchPanel.add(searchField, BorderLayout.CENTER);
 
-        JButton searchBtn = new JButton("🔍");
+        JButton searchBtn = new JButton("Q");
         searchBtn.setBorderPainted(false);
         searchBtn.setContentAreaFilled(false);
         searchBtn.setFocusPainted(false);
@@ -83,8 +83,8 @@ public class SupplierPanel extends JPanel {
 
         // ComboBox for search type
         JComboBox<String> searchType = new JComboBox<>(new String[]{"Tất cả", "Mã NCC", "Tên NCC", "Địa chỉ", "Người liên lạc", "SĐT", "Email"});
-        searchType.setFont(new Font("Arial", Font.PLAIN, 13));
-        searchType.setPreferredSize(new Dimension(120, 36));
+        searchType.setPreferredSize(new Dimension(150, 36));
+        UIUtils.styleComboBox(searchType);
 
         // Add supplier button
         JButton addBtn = new JButton("+ Thêm nhà cung cấp");
@@ -124,9 +124,24 @@ public class SupplierPanel extends JPanel {
         table.setRowHeight(50); // make rows taller
         table.setFont(new Font("Arial", Font.PLAIN, 13));
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
-        table.getTableHeader().setBackground(new Color(0xE8E6F5));
-        table.setGridColor(new Color(0xE8E6F5));
+        table.getTableHeader().setBackground(new Color(0xAF9FCB));
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.setGridColor(new Color(0xEEEEEE));
+        table.setShowVerticalLines(false);
         table.setSelectionBackground(new Color(0xC5B3E6));
+
+        // Alternating row renderer
+        DefaultTableCellRenderer altRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int col) {
+                Component c = super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, col);
+                if (!isSelected) c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
+                setHorizontalAlignment(col == 0 ? SwingConstants.CENTER : SwingConstants.LEFT);
+                return c;
+            }
+        };
+        for (int i = 0; i < 6; i++) table.getColumnModel().getColumn(i).setCellRenderer(altRenderer);
 
         // Center align for some columns
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -138,7 +153,7 @@ public class SupplierPanel extends JPanel {
         table.getColumnModel().getColumn(6).setCellEditor(new ActionEditor());
 
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(0xCCCCCC), 1));
+        UIUtils.styleScrollPane(scrollPane);
 
         // Apply search filter (unchanged)
         Runnable applyFilter = () -> {
@@ -179,9 +194,12 @@ public class SupplierPanel extends JPanel {
         searchType.addActionListener(e -> applyFilter.run());
         searchBtn.addActionListener(e -> applyFilter.run());
 
-        add(header, BorderLayout.NORTH);
-        add(top, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER); // let table fill remaining space
+        JPanel northPanel = new JPanel();
+        northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.Y_AXIS));
+        northPanel.add(header);
+        northPanel.add(top);
+        add(northPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
 
         loadSuppliers();
     }
@@ -213,71 +231,87 @@ public class SupplierPanel extends JPanel {
     }
 
     private void showSupplierDialog(SupplierDTO supplier) {
-        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), supplier == null ? "Thêm nhà cung cấp" : "Sửa nhà cung cấp", true);
-        dialog.setSize(400, 300);
-        dialog.setLocationRelativeTo(this);
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        JDialog dialog = new JDialog(owner, supplier == null ? "Thêm nhà cung cấp" : "Sửa nhà cung cấp",
+                Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setResizable(false);
         dialog.setLayout(new BorderLayout());
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.anchor = GridBagConstraints.WEST;
+        // Header
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
+        header.setBackground(new Color(0xAF9FCB));
+        JLabel titleLabel = new JLabel(supplier == null ? "Thêm nhà cung cấp mới" : "Sửa nhà cung cấp");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        titleLabel.setForeground(Color.WHITE);
+        header.add(titleLabel);
 
-        JTextField txtCode = new JTextField(15);
+        // Form
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(new Color(0xF0EFF8));
+        form.setBorder(BorderFactory.createEmptyBorder(18, 28, 18, 28));
+        GridBagConstraints g = new GridBagConstraints();
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.insets = new Insets(7, 6, 7, 6);
+        Font labelFont = new Font("Arial", Font.BOLD, 13);
+        Dimension fieldSize = new Dimension(260, 32);
+
+        // Mã NCC — read-only styled field
+        JTextField txtCode = UIUtils.makeField();
+        txtCode.setPreferredSize(new Dimension(120, 32));
         txtCode.setEditable(false);
-        JTextField txtName = new JTextField(20);
-        JTextField txtAddress = new JTextField(20);
-        JTextField txtContact = new JTextField(20);
-        JTextField txtPhone = new JTextField(20);
-        JTextField txtEmail = new JTextField(20);
+        txtCode.setBackground(new Color(0xE8E8E8));
+        txtCode.setFont(new Font("Arial", Font.BOLD, 13));
+        txtCode.setText(supplier != null ? supplier.getCode() : supplierBUS.generateSupplierCode());
+
+        JTextField txtName    = UIUtils.makeField(); txtName.setPreferredSize(fieldSize);
+        JTextField txtAddress = UIUtils.makeField(); txtAddress.setPreferredSize(fieldSize);
+        JTextField txtContact = UIUtils.makeField(); txtContact.setPreferredSize(fieldSize);
+        JTextField txtPhone   = UIUtils.makeField(); txtPhone.setPreferredSize(fieldSize);
+        JTextField txtEmail   = UIUtils.makeField(); txtEmail.setPreferredSize(fieldSize);
 
         if (supplier != null) {
-            txtCode.setText(supplier.getCode());
             txtName.setText(supplier.getName());
             txtAddress.setText(supplier.getAddress());
             txtContact.setText(supplier.getContactPerson());
             txtPhone.setText(supplier.getPhone());
             txtEmail.setText(supplier.getEmail());
-        } else {
-            // generate code for new supplier
-            txtCode.setText(supplierBUS.generateSupplierCode());
         }
 
-        gbc.gridx = 0; gbc.gridy = 0;
-        panel.add(new JLabel("Mã NCC:"), gbc);
-        gbc.gridx = 1;
-        panel.add(txtCode, gbc);
+        g.gridy = 0; g.gridx = 0; g.weightx = 0;
+        JLabel lbCode = new JLabel("Mã NCC:"); lbCode.setFont(labelFont);
+        form.add(lbCode, g);
+        g.gridx = 1; g.weightx = 1;
+        form.add(txtCode, g);
 
-        gbc.gridx = 0; gbc.gridy = 1;
-        panel.add(new JLabel("Tên nhà cung cấp:"), gbc);
-        gbc.gridx = 1;
-        panel.add(txtName, gbc);
+        g.gridy = 1; g.gridx = 0; g.weightx = 0;
+        JLabel lbName = new JLabel("Tên nhà cung cấp:"); lbName.setFont(labelFont); form.add(lbName, g);
+        g.gridx = 1; g.weightx = 1; form.add(txtName, g);
 
-        gbc.gridx = 0; gbc.gridy = 2;
-        panel.add(new JLabel("Địa chỉ:"), gbc);
-        gbc.gridx = 1;
-        panel.add(txtAddress, gbc);
+        g.gridy = 2; g.gridx = 0; g.weightx = 0;
+        JLabel lbAddr = new JLabel("Địa chỉ:"); lbAddr.setFont(labelFont); form.add(lbAddr, g);
+        g.gridx = 1; g.weightx = 1; form.add(txtAddress, g);
 
-        gbc.gridx = 0; gbc.gridy = 3;
-        panel.add(new JLabel("Người liên lạc:"), gbc);
-        gbc.gridx = 1;
-        panel.add(txtContact, gbc);
+        g.gridy = 3; g.gridx = 0; g.weightx = 0;
+        JLabel lbCt = new JLabel("Người liên lạc:"); lbCt.setFont(labelFont); form.add(lbCt, g);
+        g.gridx = 1; g.weightx = 1; form.add(txtContact, g);
 
-        gbc.gridx = 0; gbc.gridy = 4;
-        panel.add(new JLabel("SĐT:"), gbc);
-        gbc.gridx = 1;
-        panel.add(txtPhone, gbc);
+        g.gridy = 4; g.gridx = 0; g.weightx = 0;
+        JLabel lbPhone = new JLabel("SĐT:"); lbPhone.setFont(labelFont); form.add(lbPhone, g);
+        g.gridx = 1; g.weightx = 1; form.add(txtPhone, g);
 
-        gbc.gridx = 0; gbc.gridy = 5;
-        panel.add(new JLabel("Email:"), gbc);
-        gbc.gridx = 1;
-        panel.add(txtEmail, gbc);
+        g.gridy = 5; g.gridx = 0; g.weightx = 0;
+        JLabel lbEmail = new JLabel("Email:"); lbEmail.setFont(labelFont); form.add(lbEmail, g);
+        g.gridx = 1; g.weightx = 1; form.add(txtEmail, g);
 
-        JButton saveBtn = new JButton("Lưu");
+        // Footer buttons
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        footer.setBackground(new Color(0xF0EFF8));
+        footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
+
+        JButton saveBtn = UIUtils.makeActionButton("Lưu", new Color(0x5C4A7F));
+        saveBtn.setPreferredSize(new Dimension(90, 34));
         saveBtn.addActionListener(e -> {
             try {
-                // validate
                 if (txtName.getText().trim().isEmpty() ||
                     txtAddress.getText().trim().isEmpty() ||
                     txtContact.getText().trim().isEmpty() ||
@@ -293,12 +327,8 @@ public class SupplierPanel extends JPanel {
                 s.setContactPerson(txtContact.getText().trim());
                 s.setPhone(txtPhone.getText().trim());
                 s.setEmail(txtEmail.getText().trim());
-
-                if (supplier == null) {
-                    supplierBUS.addSupplier(s);
-                } else {
-                    supplierBUS.updateSupplier(s);
-                }
+                if (supplier == null) supplierBUS.addSupplier(s);
+                else supplierBUS.updateSupplier(s);
                 loadSuppliers();
                 dialog.dispose();
             } catch (Exception ex) {
@@ -306,27 +336,33 @@ public class SupplierPanel extends JPanel {
             }
         });
 
-        JButton cancelBtn = new JButton("Hủy");
+        JButton cancelBtn = UIUtils.makeActionButton("Hủy", new Color(0x9E9E9E));
+        cancelBtn.setPreferredSize(new Dimension(80, 34));
         cancelBtn.addActionListener(e -> dialog.dispose());
 
-        JPanel btnPanel = new JPanel();
-        btnPanel.add(saveBtn);
+        footer.add(saveBtn);
         if (supplier != null) {
-            JButton deleteBtn = new JButton("Xóa");
+            JButton deleteBtn = UIUtils.makeActionButton("Xóa", new Color(0xC62828));
+            deleteBtn.setPreferredSize(new Dimension(80, 34));
             deleteBtn.addActionListener(e -> {
-                int opt = JOptionPane.showConfirmDialog(dialog, "Bạn có chắc muốn xóa nhà cung cấp này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+                int opt = JOptionPane.showConfirmDialog(dialog,
+                        "Bạn có chắc muốn xóa nhà cung cấp này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
                 if (opt == JOptionPane.YES_OPTION) {
                     supplierBUS.deleteSupplier(supplier.getID());
                     loadSuppliers();
                     dialog.dispose();
                 }
             });
-            btnPanel.add(deleteBtn);
+            footer.add(deleteBtn);
         }
-        btnPanel.add(cancelBtn);
+        footer.add(cancelBtn);
 
-        dialog.add(panel, BorderLayout.CENTER);
-        dialog.add(btnPanel, BorderLayout.SOUTH);
+        dialog.add(header, BorderLayout.NORTH);
+        dialog.add(form,   BorderLayout.CENTER);
+        dialog.add(footer, BorderLayout.SOUTH);
+        dialog.pack();
+        dialog.setMinimumSize(new Dimension(420, dialog.getHeight()));
+        dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
 
@@ -344,32 +380,33 @@ public class SupplierPanel extends JPanel {
 
     // Action renderer and editor for table
     private class ActionRenderer extends JPanel implements TableCellRenderer {
-        private JButton editBtn = new JButton("Sửa");
-        private JButton deleteBtn = new JButton("Xóa");
+        private final JButton editBtn   = UIUtils.makeActionButton("Sửa",  new Color(0x6677C8));
+        private final JButton deleteBtn = UIUtils.makeActionButton("Xóa",  new Color(0xC62828));
 
         public ActionRenderer() {
-            setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-            editBtn.setFont(new Font("Arial", Font.PLAIN, 12));
-            deleteBtn.setFont(new Font("Arial", Font.PLAIN, 12));
+            setLayout(new FlowLayout(FlowLayout.CENTER, 6, 8));
+            setOpaque(true);
             add(editBtn);
             add(deleteBtn);
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            setBackground(isSelected ? table.getSelectionBackground()
+                    : (row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA)));
             return this;
         }
     }
 
     private class ActionEditor extends AbstractCellEditor implements TableCellEditor {
-        private JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-        private JButton editBtn = new JButton("Sửa");
-        private JButton deleteBtn = new JButton("Xóa");
+        private final JPanel  panel     = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
+        private final JButton editBtn   = UIUtils.makeActionButton("Sửa",  new Color(0x6677C8));
+        private final JButton deleteBtn = UIUtils.makeActionButton("Xóa",  new Color(0xC62828));
         private int currentRow;
 
         public ActionEditor() {
-            editBtn.setFont(new Font("Arial", Font.PLAIN, 12));
-            deleteBtn.setFont(new Font("Arial", Font.PLAIN, 12));
+            panel.setOpaque(true);
             panel.add(editBtn);
             panel.add(deleteBtn);
 
@@ -389,14 +426,15 @@ public class SupplierPanel extends JPanel {
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected, int row, int column) {
             currentRow = table.convertRowIndexToModel(row);
+            panel.setBackground(isSelected ? table.getSelectionBackground()
+                    : (row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA)));
             return panel;
         }
 
         @Override
-        public Object getCellEditorValue() {
-            return "";
-        }
+        public Object getCellEditorValue() { return ""; }
     }
 }

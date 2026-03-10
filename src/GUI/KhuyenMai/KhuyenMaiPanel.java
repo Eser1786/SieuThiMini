@@ -81,7 +81,7 @@ public class KhuyenMaiPanel extends JPanel {
         JTextField tfTim = new JTextField();
         tfTim.setFont(new Font("Arial", Font.PLAIN, 13));
         tfTim.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 4));
-        JButton btnTim = new JButton("\uD83D\uDD0D");
+        JButton btnTim = new JButton("Q");
         btnTim.setBorderPainted(false);
         btnTim.setContentAreaFilled(false);
         btnTim.setFocusPainted(false);
