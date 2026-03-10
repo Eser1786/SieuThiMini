@@ -1,0 +1,897 @@
+package GUI.KhuyenMai;
+
+import com.toedter.calendar.JDateChooser;
+import java.text.SimpleDateFormat;
+import javax.swing.*;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.event.DocumentEvent;
+import BUS.CategoryBUS;
+import BUS.DiscountBUS;
+import BUS.DiscountProductBUS;
+import BUS.ProductBUS;
+import DTO.CategoryDTO;
+import DTO.DiscountDTO;
+import DTO.ProductDTO;
+import GUI.ExportUtils;
+import GUI.UIUtils;
+import GUI.WrapLayout;
+
+public class KhuyenMaiPanel extends JPanel {
+
+    private static final Color PAGE_BG = new Color(0xF8F7FF);
+    private static final Color ACCENT  = new Color(0x5C4A7F);
+    private static final Color TBL_HDR = new Color(0xAF9FCB);
+
+    private final DiscountBUS discountBUS = new DiscountBUS();
+    private DefaultTableModel tableModel;
+    private TableRowSorter<DefaultTableModel> sorter;
+
+    public KhuyenMaiPanel() {
+        setLayout(new BorderLayout());
+        setBackground(PAGE_BG);
+
+        // ── Model ─────────────────────────────────────────────────────────────
+        String[] cols = { "Mã", "Tên khuyến mãi", "Giá trị", "Loại giảm",
+                "Ngày bắt đầu", "Ngày kết thúc", "Trạng thái", "Thao tác" };
+        tableModel = new DefaultTableModel(cols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return c == 7; }
+        };
+        sorter = new TableRowSorter<>(tableModel);
+
+        // ── Header ────────────────────────────────────────────────────────────
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
+        header.setBackground(PAGE_BG);
+        header.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xDDDDDD)),
+                BorderFactory.createEmptyBorder(0, 20, 0, 20)));
+        JPanel bar = new JPanel();
+        bar.setPreferredSize(new Dimension(5, 26));
+        bar.setBackground(ACCENT);
+        header.add(bar);
+        header.add(Box.createHorizontalStrut(12));
+        JLabel hdrTitle = new JLabel("QUẢN LÝ KHUYẾN MÃI");
+        hdrTitle.setFont(new Font("Arial", Font.BOLD, 20));
+        header.add(hdrTitle);
+
+        // ── Toolbar ───────────────────────────────────────────────────────────
+        JPanel toolbar = new JPanel(new WrapLayout(FlowLayout.LEFT, 8, 4));
+        toolbar.setBackground(PAGE_BG);
+        toolbar.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
+                BorderFactory.createEmptyBorder(8, 10, 8, 10)));
+
+        String[] loaiGiam = { "Tất cả", "PERCENT", "FIXED" };
+        JComboBox<String> cbLoc = new JComboBox<>(loaiGiam);
+        cbLoc.setPreferredSize(new Dimension(160, 38));
+        UIUtils.styleComboBox(cbLoc);
+
+        String[] trangThaiList = { "Tất cả", "ACTIVE", "EXPIRED"};
+        JComboBox<String> cbTrangThai = new JComboBox<>(trangThaiList);
+        cbTrangThai.setPreferredSize(new Dimension(150, 38));
+        UIUtils.styleComboBox(cbTrangThai);
+
+        JPanel timPanel = new JPanel(new BorderLayout());
+        timPanel.setPreferredSize(new Dimension(220, 38));
+        timPanel.setBackground(Color.WHITE);
+        timPanel.setBorder(BorderFactory.createLineBorder(new Color(0xBBBBBB), 1));
+        JTextField tfTim = new JTextField();
+        tfTim.setFont(new Font("Arial", Font.PLAIN, 13));
+        tfTim.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 4));
+        JButton btnTim = new JButton("\uD83D\uDD0D");
+        btnTim.setBorderPainted(false);
+        btnTim.setContentAreaFilled(false);
+        btnTim.setFocusPainted(false);
+        btnTim.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnTim.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                btnTim.setContentAreaFilled(true);
+                btnTim.setBackground(new Color(0xC5B3E6));
+                btnTim.setOpaque(true);
+            }
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                btnTim.setContentAreaFilled(false);
+                btnTim.setOpaque(false);
+            }
+        });
+        timPanel.add(tfTim, BorderLayout.CENTER);
+        timPanel.add(btnTim, BorderLayout.EAST);
+
+        JLabel lbLoc = new JLabel("Loại giảm:");  lbLoc.setFont(new Font("Arial", Font.PLAIN, 13));
+        JLabel lbTT  = new JLabel("Trạng thái:"); lbTT.setFont(new Font("Arial", Font.PLAIN, 13));
+        JLabel lbTim = new JLabel("Tìm kiếm:");   lbTim.setFont(new Font("Arial", Font.PLAIN, 13));
+        
+
+        JPanel pLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pLoc.setOpaque(false); pLoc.add(lbLoc); pLoc.add(cbLoc);
+        JPanel pTT  = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTT.setOpaque(false);  pTT.add(lbTT);  pTT.add(cbTrangThai);
+        JPanel pTim = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTim.setOpaque(false); pTim.add(lbTim); pTim.add(timPanel);
+
+        JButton btnThem = new JButton("+ Thêm khuyến mãi");
+        btnThem.setFont(new Font("Arial", Font.BOLD, 13));
+        btnThem.setBackground(new Color(0xD9D9D9));
+        btnThem.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnThem.setOpaque(true); btnThem.setBorderPainted(false); btnThem.setFocusPainted(false);
+        btnThem.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnThem.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnThem.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnThem.setBackground(new Color(0xD9D9D9)); }
+        });
+        btnThem.addActionListener(e -> showAddDialog());
+
+        JButton btnPDF    = ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
+        JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
+        JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
+        JButton btnReset = new JButton("Reset");
+        btnReset.setBackground(new Color(108, 117, 125)); // màu xám
+        btnReset.setForeground(Color.WHITE);
+        btnReset.setFocusPainted(false);
+        btnReset.setBorderPainted(false);
+        btnReset.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnReset.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnReset.addActionListener(e -> {
+            tfTim.setText("");
+            cbLoc.setSelectedIndex(0);
+            cbTrangThai.setSelectedIndex(0);
+            sorter.setRowFilter(null);
+        });
+        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, tableModel, "Danh sách khuyến mãi"));
+        btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, tableModel, "khuyen_mai"));
+        btnImport.addActionListener(e -> {
+            List<String[]> rows = ExportUtils.importCSV(this);
+            if (rows == null) return;
+            for (String[] r : rows) { if (r.length < 7) continue; tableModel.addRow((Object[]) r); }
+        });
+
+        toolbar.add(pLoc); toolbar.add(pTT); toolbar.add(pTim);
+        toolbar.add(btnThem); toolbar.add(btnPDF); toolbar.add(btnExcel);
+        toolbar.add(btnReset);
+        JPanel north = new JPanel();
+        north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
+        north.add(header);
+        north.add(toolbar);
+        add(north, BorderLayout.NORTH);
+
+        // ── Table ─────────────────────────────────────────────────────────────
+        JTable bang = new JTable(tableModel);
+        bang.setRowSorter(sorter);
+        bang.setRowHeight(52);
+        bang.setFont(new Font("Arial", Font.PLAIN, 14));
+        bang.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        bang.getTableHeader().setPreferredSize(new Dimension(0, 52));
+        bang.getTableHeader().setBackground(TBL_HDR);
+        bang.getTableHeader().setForeground(Color.WHITE);
+        bang.getTableHeader().setReorderingAllowed(false);
+        bang.setShowVerticalLines(false);
+        bang.setGridColor(new Color(0xEEEEEE));
+        bang.setIntercellSpacing(new Dimension(0, 1));
+        bang.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        bang.getColumnModel().getColumn(0).setPreferredWidth(70);
+        bang.getColumnModel().getColumn(1).setPreferredWidth(220);
+        bang.getColumnModel().getColumn(2).setPreferredWidth(90);
+        bang.getColumnModel().getColumn(3).setPreferredWidth(100);
+        bang.getColumnModel().getColumn(4).setPreferredWidth(120);
+        bang.getColumnModel().getColumn(5).setPreferredWidth(120);
+        bang.getColumnModel().getColumn(6).setPreferredWidth(100);
+        bang.getColumnModel().getColumn(7).setPreferredWidth(110);
+
+        DefaultTableCellRenderer altR = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable t, Object val, boolean sel, boolean foc, int r, int c) {
+                super.getTableCellRendererComponent(t, val, sel, foc, r, c);
+                if (!sel) {
+                    setBackground(r % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
+                    setForeground(Color.BLACK);
+                    if (c == 3) {
+                        String v = val == null ? "" : val.toString();
+                        setForeground("PERCENT".equals(v) ? new Color(0x1565C0) : new Color(0x6A1B9A));
+                    }
+                    if (c == 6) {
+                        String v = val == null ? "" : val.toString();
+                        if (v.equalsIgnoreCase("ACTIVE"))        setForeground(new Color(0x2E7D32));
+                        else if (v.equalsIgnoreCase("EXPIRED"))  setForeground(new Color(0xB71C1C));
+                        else                                      setForeground(new Color(0x888888));
+                    }
+                }
+                setHorizontalAlignment(SwingConstants.CENTER);
+                return this;
+            }
+        };
+        for (int i = 0; i < 7; i++)
+            bang.getColumnModel().getColumn(i).setCellRenderer(altR);
+
+        bang.getColumnModel().getColumn(7).setCellRenderer(
+                (t, val, sel, foc, r, c) -> buildActionCell(bang, r, false));
+        bang.getColumnModel().getColumn(7).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+            @Override
+            public Component getTableCellEditorComponent(JTable t, Object val, boolean sel, int r, int c) {
+                return buildActionCell(t, r, true);
+            }
+            @Override public Object getCellEditorValue() { return ""; }
+        });
+
+        bang.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int row = bang.rowAtPoint(e.getPoint());
+                int col = bang.columnAtPoint(e.getPoint());
+                if (col == 7 && row >= 0)
+                    showDetailDialog(bang.convertRowIndexToModel(row));
+            }
+        });
+
+        Runnable applyFilter = () -> {
+            String kw      = tfTim.getText().trim();
+            int    idxLoc  = cbLoc.getSelectedIndex();
+            int    idxTT   = cbTrangThai.getSelectedIndex();
+
+            RowFilter<DefaultTableModel, Integer> fLoc = idxLoc == 0 ? null
+                    : RowFilter.regexFilter("(?i)^" + loaiGiam[idxLoc] + "$", 3);
+            RowFilter<DefaultTableModel, Integer> fTT = idxTT == 0 ? null
+                    : RowFilter.regexFilter("(?i)^" + trangThaiList[idxTT] + "$", 6);
+            RowFilter<DefaultTableModel, Integer> fSr = kw.isEmpty() ? null
+                    : RowFilter.orFilter(List.of(
+                            RowFilter.regexFilter("(?i)" + kw, 0),
+                            RowFilter.regexFilter("(?i)" + kw, 1)));
+
+            List<RowFilter<DefaultTableModel, Integer>> active = new java.util.ArrayList<>();
+            if (fLoc != null) active.add(fLoc);
+            if (fTT  != null) active.add(fTT);
+            if (fSr  != null) active.add(fSr);
+
+            if (active.isEmpty()) sorter.setRowFilter(null);
+            else if (active.size() == 1) sorter.setRowFilter(active.get(0));
+            else sorter.setRowFilter(RowFilter.andFilter(active));
+        };
+
+        btnTim.addActionListener(e -> applyFilter.run());
+
+
+        JScrollPane scroll = new JScrollPane(bang);
+        UIUtils.styleScrollPane(scroll);
+        add(scroll, BorderLayout.CENTER);
+
+        loadDiscountTables();
+    }
+
+    // ── Action cell ───────────────────────────────────────────────────────────
+    private JPanel buildActionCell(JTable t, int row, boolean isEditor) {
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
+        p.setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
+        JButton btn = UIUtils.makeActionButton("Chi tiết", new Color(0x6677C8));
+        if (isEditor) {
+            btn.addActionListener(e -> {
+                int modelRow = t.convertRowIndexToModel(row);
+                showDetailDialog(modelRow);
+                t.getCellEditor().stopCellEditing();
+            });
+        }
+        p.add(btn);
+        return p;
+    }
+
+    // ── Load data ─────────────────────────────────────────────────────────────
+   void loadDiscountTables() {
+
+    ArrayList<DiscountDTO> list = discountBUS.getAllDiscounts();
+    tableModel.setRowCount(0);
+
+    if (list == null) return;
+
+    for (DiscountDTO d : list) {
+
+        // bỏ qua INACTIVE
+        if(d.getStatus() != null && d.getStatus().name().equals("INACTIVE"))
+            continue;
+
+        tableModel.addRow(new Object[]{
+            d.getDiscountCode() != null ? d.getDiscountCode() : String.valueOf(d.getId()),
+            d.getName(),
+            d.getValue(),
+            d.getDiscountType().name(),
+            d.getStartDate(),
+            d.getEndDate(),
+            d.getStatus() != null ? d.getStatus().name() : "-",
+            ""
+        });
+    }
+}
+
+    // ── Detail dialog ─────────────────────────────────────────────────────────
+    private void showDetailDialog(int modelRow) {
+        if (modelRow < 0 || modelRow >= tableModel.getRowCount()) return;
+
+        String ma        = cell(modelRow, 0);
+        String ten       = cell(modelRow, 1);
+        String giaTriStr = cell(modelRow, 2);
+        String loaiGiam  = cell(modelRow, 3);
+        String ngayBD    = cell(modelRow, 4);
+        String ngayKT    = cell(modelRow, 5);
+        String trangThai = cell(modelRow, 6);
+
+        DiscountDTO d = null;
+        try { d = discountBUS.getDiscountByCode(ma); } catch (Exception ignored) {}
+
+        String moTa     = d != null && d.getDescription() != null ? d.getDescription() : "-";
+        String minOrder = d != null ? String.valueOf(d.getMinOrderAmount()) : "-";
+        final DiscountDTO dto = d;
+
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        JDialog dlg = new JDialog(owner, "Chi tiết khuyến mãi", Dialog.ModalityType.APPLICATION_MODAL);
+        dlg.setResizable(false);
+        dlg.setLayout(new BorderLayout());
+
+        JPanel hdr = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
+        hdr.setBackground(TBL_HDR);
+        JLabel hdrLbl = new JLabel("Thông tin khuyến mãi");
+        hdrLbl.setFont(new Font("Arial", Font.BOLD, 18));
+        hdrLbl.setForeground(Color.WHITE);
+        hdr.add(hdrLbl);
+        dlg.add(hdr, BorderLayout.NORTH);
+
+        String[] labels = { "Mã:", "Tên:", "Mô tả:", "Giá trị giảm:", "Loại giảm:",
+                             "Ngày bắt đầu:", "Ngày kết thúc:", "Min order:", "Trạng thái:" };
+        Object[] values = { ma, ten, moTa, giaTriStr, loaiGiam, ngayBD, ngayKT, minOrder, trangThai };
+        JPanel body = new JPanel(new BorderLayout(0, 0));
+        body.setBackground(new Color(0xF0EFF8));
+        body.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+
+        JPanel infoGrid = new JPanel(new GridLayout(labels.length, 2, 10, 10));
+        infoGrid.setOpaque(false);
+        for (int i = 0; i < labels.length; i++) {
+            JLabel l = new JLabel(labels[i]); l.setFont(new Font("Arial", Font.BOLD, 14));
+            JLabel v = new JLabel(values[i] == null ? "-" : values[i].toString()); v.setFont(new Font("Arial", Font.PLAIN, 14));
+            infoGrid.add(l); infoGrid.add(v);
+        }
+        body.add(infoGrid, BorderLayout.NORTH);
+
+        // Load products that apply to this discount
+        if (dto != null) {
+            DiscountProductBUS dpBUS2 = new DiscountProductBUS();
+            ArrayList<Integer> pids = dpBUS2.getProductsByDiscount(dto.getId());
+            if (!pids.isEmpty()) {
+                ProductBUS productBUS2 = new ProductBUS();
+                ArrayList<ProductDTO> allProducts = productBUS2.getAllProducts();
+                java.util.Map<Integer, String> pidToName = new java.util.HashMap<>();
+                for (ProductDTO p : allProducts) pidToName.put(p.getId(), p.getName());
+
+                JPanel prodSection = new JPanel(new BorderLayout(0, 6));
+                prodSection.setOpaque(false);
+                prodSection.setBorder(BorderFactory.createEmptyBorder(14, 0, 0, 0));
+                JLabel prodTitle = new JLabel("Sản phẩm áp dụng:");
+                prodTitle.setFont(new Font("Arial", Font.BOLD, 14));
+                prodSection.add(prodTitle, BorderLayout.NORTH);
+
+                DefaultTableModel prodModel = new DefaultTableModel(new String[]{"#", "ID", "Tên sản phẩm"}, 0) {
+                    @Override public boolean isCellEditable(int r, int c) { return false; }
+                };
+                for (int i = 0; i < pids.size(); i++) {
+                    int pid = pids.get(i);
+                    String pname = pidToName.getOrDefault(pid, "SP#" + pid);
+                    prodModel.addRow(new Object[]{i + 1, pid, pname});
+                }
+                JTable prodTable = new JTable(prodModel);
+                prodTable.setRowHeight(26);
+                prodTable.setFont(new Font("Arial", Font.PLAIN, 13));
+                prodTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
+                prodTable.getColumnModel().getColumn(0).setPreferredWidth(35);
+                prodTable.getColumnModel().getColumn(1).setPreferredWidth(55);
+                prodTable.getColumnModel().getColumn(2).setPreferredWidth(260);
+                JScrollPane ps = new JScrollPane(prodTable);
+                ps.setPreferredSize(new Dimension(400, Math.min(120, 28 + 26 * pids.size())));
+                prodSection.add(ps, BorderLayout.CENTER);
+                body.add(prodSection, BorderLayout.CENTER);
+            }
+        }
+        dlg.add(body, BorderLayout.CENTER);
+
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12));
+        footer.setBackground(new Color(0xF0EFF8));
+        footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
+
+        if (dto != null) {
+            JButton btnSua = makeDialogBtn("Sửa", ACCENT);
+            JButton btnXoa = makeDialogBtn("Xóa", new Color(0xC62828));
+            btnSua.addActionListener(e -> { dlg.dispose(); showEditDialog(dto); });
+            btnXoa.addActionListener(e -> {
+                int c1 = JOptionPane.showConfirmDialog(dlg, "Xóa khuyến mãi này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+                if (c1 != JOptionPane.YES_OPTION) return;
+                int c2 = JOptionPane.showConfirmDialog(dlg,
+                    "Xác nhận lần cuối: Khuyến mãi sẽ bị ẩn vĩnh viễn. Tiếp tục?",
+                    "Xác nhận lần 2", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (c2 != JOptionPane.YES_OPTION) return;
+                String result = discountBUS.deleteDiscount(dto.getId());
+                if ("SUCCESS".equals(result)) {
+                    JOptionPane.showMessageDialog(dlg, "Đã xóa khuyến mãi.");
+                    loadDiscountTables(); dlg.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(dlg, result, "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            footer.add(btnSua); footer.add(btnXoa);
+        }
+        JButton btnDong = makeDialogBtn("Đóng", new Color(0x9B8EA8));
+        btnDong.addActionListener(e -> dlg.dispose());
+        footer.add(btnDong);
+        dlg.add(footer, BorderLayout.SOUTH);
+
+        dlg.pack();
+        dlg.setMinimumSize(new Dimension(460, dlg.getPreferredSize().height));
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+    }
+
+    // ── Add dialog ────────────────────────────────────────────────────────────
+    private void showAddDialog() {
+        JDialog dlg = makeFormDialog("Thêm khuyến mãi mới", "Thêm khuyến mãi");
+        JTextField fName     = formField(); JTextField fDesc  = formField();
+        JTextField fValue    = formField(); JTextField fMinOrder = formField();
+        JComboBox<String> cbType   = styledCombo(new String[]{"PERCENT", "FIXED"});
+        JComboBox<String> cbStatus = styledCombo(new String[]{"ACTIVE", "EXPIRED"});
+        JDateChooser dcStart = dateChooser(); JDateChooser dcEnd = dateChooser();
+                String[] productCols = {"Chọn", "ID", "Tên sản phẩm"};
+
+        DefaultTableModel productModel = new DefaultTableModel(productCols,0){
+            @Override
+            public Class<?> getColumnClass(int column){
+                return column == 0 ? Boolean.class : String.class;
+            }
+        };
+
+        JTable productTable = new JTable(productModel);
+        productTable.setRowHeight(25);
+        productModel.addTableModelListener(e -> {
+
+    if(e.getColumn() == 0){ // cột checkbox
+
+        int selectedRow = e.getFirstRow();
+        Boolean checked = (Boolean) productModel.getValueAt(selectedRow,0);
+
+        if(Boolean.TRUE.equals(checked)){
+
+            for(int i = 0; i < productModel.getRowCount(); i++){
+
+                if(i != selectedRow){
+                    productModel.setValueAt(false,i,0);
+                }
+
+            }
+
+        }
+
+    }
+
+});
+        TableRowSorter<DefaultTableModel> productSorter =
+        new TableRowSorter<>(productModel);
+
+        productTable.setRowSorter(productSorter);
+        JScrollPane productScroll = new JScrollPane(productTable);
+        productScroll.setPreferredSize(new Dimension(300,120));
+
+            ProductBUS productBUS = new ProductBUS();
+        ArrayList<ProductDTO> products = productBUS.getAllProducts();
+        CategoryBUS categoryBUS = new CategoryBUS();
+ArrayList<CategoryDTO> categories = categoryBUS.getAllCategories();
+
+JComboBox<String> cbCategory = new JComboBox<>();
+cbCategory.addItem("Tất cả");
+
+for(CategoryDTO c : categories){
+    cbCategory.addItem(c.getName());
+}
+
+JTextField tfSearch = new JTextField();
+tfSearch.setBorder(BorderFactory.createTitledBorder("Tìm sản phẩm"));
+        for(ProductDTO p : products){
+            productModel.addRow(new Object[]{
+                false,
+                p.getId(),
+                p.getName()
+            });
+        }
+        Runnable applyFilter = () -> {
+
+    String keyword = tfSearch.getText().trim();
+    String categoryName = (String) cbCategory.getSelectedItem();
+
+    List<RowFilter<Object,Object>> filters = new ArrayList<>();
+
+    if(!keyword.isEmpty()){
+        filters.add(RowFilter.regexFilter("(?i)" + keyword, 2));
+    }
+
+    if(!"Tất cả".equals(categoryName)){
+
+        filters.add(new RowFilter<Object,Object>(){
+
+            public boolean include(Entry<?,?> entry){
+
+                int productId = Integer.parseInt(entry.getStringValue(1));
+
+                for(ProductDTO p : products){
+
+                    if(p.getId()==productId){
+
+                        for(CategoryDTO c : categories){
+                            if(c.getID()==p.getId()){
+                                return c.getName().equals(categoryName);
+                            }
+                        }
+
+                    }
+
+                }
+
+                return false;
+            }
+        });
+    }
+
+    if(filters.isEmpty()) productSorter.setRowFilter(null);
+    else productSorter.setRowFilter(RowFilter.andFilter(filters));
+};
+tfSearch.getDocument().addDocumentListener(new DocumentListener(){
+
+    public void insertUpdate(DocumentEvent e){applyFilter.run();}
+    public void removeUpdate(DocumentEvent e){applyFilter.run();}
+    public void changedUpdate(DocumentEvent e){applyFilter.run();}
+});
+JPanel filterPanel = new JPanel(new GridLayout(1,2,10,5));
+filterPanel.add(cbCategory);
+filterPanel.add(tfSearch);
+
+JPanel productPanel = new JPanel(new BorderLayout());
+productPanel.add(filterPanel, BorderLayout.NORTH);
+productPanel.add(productScroll, BorderLayout.CENTER);
+cbCategory.addActionListener(e -> applyFilter.run());
+        JPanel form = buildFormGrid(new Object[][]{
+            {"Tên khuyến mãi *:", fName,     "Loại giảm:",       cbType},
+            {"Giá trị giảm *:",   fValue,    "Trạng thái:",      cbStatus},
+            {"Min order (VNĐ):",  fMinOrder, "Ngày bắt đầu *:",  dcStart},
+            {"Mô tả:",            fDesc,     "Ngày kết thúc *:", dcEnd},
+            {"Sản phẩm áp dụng:", productPanel, "", new JLabel("")}
+        });
+        productPanel.setVisible(false);
+        cbType.addActionListener(e -> {
+            String type = cbType.getSelectedItem().toString();
+            productPanel.setVisible(type.equals("FIXED"));
+            dlg.pack();
+        });
+        dlg.add(form, BorderLayout.CENTER);
+
+        JPanel footer = makeFooter();
+        JButton btnLuu = makeDialogBtn("Lưu", ACCENT);
+        JButton btnHuy = makeDialogBtn("Hủy", new Color(0x9B8EA8));
+        footer.add(btnLuu); footer.add(btnHuy);
+        dlg.add(footer, BorderLayout.SOUTH);
+        btnHuy.addActionListener(e -> dlg.dispose());
+        btnLuu.addActionListener(e -> {
+            try {
+                Integer productId = null;
+
+            for(int i=0;i<productModel.getRowCount();i++){
+
+                Boolean checked = (Boolean) productModel.getValueAt(i,0);
+
+                if(Boolean.TRUE.equals(checked)){
+                    productId = Integer.parseInt(productModel.getValueAt(i,1).toString());
+                    break;
+                }
+            }
+            if(cbType.getSelectedItem().equals("FIXED") && productId == null){
+            JOptionPane.showMessageDialog(dlg,"Vui lòng chọn sản phẩm!");
+            return;
+        }
+                if (dcStart.getDate() == null || dcEnd.getDate() == null) {
+                    JOptionPane.showMessageDialog(dlg, "Vui lòng chọn ngày bắt đầu và ngày kết thúc!"); return;
+                }
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String result = discountBUS.addDiscount(
+        fName.getText().trim(),
+        fDesc.getText().trim(),
+        fValue.getText().trim(),
+        cbType.getSelectedItem().toString(),
+        cbStatus.getSelectedItem().toString(),
+        sdf.format(dcStart.getDate()),
+        sdf.format(dcEnd.getDate()),
+        fMinOrder.getText().trim(),
+        productId
+);
+                if ("SUCCESS".equals(result)) {
+                    JOptionPane.showMessageDialog(dlg, "Thêm khuyến mãi thành công!");
+                    loadDiscountTables(); dlg.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(dlg, result, "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dlg, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        dlg.pack();
+        dlg.setMinimumSize(new Dimension(680, dlg.getPreferredSize().height));
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+    }
+
+    // ── Edit dialog ───────────────────────────────────────────────────────────
+    private void showEditDialog(DiscountDTO d) {
+
+    JDialog dlg = makeFormDialog("Sửa thông tin khuyến mãi", "Sửa khuyến mãi");
+
+    JTextField fName = formField();
+    fName.setText(d.getName());
+
+    JTextField fDesc = formField();
+    fDesc.setText(d.getDescription() != null ? d.getDescription() : "");
+
+    JTextField fValue = formField();
+    fValue.setText(String.valueOf(d.getValue()));
+
+    JTextField fMinOrder = formField();
+    fMinOrder.setText(String.valueOf(d.getMinOrderAmount()));
+
+    JComboBox<String> cbType = styledCombo(new String[]{"PERCENT", "FIXED"});
+    JComboBox<String> cbStatus = styledCombo(new String[]{"ACTIVE", "EXPIRED"});
+
+    cbType.setSelectedItem(d.getDiscountType().name());
+    cbType.setEnabled(false);
+
+    if (d.getStatus() != null)
+        cbStatus.setSelectedItem(d.getStatus().name());
+
+    JDateChooser dcStart = dateChooser();
+    JDateChooser dcEnd = dateChooser();
+
+    if (d.getStartDate() != null)
+        dcStart.setDate(java.sql.Date.valueOf(d.getStartDate()));
+
+    if (d.getEndDate() != null)
+        dcEnd.setDate(java.sql.Date.valueOf(d.getEndDate()));
+
+    // ================= PRODUCT TABLE =================
+
+    String[] cols = {"Chọn", "ID", "Tên sản phẩm"};
+
+    DefaultTableModel productModel = new DefaultTableModel(cols,0){
+        @Override
+        public Class<?> getColumnClass(int column){
+            return column == 0 ? Boolean.class : String.class;
+        }
+    };
+
+    JTable productTable = new JTable(productModel);
+    productTable.setRowHeight(25);
+
+    // chỉ chọn 1 checkbox
+    productModel.addTableModelListener(e -> {
+
+        if(e.getColumn() == 0){
+
+            int row = e.getFirstRow();
+            Boolean checked = (Boolean) productModel.getValueAt(row,0);
+
+            if(Boolean.TRUE.equals(checked)){
+
+                for(int i=0;i<productModel.getRowCount();i++){
+                    if(i != row){
+                        productModel.setValueAt(false,i,0);
+                    }
+                }
+
+            }
+
+        }
+
+    });
+
+    JScrollPane productScroll = new JScrollPane(productTable);
+    productScroll.setPreferredSize(new Dimension(300,120));
+
+    // load sản phẩm
+    ProductBUS productBUS = new ProductBUS();
+    ArrayList<ProductDTO> products = productBUS.getAllProducts();
+
+    // lấy sản phẩm hiện tại của discount
+    DiscountProductBUS dpBUS = new DiscountProductBUS();
+    ArrayList<Integer> productIds = dpBUS.getProductsByDiscount(d.getId());
+
+    Integer selectedProduct = null;
+
+    if(!productIds.isEmpty()){
+        selectedProduct = productIds.get(0);
+    }
+
+    for(ProductDTO p : products){
+
+        boolean checked = selectedProduct != null && p.getId() == selectedProduct;
+
+        productModel.addRow(new Object[]{
+                checked,
+                p.getId(),
+                p.getName()
+        });
+    }
+
+    JPanel productPanel = new JPanel(new BorderLayout());
+    productPanel.add(productScroll, BorderLayout.CENTER);
+
+    productPanel.setVisible(d.getDiscountType().name().equals("FIXED"));
+
+    // ================= FORM =================
+
+    JPanel form = buildFormGrid(new Object[][]{
+            {"Tên khuyến mãi *:", fName, "Loại giảm:", cbType},
+            {"Giá trị giảm *:", fValue, "Trạng thái:", cbStatus},
+            {"Min order (VNĐ):", fMinOrder, "Ngày bắt đầu *:", dcStart},
+            {"Mô tả:", fDesc, "Ngày kết thúc *:", dcEnd},
+            {"Sản phẩm áp dụng:", productPanel, "", new JLabel("")}
+    });
+
+    dlg.add(form, BorderLayout.CENTER);
+
+    // ================= FOOTER =================
+
+    JPanel footer = makeFooter();
+
+    JButton btnLuu = makeDialogBtn("Cập nhật", ACCENT);
+    JButton btnHuy = makeDialogBtn("Hủy", new Color(0x9B8EA8));
+
+    footer.add(btnLuu);
+    footer.add(btnHuy);
+
+    dlg.add(footer, BorderLayout.SOUTH);
+
+    btnHuy.addActionListener(e -> dlg.dispose());
+
+    btnLuu.addActionListener(e -> {
+
+        try {
+
+            if (dcStart.getDate() == null || dcEnd.getDate() == null) {
+                JOptionPane.showMessageDialog(dlg,"Vui lòng chọn ngày!");
+                return;
+            }
+
+            // lấy productId
+            Integer productId = null;
+
+            for(int i=0;i<productModel.getRowCount();i++){
+
+                Boolean checked = (Boolean) productModel.getValueAt(i,0);
+
+                if(Boolean.TRUE.equals(checked)){
+                    productId = Integer.parseInt(productModel.getValueAt(i,1).toString());
+                    break;
+                }
+            }
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+            String result = discountBUS.updateDiscount(
+                    d.getId(),
+                    fName.getText().trim(),
+                    fDesc.getText().trim(),
+                    Double.parseDouble(fValue.getText().trim()),
+                    cbType.getSelectedItem().toString(),
+                    sdf.format(dcStart.getDate()),
+                    sdf.format(dcEnd.getDate()),
+                    Double.parseDouble(fMinOrder.getText().trim()),
+                    cbStatus.getSelectedItem().toString(),
+                    productId
+            );
+
+            if("SUCCESS".equals(result)){
+                JOptionPane.showMessageDialog(dlg,"Cập nhật thành công!");
+                loadDiscountTables();
+                dlg.dispose();
+            }else{
+                JOptionPane.showMessageDialog(dlg, result, "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            }
+
+        }catch(Exception ex){
+            JOptionPane.showMessageDialog(dlg,"Lỗi: "+ex.getMessage());
+        }
+
+    });
+
+    dlg.pack();
+    dlg.setMinimumSize(new Dimension(700, dlg.getPreferredSize().height));
+    dlg.setLocationRelativeTo(this);
+    dlg.setVisible(true);
+}
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    private String cell(int row, int col) {
+        Object v = tableModel.getValueAt(row, col);
+        return v == null ? "-" : v.toString();
+    }
+
+    private JDialog makeFormDialog(String headerText, String windowTitle) {
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        JDialog dlg = new JDialog(owner, windowTitle, Dialog.ModalityType.APPLICATION_MODAL);
+        dlg.setResizable(false);
+        dlg.setLayout(new BorderLayout());
+        JPanel hdr = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
+        hdr.setBackground(TBL_HDR);
+        JLabel hdrLbl = new JLabel(headerText);
+        hdrLbl.setFont(new Font("Arial", Font.BOLD, 18));
+        hdrLbl.setForeground(Color.WHITE);
+        hdr.add(hdrLbl);
+        dlg.add(hdr, BorderLayout.NORTH);
+        return dlg;
+    }
+
+    private JPanel buildFormGrid(Object[][] rows) {
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(new Color(0xF0EFF8));
+        form.setBorder(BorderFactory.createEmptyBorder(18, 28, 14, 28));
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.insets = new Insets(6, 6, 6, 6);
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.anchor = GridBagConstraints.WEST;
+        for (int r = 0; r < rows.length; r++) {
+            for (int c = 0; c < 4; c++) {
+                gc.gridx = c; gc.gridy = r;
+                if (c % 2 == 0) {
+                    gc.weightx = 0;
+                    JLabel lb = new JLabel(rows[r][c].toString());
+                    lb.setFont(new Font("Arial", Font.PLAIN, 13));
+                    form.add(lb, gc);
+                } else {
+                    gc.weightx = 1;
+                    form.add((Component) rows[r][c], gc);
+                }
+            }
+        }
+        return form;
+    }
+
+    private JPanel makeFooter() {
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        footer.setBackground(new Color(0xF0EFF8));
+        footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xD1C4E9)));
+        return footer;
+    }
+
+    private JTextField formField() {
+        JTextField tf = new JTextField();
+        tf.setFont(new Font("Arial", Font.PLAIN, 13));
+        tf.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+        tf.setPreferredSize(new Dimension(200, 36));
+        return tf;
+    }
+
+    private JComboBox<String> styledCombo(String[] items) {
+        JComboBox<String> cb = new JComboBox<>(items);
+        UIUtils.styleComboBox(cb);
+        cb.setPreferredSize(new Dimension(200, 36));
+        return cb;
+    }
+
+    private JDateChooser dateChooser() {
+        JDateChooser dc = new JDateChooser();
+        dc.setDateFormatString("dd/MM/yyyy");
+        dc.setPreferredSize(new Dimension(200, 36));
+        return dc;
+    }
+
+    private JButton makeDialogBtn(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Arial", Font.BOLD, 13));
+        btn.setOpaque(true);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createEmptyBorder(8, 22, 8, 22));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+}
+

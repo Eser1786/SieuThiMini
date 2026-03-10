@@ -1,0 +1,250 @@
+package DAO;
+
+import java.sql.*;
+
+public class ProductDAO {
+
+    private Connection con;
+    public boolean openConnection(){
+        try{
+            con = DBConnection.getConnection();
+            return con != null;
+        }catch(Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public void closeConnection(){
+        try{
+            if(con!=null){
+                con.close();
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+    }
+
+   public java.util.ArrayList<DTO.ProductDTO> getAllProducts(){
+    java.util.ArrayList<DTO.ProductDTO> list = new java.util.ArrayList<>();
+    if(openConnection()){
+        try{
+            String sql = """
+                SELECT p.*, s.name AS supplier_name, c.name AS category_name
+                FROM products p
+                LEFT JOIN suppliers s 
+                  ON p.supplier_id = s.supplier_id
+                LEFT JOIN categories c
+                  ON p.category_id = c.category_id
+                WHERE p.isdeleted = 0
+            """;
+
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while(rs.next()){
+                DTO.ProductDTO p = new DTO.ProductDTO();
+
+                p.setId(rs.getInt("product_id"));
+                p.setCode(rs.getString("product_code"));
+                p.setImagePath(rs.getString("image_path")); // thêm trường đường dẫn ảnh
+                p.setName(rs.getString("name"));
+                p.setDescription(rs.getString("description"));
+
+                // 🔥 Supplier
+                DTO.SupplierDTO sup = new DTO.SupplierDTO();
+                sup.setID(rs.getInt("supplier_id"));
+                sup.setName(rs.getString("supplier_name")); // 👈 LẤY TÊN Ở ĐÂY
+                p.setSupplier(sup);
+
+                // Category giữ nguyên nếu chưa cần name
+                DTO.CategoryDTO cat = new DTO.CategoryDTO();
+                cat.setID(rs.getInt("category_id"));
+                cat.setName(rs.getString("category_name"));
+                p.setCategory(cat);
+
+                p.setCostPrice(rs.getBigDecimal("cost_price"));
+                p.setSellingPrice(rs.getBigDecimal("selling_price"));
+                p.setTotalQuantity(rs.getLong("total_quantity"));
+                p.setMinStockLevel(rs.getLong("min_stock_level"));
+                p.setMadeIn(rs.getString("made_in"));
+
+                java.sql.Date pd = rs.getDate("production_date");
+                if(pd!=null) p.setProductionDate(pd.toLocalDate());
+
+                java.sql.Date ed = rs.getDate("expire_date");
+                if(ed!=null) p.setExpireDate(ed.toLocalDate());
+
+                p.setPosition(rs.getString("position"));
+                p.setUnit(rs.getString("unit"));
+                p.setStatus(rs.getString("status"));
+                p.setIsVisible(rs.getBoolean("is_visible"));
+                p.setIsdeleted(rs.getBoolean("isdeleted"));
+
+                Timestamp ct = rs.getTimestamp("created_at");
+                if(ct!=null) p.setCreatedAt(ct.toLocalDateTime());
+
+                Timestamp ut = rs.getTimestamp("updated_at");
+                if(ut!=null) p.setUpdatedAt(ut.toLocalDateTime());
+
+                list.add(p);
+            }
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }finally{
+            closeConnection();
+        }
+    }
+    return list;
+}
+
+    public boolean softDeleteProduct(int id) {
+        String sql = "UPDATE products SET isdeleted=1 WHERE product_id=?";
+        try (java.sql.Connection conn = DAO.DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean addProduct(DTO.ProductDTO p){
+        if(!openConnection()) return false;
+        try{
+            String sql = "INSERT INTO products(product_code,image_path,name,description,category_id,supplier_id,cost_price,selling_price,total_quantity,min_stock_level,made_in,production_date,expire_date,position,unit,status,is_visible,isdeleted,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            PreparedStatement pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, p.getCode());
+            pstmt.setString(2, p.getImagePath()); // đường dẫn hình
+            pstmt.setString(3, p.getName());
+            pstmt.setString(4, p.getDescription());
+            pstmt.setInt(5, p.getCategory()!=null ? p.getCategory().getID() : 0);
+            pstmt.setInt(6, p.getSupplier()!=null ? p.getSupplier().getID() : 0);
+            pstmt.setBigDecimal(7, p.getCostPrice());
+            pstmt.setBigDecimal(8, p.getSellingPrice());
+            pstmt.setLong(9, p.getTotalQuantity());
+            pstmt.setLong(10, p.getMinStockLevel());
+            pstmt.setString(11, p.getMadeIn());
+            pstmt.setDate(12, p.getProductionDate()!=null ? java.sql.Date.valueOf(p.getProductionDate()) : null);
+            pstmt.setDate(13, p.getExpireDate()!=null ? java.sql.Date.valueOf(p.getExpireDate()) : null);
+            pstmt.setString(14, p.getPosition());
+            pstmt.setString(15, p.getUnit());
+            pstmt.setString(16, p.getStatus());
+            pstmt.setBoolean(17, p.getIsVisible());
+            pstmt.setBoolean(18, p.getIsdeleted());
+            pstmt.setTimestamp(19, p.getCreatedAt()!=null ? Timestamp.valueOf(p.getCreatedAt()) : null);
+            pstmt.setTimestamp(20, p.getUpdatedAt()!=null ? Timestamp.valueOf(p.getUpdatedAt()) : null);
+            return pstmt.executeUpdate() > 0;
+        }catch(SQLException e){
+            e.printStackTrace();
+            return false;
+        }finally{
+            closeConnection();
+        }
+    }
+    
+    public boolean hasProductId(int id){
+        if(!openConnection()) return false;
+        try{
+            String sql = "SELECT 1 FROM products WHERE product_id = ?";
+            PreparedStatement pstmt = con.prepareStatement(sql);
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next();
+        }catch(SQLException e){
+            e.printStackTrace();
+            return false;
+        }finally{
+            closeConnection();
+        }
+    }
+
+    /**
+     * Cộng/trừ tồn kho. delta > 0 là nhập, delta < 0 là xuất.
+     * Dùng atomic UPDATE để tránh race condition.
+     */
+    /**
+     * Cộng/trừ tồn kho. delta > 0 là nhập, delta < 0 là xuất.
+     * Dùng atomic UPDATE để tránh race condition.
+     */
+    public boolean updateStock(long productId, long delta) {
+        String sql = "UPDATE products SET total_quantity = total_quantity + ?, updated_at = NOW() WHERE product_id = ?";
+        try (java.sql.Connection conn = DAO.DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, delta);
+            ps.setLong(2, productId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Tính tồn kho thực tế từ giao dịch:
+     * Tồn = tổng nhập (phiếu RECEIVED) − tổng bán (hóa đơn COMPLETED).
+     */
+    public long getComputedStock(long productId) {
+        String sql =
+            "SELECT " +
+            "  COALESCE((SELECT SUM(pii.quantity) " +
+            "            FROM purchase_invoice_items pii " +
+            "            JOIN purchase_invoices pi ON pii.invoice_id = pi.invoice_id " +
+            "            WHERE pii.product_id = ? AND pi.status = 'RECEIVED'), 0) " +
+            "- COALESCE((SELECT SUM(sii.quantity) " +
+            "            FROM sales_invoice_items sii " +
+            "            JOIN sales_invoices sinv ON sii.invoice_id = sinv.invoice_id " +
+            "            WHERE sii.product_id = ? AND sinv.status = 'COMPLETED'), 0) " +
+            "AS computed_stock";
+        try (java.sql.Connection conn = DAO.DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            ps.setLong(2, productId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getLong("computed_stock");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0L;
+    }
+
+    public boolean deleteProduct(int id) {
+        boolean result = false;
+        if (openConnection()) {
+            try {
+                PreparedStatement pstm = con.prepareStatement("UPDATE products SET is_deleted = 1 WHERE product_id=?");
+                pstm.setInt(1, id);
+                result = pstm.executeUpdate() >= 1;
+            } catch (SQLException e) {
+                System.out.println("Không thể xóa sản phẩm! ProductDAO - deleteProduct");
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return result;
+    }
+public boolean decreaseStock(Long productId, int quantity){
+
+    String sql = """
+        UPDATE products
+        SET total_quantity = total_quantity - ?
+        WHERE product_id = ?
+    """;
+
+    try(Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)){
+
+        ps.setInt(1, quantity);
+        ps.setLong(2, productId);
+
+        return ps.executeUpdate() > 0;
+
+    }catch(Exception e){
+        e.printStackTrace();
+        return false;
+    }
+}
+}
