@@ -1,8 +1,6 @@
 package DAO;
 
 import DTO.SalesInvoiceItemDTO;
-import DAO.DBConnection;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -169,25 +167,65 @@ public List<SalesInvoiceItemDTO> getBySaleCode(String saleCode){
     return list;
 }
 public void addItems(Long invoiceId, List<SalesInvoiceItemDTO> items) throws SQLException {
-        String sql = "INSERT INTO sales_invoice_items (invoice_id, product_id, quantity, unit_price, subtotal, notes) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO sales_invoice_items (invoice_id, product_id, product_code, product_name, quantity, unit_price, subtotal, notes) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             for (SalesInvoiceItemDTO item : items) {
+                // Validate product is not deleted
+                if (isProductDeleted(item.getProductId())) {
+                    throw new SQLException("Sản phẩm ID " + item.getProductId() + " đã bị xóa, không thể bán");
+                }
+                
+                // Get product info for historical preservation
+                String[] productInfo = getProductInfo(item.getProductId());
+                String productCode = productInfo[0];
+                String productName = productInfo[1];
+                
                 ps.setLong(1, invoiceId);
                 ps.setLong(2, item.getProductId());
-                ps.setInt(3, item.getQuantity());
-                ps.setBigDecimal(4, item.getUnitPrice());
-                ps.setBigDecimal(5, item.getSubtotal());
-                ps.setString(6, item.getNotes());
+                ps.setString(3, productCode);
+                ps.setString(4, productName);
+                ps.setInt(5, item.getQuantity());
+                ps.setBigDecimal(6, item.getUnitPrice());
+                ps.setBigDecimal(7, item.getSubtotal());
+                ps.setString(8, item.getNotes());
 
                 ps.addBatch();
             }
 
             ps.executeBatch();
         }
+    }
+
+    private String[] getProductInfo(long productId) throws SQLException {
+        String sql = "SELECT product_code, name FROM products WHERE product_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new String[]{rs.getString("product_code"), rs.getString("name")};
+                }
+            }
+        }
+        return new String[]{"", ""};
+    }
+
+    private boolean isProductDeleted(long productId) throws SQLException {
+        String sql = "SELECT isdeleted FROM products WHERE product_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean("isdeleted");
+                }
+            }
+        }
+        return false;
     }
     public boolean deleteItemsByInvoiceId(Long invoiceId){
 

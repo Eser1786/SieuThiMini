@@ -60,6 +60,10 @@ public class SupplierBUS {
     }
 
     public boolean deleteSupplier(int id) {
+        // When deleting a supplier, also soft-delete all its products
+        ProductBUS productBUS = new ProductBUS();
+        productBUS.softDeleteProductsBySupplier(id);
+        // Then delete the supplier
         return supplierDAO.deleteSupplier(id);
     }
 

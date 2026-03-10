@@ -38,6 +38,10 @@ public class ProductBUS {
         return dao.softDeleteProductsByCategory(categoryId);
     }
 
+    public boolean softDeleteProductsBySupplier(int supplierId) {
+        return dao.softDeleteProductsBySupplier(supplierId);
+    }
+
     /** delta > 0 nhập kho, delta < 0 xuất kho */
     public boolean updateStock(long productId, long delta) {
         return dao.updateStock(productId, delta);

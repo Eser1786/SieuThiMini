@@ -1,15 +1,14 @@
 package GUI.SanPham;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.awt.Dialog;
-import GUI.UIUtils;
 import BUS.CategoryBUS;
 import BUS.SupplierBUS;
 import DTO.CategoryDTO;
 import DTO.SupplierDTO;
+import GUI.UIUtils;
+import java.awt.*;
 import java.util.ArrayList;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 /** Dialog chi tiết + sửa San Pham — tách từ SanPhamPanel */
 class SanPhamDetailDialog {
@@ -112,9 +111,9 @@ class SanPhamDetailDialog {
             "Mã SP", "Tên sản phẩm", "Mô tả", "Nhà cung cấp", "Danh mục",
             "Giá vốn", "Giá bán", "Số lượng", "Tồn kho tối thiểu",
             "Xuất xứ", "Ngày sản xuất", "Ngày hết hạn",
-            "Vị trí", "Đơn vị", "Trạng thái", "Khuyến mãi"
+            "Vị trí", "Đơn vị", "Trạng thái"
         };
-        int[] colIdx = { 0, 2, 9, 10, 11, 12, 3, 4, 13, 14, 15, 6, 16, 17, 18, 7 };
+        int[] colIdx = { 0, 2, 9, 10, 11, 12, 3, 4, 13, 14, 15, 6, 16, 17, 18 };
 
         JComponent[] flds = new JComponent[lbls.length];
         for (int i = 0; i < lbls.length; i++) {
@@ -161,7 +160,7 @@ class SanPhamDetailDialog {
                 tf.setEditable(false);
                 tf.setBackground(new Color(0xE8E8E8));
                 flds[i] = tf;
-            } else if (i == 14) { // Trạng thái - combo box
+            } else if (i == 13) { // Trạng thái - combo box
                 JComboBox<String> cb = new JComboBox<>();
                 cb.setFont(new Font("Arial", Font.PLAIN, 14));
                 cb.setBackground(Color.WHITE);

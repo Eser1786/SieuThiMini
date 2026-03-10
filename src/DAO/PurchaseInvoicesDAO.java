@@ -1,9 +1,7 @@
 package DAO;
 
-import DTO.PurchaseInvoicesDTO;
 import DTO.PurchaseInvoiceItemsDTO;
-import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
-
+import DTO.PurchaseInvoicesDTO;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -61,10 +59,7 @@ public class PurchaseInvoicesDAO {
 
     private List<PurchaseInvoiceItemsDTO> getItemsByInvoiceId(Long invoiceId) {
         List<PurchaseInvoiceItemsDTO> items = new ArrayList<>();
-        String sql = "SELECT pii.*, p.product_code, p.name AS product_name " +
-                     "FROM purchase_invoice_items pii " +
-                     "LEFT JOIN products p ON pii.product_id = p.product_id " +
-                     "WHERE pii.invoice_id = ?";
+        String sql = "SELECT pii.* FROM purchase_invoice_items pii WHERE pii.invoice_id = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -144,6 +139,11 @@ public class PurchaseInvoicesDAO {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
+            // Validate supplier is not deleted
+            if (isSupplierDeleted(invoice.getSupplierId())) {
+                throw new SQLException("Nhà cung cấp đã bị xóa, không thể nhập hàng từ nhà cung cấp này");
+            }
+
             ps.setString(1, invoice.getInvoiceCode());
             ps.setObject(2, invoice.getPurchaseId());
             ps.setTimestamp(3, Timestamp.valueOf(invoice.getDateIn()));
@@ -176,25 +176,79 @@ public class PurchaseInvoicesDAO {
     }
 
     private void addItems(Long invoiceId, List<PurchaseInvoiceItemsDTO> items) throws SQLException {
-        String sql = "INSERT INTO purchase_invoice_items (invoice_id, product_id, quantity, unit_price, subtotal, notes) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO purchase_invoice_items (invoice_id, product_id, product_code, product_name, quantity, unit_price, subtotal, notes) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             for (PurchaseInvoiceItemsDTO item : items) {
+                // Validate product is not deleted
+                if (isProductDeleted(item.getProductId())) {
+                    throw new SQLException("Sản phẩm ID " + item.getProductId() + " đã bị xóa, không thể nhập hàng");
+                }
+                
+                // Get product info for historical preservation
+                String[] productInfo = getProductInfo(item.getProductId());
+                String productCode = productInfo[0];
+                String productName = productInfo[1];
+                
                 ps.setLong(1, invoiceId);
                 ps.setLong(2, item.getProductId());
-                ps.setLong(3, item.getQuantity());
-                ps.setBigDecimal(4, item.getUnitPrice());
-                ps.setBigDecimal(5, item.getSubtotal());
-                ps.setString(6, item.getNotes());
+                ps.setString(3, productCode);
+                ps.setString(4, productName);
+                ps.setLong(5, item.getQuantity());
+                ps.setBigDecimal(6, item.getUnitPrice());
+                ps.setBigDecimal(7, item.getSubtotal());
+                ps.setString(8, item.getNotes());
 
                 ps.addBatch();
             }
 
             ps.executeBatch();
         }
+    }
+
+    private String[] getProductInfo(long productId) throws SQLException {
+        String sql = "SELECT product_code, name FROM products WHERE product_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new String[]{rs.getString("product_code"), rs.getString("name")};
+                }
+            }
+        }
+        return new String[]{"", ""};
+    }
+
+    private boolean isProductDeleted(long productId) throws SQLException {
+        String sql = "SELECT isdeleted FROM products WHERE product_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean("isdeleted");
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isSupplierDeleted(long supplierId) throws SQLException {
+        String sql = "SELECT isdeleted FROM suppliers WHERE supplier_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, supplierId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean("isdeleted");
+                }
+            }
+        }
+        return false;
     }
 
     public boolean updatePurchaseInvoice(PurchaseInvoicesDTO invoice) {

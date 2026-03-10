@@ -36,7 +36,7 @@ public class ProductDAO {
                   ON p.supplier_id = s.supplier_id
                 LEFT JOIN categories c
                   ON p.category_id = c.category_id
-                WHERE p.isdeleted = 0
+                WHERE p.isdeleted = 0 AND (s.isdeleted = 0 OR s.isdeleted IS NULL)
             """;
 
             Statement stmt = con.createStatement();
@@ -117,6 +117,18 @@ public class ProductDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, categoryId);
             return ps.executeUpdate() >= 0; // >=0 because it might update 0 rows
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean softDeleteProductsBySupplier(int supplierId) {
+        String sql = "UPDATE products SET isdeleted=1 WHERE supplier_id=?";
+        try (java.sql.Connection conn = DAO.DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, supplierId);
+            return ps.executeUpdate() >= 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

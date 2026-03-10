@@ -1,8 +1,10 @@
 package GUI.SanPham;
 
 import BUS.CategoryBUS;
+import BUS.ProductBUS;
 import BUS.SupplierBUS;
 import DTO.CategoryDTO;
+import DTO.ProductDTO;
 import DTO.SupplierDTO;
 import java.util.List;
 
@@ -15,6 +17,7 @@ import javax.imageio.ImageIO;
 import GUI.UIUtils;
 import com.toedter.calendar.JDateChooser;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 
 /** Dialog add San Pham mới — tách từ SanPhamPanel.showThemPopup */
 class SanPhamAddDialog {
@@ -130,6 +133,10 @@ class SanPhamAddDialog {
         JTextField fGiaVon = UIUtils.makeField(); fGiaVon.setPreferredSize(fd);
         JTextField fGiaBan = UIUtils.makeField(); fGiaBan.setPreferredSize(fd);
         JTextField fSL     = UIUtils.makeField(); fSL.setPreferredSize(fd);
+        fSL.setText("0");
+        fSL.setEditable(false);
+        fSL.setBackground(new Color(0xE8E6F0));
+        fSL.setForeground(new Color(0x888888));
         JTextField fTonMin = UIUtils.makeField(); fTonMin.setPreferredSize(fd);
         JTextField fXX     = UIUtils.makeField(); fXX.setPreferredSize(fd);
         JTextField fViTri  = UIUtils.makeField(); fViTri.setPreferredSize(fd);
@@ -138,8 +145,6 @@ class SanPhamAddDialog {
         JComboBox<String> cbTT = new JComboBox<>(new String[]{"ACTIVE", "INACTIVE", "DISCONTINUED"});
         cbTT.setPreferredSize(fd);
         cbTT.setSelectedItem("ACTIVE"); // Default to ACTIVE for new products
-        
-        JTextField fKM     = UIUtils.makeField(); fKM.setPreferredSize(fd);
 
         JDateChooser dcNgaySX = new JDateChooser();
         dcNgaySX.setDateFormatString("dd/MM/yyyy");
@@ -172,13 +177,13 @@ class SanPhamAddDialog {
 
         Object[][] rows = {
             { "Mã SP:",              fMa,       "Tên sản phẩm:",      fTen    },
-            { "Mô tả:",              fMoTa,     "Nhà cung cấp:",      cbNCC   },
+            { "Mô tả:",              fMoTa,     "Nhà cung cáp:",      cbNCC   },
             { "Danh mục:",           cbDM,      "Giá vốn (VNĐ):",     fGiaVon },
-            { "Giá bán (VNĐ):",      fGiaBan,   "Số lượng:",           fSL     },
-            { "Tồn kho tối thiểu:",  fTonMin,   "Xuất xứ:",            fXX     },
-            { "Ngày sản xuất:",      dcNgaySX,  "Ngày hết hạn:",      dcNgayHH },
-            { "Vị trí:",             fViTri,    "Đơn vị:",             fDonVi  },
-            { "Trạng thái:",         cbTT,      "Khuyến mãi:",         fKM     }
+            { "Giá bán (VNĐ):",      fGiaBan,   "Tồn kho tối thiểu:",  fTonMin     },
+            { "Xuất xứ:",            fXX,       "Ngày sản xuất:",      dcNgaySX },
+            { "Ngày hết hạn:",       dcNgayHH,  "Vị trí:",            fViTri  },
+            { "Đơn vị:",             fDonVi,    "Trạng thái:",        cbTT   },
+            { "Số lượng (Hệ thống):", fSL,     null,                 null    }
         };
         for (int i = 0; i < rows.length; i++) {
             g.gridy = i;
@@ -248,12 +253,6 @@ class SanPhamAddDialog {
                 JOptionPane.showMessageDialog(popup, "Giá bán phải lớn hơn giá vốn.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
                 fGiaBan.requestFocus(); return;
             }
-            int sl = 0;
-            try { sl = Integer.parseInt(fSL.getText().trim()); if (sl < 0) throw new NumberFormatException(); }
-            catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(popup, "Số lượng phải là số nguyên không âm.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
-                fSL.requestFocus(); return;
-            }
             if (!fTonMin.getText().trim().isEmpty()) {
                 try { int t = Integer.parseInt(fTonMin.getText().trim()); if (t < 0) throw new NumberFormatException(); }
                 catch (NumberFormatException ex) {
@@ -267,18 +266,80 @@ class SanPhamAddDialog {
                 return;
             }
             // ── Save ──────────────────────────────────────────────────────────
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            String ngaySX = dcNgaySX.getDate() != null ? sdf.format(dcNgaySX.getDate()) : "";
-            String ngayHH = dcNgayHH.getDate() != null ? sdf.format(dcNgayHH.getDate()) : "";
-            String kho = sl > 0 ? "Còn hàng" : "Hết hàng";
-            model.addRow(new Object[]{
-                fMa.getText(), tmpPhotoPath[0] != null ? tmpPhotoPath[0] : "", fTen.getText(), fGiaBan.getText(),
-                sl, kho, ngayHH, fKM.getText().isEmpty() ? "-" : fKM.getText(), "",
-                fMoTa.getText(), (String)cbNCC.getSelectedItem(), (String)cbDM.getSelectedItem(), fGiaVon.getText(),
-                fTonMin.getText(), fXX.getText(), ngaySX,
-                fViTri.getText(), fDonVi.getText(), (String)cbTT.getSelectedItem()
-            });
-            popup.dispose();
+            try {
+                // Create ProductDTO to save to database
+                ProductDTO newProduct = new ProductDTO();
+                newProduct.setCode(fMa.getText());
+                newProduct.setImagePath(tmpPhotoPath[0] != null ? tmpPhotoPath[0] : "");
+                newProduct.setName(fTen.getText());
+                newProduct.setDescription(fMoTa.getText());
+                
+                // Get supplier
+                String nccName = (String) cbNCC.getSelectedItem();
+                if (nccName != null && !nccName.isEmpty()) {
+                    SupplierBUS supplierBUS = new SupplierBUS();
+                    List<SupplierDTO> suppliers = supplierBUS.getAllSuppliers();
+                    for (SupplierDTO s : suppliers) {
+                        if (s.getName().equals(nccName)) {
+                            newProduct.setSupplier(s);
+                            break;
+                        }
+                    }
+                }
+                
+                // Get category
+                String dmName = (String) cbDM.getSelectedItem();
+                if (dmName != null && !dmName.isEmpty()) {
+                    CategoryBUS categoryBUS = new CategoryBUS();
+                    List<CategoryDTO> categories = categoryBUS.getAllCategories();
+                    for (CategoryDTO c : categories) {
+                        if (c.getName().equals(dmName)) {
+                            newProduct.setCategory(c);
+                            break;
+                        }
+                    }
+                }
+                
+                newProduct.setCostPrice(new java.math.BigDecimal(fGiaVon.getText()));
+                newProduct.setSellingPrice(new java.math.BigDecimal(fGiaBan.getText()));
+                newProduct.setTotalQuantity(0); // Always 0 for new products
+                
+                if (!fTonMin.getText().trim().isEmpty()) {
+                    newProduct.setMinStockLevel(Long.parseLong(fTonMin.getText().trim()));
+                }
+                
+                newProduct.setMadeIn(fXX.getText());
+                if (dcNgaySX.getDate() != null) {
+                    newProduct.setProductionDate(new java.sql.Date(dcNgaySX.getDate().getTime()).toLocalDate());
+                }
+                if (dcNgayHH.getDate() != null) {
+                    newProduct.setExpireDate(new java.sql.Date(dcNgayHH.getDate().getTime()).toLocalDate());
+                }
+                newProduct.setPosition(fViTri.getText());
+                newProduct.setUnit(fDonVi.getText());
+                newProduct.setStatus((String) cbTT.getSelectedItem());
+                newProduct.setIsVisible(true);
+                newProduct.setIsdeleted(false);
+                newProduct.setCreatedAt(LocalDateTime.now());
+                newProduct.setUpdatedAt(LocalDateTime.now());
+                
+                // Save to database
+                ProductBUS productBUS = new ProductBUS();
+                if (productBUS.addProduct(newProduct)) {
+                    JOptionPane.showMessageDialog(popup, "Thêm sản phẩm thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                    
+                    // Reload products in parent panel
+                    if (parent instanceof SanPhamPanel) {
+                        ((SanPhamPanel) parent).loadProducts();
+                    }
+                    popup.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(popup, "Lỗi khi lưu sản phẩm vào CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(popup, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
         });
         footer.add(btnLuu);
         footer.add(btnHuy);
