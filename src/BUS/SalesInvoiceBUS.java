@@ -90,10 +90,6 @@ public class SalesInvoiceBUS {
         return salesInvoiceDAO.updateSalesInvoice(invoice);
     }
 
-    public boolean deleteSalesInvoice(Long invoiceId) throws SQLException {
-        if (invoiceId == null || invoiceId <= 0) return false;
-        return salesInvoiceDAO.deleteSalesInvoice(invoiceId);
-    }
 
     private String generateInvoiceCode() {
         // Format: HD + YYYYMMDD + - + 3-digit number

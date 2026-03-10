@@ -7,12 +7,14 @@ import BUS.ProductBUS;
 import BUS.SalesBUS;
 import DAO.DBConnection;
 import DAO.ProductDAO;
+import DAO.SalesInvoiceDAO;
 import DAO.SalesInvoiceItemDAO;
 import DTO.CustomerDTO;
 import DTO.DiscountDTO;
 import DTO.EmployeeDTO;
 import DTO.ProductDTO;
 import DTO.SaleDTO;
+import DTO.SalesInvoiceDTO;
 import DTO.SalesInvoiceItemDTO;
 import DTO.enums.SaleEnum.SalePaymentMethod;
 import DTO.enums.SaleEnum.SaleStatus;
@@ -662,27 +664,70 @@ class DonHangCreateCard extends JPanel {
             sale.setNote(itemsNote.toString());
             
             // Lưu vào database
-            boolean saved = salesBUS.addSale(sale);
-            if(saved){
+          boolean saved = salesBUS.addSale(sale);
 
-    // Lấy sale vừa tạo
-    SaleDTO savedSale = salesBUS.getSaleByCode(maDon);
-    Long saleId = savedSale.getSaleID();
+if(!saved){
+    JOptionPane.showMessageDialog(this, "Lỗi khi lưu đơn hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+    return;
+}
 
-    SalesInvoiceItemDAO itemDAO = new SalesInvoiceItemDAO();
-    ProductDAO productDAO = new ProductDAO();
+// lấy sale vừa tạo
+SaleDTO savedSale = salesBUS.getSaleByCode(maDon);
+Long saleId = savedSale.getSaleID();
 
-    for(OrderItem it : items){
+long subtotal = tongCong + discAmt;
+long total = tongCong;
+
+// ===== TẠO SALES INVOICE =====
+SalesInvoiceDAO invoiceDAO = new SalesInvoiceDAO();
+
+SalesInvoiceDTO invoice = new SalesInvoiceDTO();
+
+invoice.setInvoiceCode(invoiceDAO.generateInvoiceCode());
+invoice.setSaleId(saleId);
+invoice.setSubtotal(BigDecimal.valueOf(subtotal));
+invoice.setDiscountAmount(BigDecimal.valueOf(discAmt));
+invoice.setTaxAmount(BigDecimal.ZERO);
+invoice.setTotalAmount(BigDecimal.valueOf(total));
+invoice.setStatus("PENDING");
+
+// payment method
+String payment = cbHinhThuc.getSelectedItem().toString();
+
+if(payment.contains("Chuyển khoản"))
+    invoice.setPaymentMethod("TRANSFER");
+else if(payment.contains("Thẻ"))
+    invoice.setPaymentMethod("CARD");
+else
+    invoice.setPaymentMethod("CASH");
+
+
+boolean invoiceSaved = invoiceDAO.addSalesInvoice(invoice);
+
+if(!invoiceSaved){
+    JOptionPane.showMessageDialog(this,"Không tạo được hóa đơn","Lỗi",JOptionPane.ERROR_MESSAGE);
+    return;
+}
+
+// lấy invoiceId
+Long invoiceId = invoice.getInvoiceId();
+
+
+// ===== TẠO SALES INVOICE ITEMS =====
+SalesInvoiceItemDAO itemDAO = new SalesInvoiceItemDAO();
+
+for(OrderItem it : items){
 
     SalesInvoiceItemDTO item = new SalesInvoiceItemDTO();
 
-    item.setInvoiceId(saleId);
-    item.setProductId(it.productId);   // dùng trực tiếp
+    item.setInvoiceId(invoiceId);
+    item.setProductId(it.productId);
     item.setQuantity(it.qty);
     item.setUnitPrice(BigDecimal.valueOf(it.unitPrice));
     item.setSubtotal(BigDecimal.valueOf(it.unitPrice * it.qty));
 
     itemDAO.insert(item);
+<<<<<<< Updated upstream
     
 }
 
@@ -696,6 +741,8 @@ class DonHangCreateCard extends JPanel {
             System.err.println("Lỗi cập nhật last_purchase cho khách hàng: " + ex.getMessage());
         }
     }
+=======
+>>>>>>> Stashed changes
 }
             if (!saved) {
                 JOptionPane.showMessageDialog(this, "Lỗi khi lưu đơn hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
