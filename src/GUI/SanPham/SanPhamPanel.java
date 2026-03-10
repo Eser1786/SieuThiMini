@@ -133,10 +133,11 @@ public class SanPhamPanel extends JPanel {
         // ---- All columns (visible + hidden) ----
         String[] columns = {
             "Mã SP", "Ảnh", "Tên sản phẩm", "Giá bán",
-            "Số lượng", "Kho", "Ngày hết hạn", "Danh mục", "Thao tác",
-            // hidden:
-            "Mô tả", "Nhà cung cấp", "Danh mục", "Giá vốn",
-            "Tồn kho tối thiểu", "Xuất xứ", "Ngày sản xuất",
+            "Giá vốn", "Tồn kho tối thiểu",
+            "Ngày hết hạn", "Danh mục", "Thao tác",
+            // hidden
+            "Mô tả", "Nhà cung cấp", "Danh mục", "Số lượng",
+            "Kho", "Xuất xứ", "Ngày sản xuất",
             "Vị trí", "Đơn vị", "Trạng thái", "product_id"
         };
         productModel = new DefaultTableModel(columns, 0) {
@@ -468,14 +469,22 @@ public class SanPhamPanel extends JPanel {
                 productModel.addRow(new Object[]{
                     p.getCode(),
                     icon,
-                    p.getName(), giaBan, qty, kho, ngayHH, dm, "",
+                    p.getName(),
+                    giaBan,
+                    giaVon,                 // giá vốn
+                    p.getMinStockLevel(),   // tồn kho tối thiểu
+                    ngayHH,
+                    dm,
+                    "",
                     p.getDescription() != null ? p.getDescription() : "-",
-                    ncc, dm, giaVon,
-                    p.getMinStockLevel(),
+                    ncc,
+                    dm,
+                    qty,        // số lượng (hidden)
+                    kho,        // trạng thái kho (hidden)
                     p.getMadeIn() != null ? p.getMadeIn() : "-",
                     ngaySX,
                     p.getPosition() != null ? p.getPosition() : "-",
-                    p.getUnit()   != null ? p.getUnit()   : "-",
+                    p.getUnit() != null ? p.getUnit() : "-",
                     p.getStatus() != null ? p.getStatus() : "-",
                     p.getId()
                 });
