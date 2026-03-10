@@ -3,7 +3,6 @@ package BUS;
 import DAO.DBConnection;
 import DAO.ProductDAO;
 import DTO.ProductDTO;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,7 +15,12 @@ public class ProductBUS {
         dao = new ProductDAO();
     }
     public ArrayList<ProductDTO> getAllProducts(){
-        return dao.getAllProducts();
+        try {
+            return dao.getAllProducts();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
     public boolean addProduct(ProductDTO p){
         if(p.getName()==null || p.getName().isEmpty()){

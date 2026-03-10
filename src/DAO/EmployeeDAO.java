@@ -2,8 +2,8 @@ package DAO;
 
 import DTO.EmployeeDTO;
 import DTO.RoleDTO;
-import DAO.DBConnection;
-
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,6 +154,8 @@ public class EmployeeDAO {
                 }   
             }catch(SQLException e){
                 e.printStackTrace();
+            } finally {
+                closeConnection();
             }
         }
         return role;
@@ -179,11 +181,60 @@ public class EmployeeDAO {
             }catch(SQLException e){
                 e.printStackTrace();
         
+            } finally {
+                closeConnection();
             }
         }
         return permissions;
-
     }
 
     //Sau khi có đăng nhập dùng bus của nhân viên rồi chọn có thể hiện panel nào
+
+    public EmployeeDTO login(String username, String password) {
+        EmployeeDTO emp = null;
+        if (openConnection()) {
+            try {
+                String sql = "SELECT * FROM employees WHERE user_name = ? AND isdeleted = 0";
+                PreparedStatement pstmt = con.prepareStatement(sql);
+                pstmt.setString(1, username);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    String storedHash = rs.getString("password_hash");
+                    if (storedHash.equals(password)) {  // Giả sử password không hash
+                        emp = new EmployeeDTO();
+                        emp.setId(rs.getInt("employee_id"));
+                        emp.setCode(rs.getString("employee_code"));
+                        emp.setFullName(rs.getString("name"));
+                        emp.setUsername(rs.getString("user_name"));
+                        emp.setPasswordHash(storedHash);
+                        emp.setPhone(rs.getString("phone"));
+                        emp.setEmail(rs.getString("email"));
+                        Timestamp ts = rs.getTimestamp("hire_date");
+                        emp.setHireDate(ts != null ? ts.toLocalDateTime() : null);
+                        emp.setSalary(rs.getBigDecimal("salary"));
+                        emp.setRoleId(rs.getInt("role_id"));
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return emp;
+    }
+
+    private String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(password.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

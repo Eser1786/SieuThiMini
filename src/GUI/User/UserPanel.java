@@ -1,10 +1,16 @@
 package GUI.User;
 
-import javax.swing.*;
+import BUS.EmployeeBUS;
+import BUS.UserSession;
+import DTO.EmployeeDTO;
+import DTO.RoleDTO;
+import GUI.GUI;
+import GUI.LoginDialog;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
+import javax.swing.*;
 
 public class UserPanel extends JPanel {
 
@@ -75,12 +81,22 @@ public class UserPanel extends JPanel {
 
         // Camera icon overlay hint
 
-        JLabel name = new JLabel("Nguyễn Văn A");
+        EmployeeDTO user = UserSession.getCurrentUser();
+        String displayName = user != null ? user.getFullName() : "Chưa đăng nhập";
+        JLabel name = new JLabel(displayName);
         name.setFont(new Font("Arial", Font.BOLD, 22));
         name.setForeground(VALUE_FG);
         name.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel role = makeRoleBadge("Quản lý");
+        String roleName = "Không xác định";
+        if (user != null) {
+            EmployeeBUS empBUS = new EmployeeBUS();
+            RoleDTO role = empBUS.getRole((long) user.getId());
+            if (role != null) {
+                roleName = role.getName();
+            }
+        }
+        JLabel role = makeRoleBadge(roleName);
         role.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         card.add(avatar);
@@ -100,13 +116,28 @@ public class UserPanel extends JPanel {
         addSectionTitle(card, "Thông tin cá nhân");
         card.add(Box.createVerticalStrut(10));
 
+        EmployeeDTO user = UserSession.getCurrentUser();
+        String fullName = user != null ? user.getFullName() : "N/A";
+        String username = user != null ? user.getUsername() : "N/A";
+        String email = user != null ? user.getEmail() : "N/A";
+        String phone = user != null ? user.getPhone() : "N/A";
+        String hireDate = user != null && user.getHireDate() != null ? user.getHireDate().toString() : "N/A";
+        String roleName = "N/A";
+        if (user != null) {
+            EmployeeBUS empBUS = new EmployeeBUS();
+            RoleDTO role = empBUS.getRole((long) user.getId());
+            if (role != null) {
+                roleName = role.getName();
+            }
+        }
+
         String[][] fields = {
-            { "Họ và tên",              "Nguyễn Văn A"       },
-            { "Username / ID nhân viên","NV001"               },
-            { "Email",                  "nguyenvana@situ.vn"  },
-            { "Số điện thoại",          "0912 345 678"        },
-            { "Ngày tạo tài khoản",     "01/01/2026"          },
-            { "Vai trò",                "Quản lý"             },
+            { "Họ và tên",              fullName       },
+            { "Username / ID nhân viên", username       },
+            { "Email",                  email           },
+            { "Số điện thoại",          phone           },
+            { "Ngày tạo tài khoản",     hireDate        },
+            { "Vai trò",                roleName        },
         };
 
         for (int i = 0; i < fields.length; i++) {
@@ -126,8 +157,21 @@ public class UserPanel extends JPanel {
             int ok = JOptionPane.showConfirmDialog(this,
                 "Bạn có chắc muốn đăng xuất?",
                 "Đăng xuất", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (ok == JOptionPane.YES_OPTION)
-                JOptionPane.showMessageDialog(this, "Đã đăng xuất.");
+            if (ok == JOptionPane.YES_OPTION) {
+                // Thực hiện logout
+                UserSession.logout();
+                // Đóng main frame
+                JFrame mainFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                mainFrame.dispose();
+                // Hiển thị lại login dialog
+                LoginDialog loginDialog = new LoginDialog(null);
+                loginDialog.setVisible(true);
+                if (loginDialog.isLoginSuccess()) {
+                    // Tạo frame mới với MainPanel
+                    JFrame newFrame = new GUI();
+                    newFrame.setVisible(true);
+                }
+            }
         });
 
         card.add(btnLogout);

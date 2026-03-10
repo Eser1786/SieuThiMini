@@ -1,17 +1,14 @@
 package BUS;
 
-import DAO.SaleDAO;
 import DAO.DBConnection;
+import DAO.SaleDAO;
 import DTO.SaleDTO;
 import DTO.enums.SaleEnum.SaleStatus;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.sql.*;
-
-import java.math.BigDecimal;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 
 public class SalesBUS {
     private SaleDAO saleDAO;
@@ -21,7 +18,12 @@ public class SalesBUS {
     }
 
     public ArrayList<SaleDTO> getAllSales() {
-        return saleDAO.getAllSales();
+        try {
+            return saleDAO.getAllSales();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public ArrayList<SaleDTO> getSalesByDateRange(LocalDate from, LocalDate to) {
@@ -92,7 +94,7 @@ public class SalesBUS {
                 }
                 return String.format("DH%03d", maxNum + 1);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         

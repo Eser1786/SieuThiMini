@@ -1,5 +1,9 @@
 package GUI;
 
+import BUS.EmployeeBUS;
+import BUS.UserSession;
+import DTO.EmployeeDTO;
+import DTO.RoleDTO;
 import GUI.DonHang.DonHangPanel;
 import GUI.KhachHang.KhachHangPanel;
 import GUI.Kho.KhoPanel;
@@ -9,8 +13,8 @@ import GUI.NhapKho.NhapKhoPanel;
 import GUI.SanPham.SanPhamPanel;
 import GUI.TrangChu.TrangChuPanel;
 import GUI.User.UserPanel;
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 /**
  * Panel chính chứa header, sidebar nav và CardLayout để hiển thị các panel con.
@@ -37,6 +41,11 @@ public class MainPanel extends JPanel {
     // Theo dõi nút đang active để bỏ highlight khi chuyển tab
     private JButton activeBtn = null;
     private JButton btnKhachHang;
+    private JButton btnSanPham;
+    private JButton btnNhanVien;
+    private JButton btnDonHang;
+    private JButton btnNhapXuat;
+    private JButton btnKhuyenMai;
 
     public MainPanel() {
         setLayout(new BorderLayout());
@@ -72,59 +81,110 @@ public class MainPanel extends JPanel {
                 BorderFactory.createEmptyBorder(20, 10, 20, 10)));
 
         JButton btnTrangChu = createNavButton("Trang chủ");
-        JButton btnSanPham = createNavButton("Sản phẩm");
-        btnKhachHang = createNavButton("Khách hàng");
-        JButton btnNhanVien = createNavButton("Nhân viên");
-        JButton btnDonHang = createNavButton("Đơn hàng");
-        JButton btnKho = createNavButton("Kho");
-        JButton btnNhapXuat = createNavButton("Nhập kho");
-        JButton btnKhuyenMai = createNavButton("Khuyến mãi");
-        JButton btnUser = createNavButton("👤 Tài khoản"); // tránh emoji --hem, emoji đẹp mò
-
         nav.add(btnTrangChu);
         nav.add(Box.createVerticalStrut(12));
-        nav.add(btnSanPham);
-        nav.add(Box.createVerticalStrut(12));
-        nav.add(btnKhachHang);
-        nav.add(Box.createVerticalStrut(12));
-        nav.add(btnNhanVien);
-        nav.add(Box.createVerticalStrut(12));
-        nav.add(btnDonHang);
-        nav.add(Box.createVerticalStrut(12));
-        nav.add(btnKho);
-        nav.add(Box.createVerticalStrut(12));
-        nav.add(btnNhapXuat);
-        nav.add(Box.createVerticalStrut(12));
-        nav.add(btnKhuyenMai);
-        nav.add(Box.createVerticalGlue());
-        nav.add(btnUser);
 
+        // Lấy role của user hiện tại
+        EmployeeDTO user = UserSession.getCurrentUser();
+        String roleName = "ADMIN"; // default
+        if (user != null) {
+            try {
+                EmployeeBUS empBUS = new EmployeeBUS();
+                RoleDTO role = empBUS.getRole((long) user.getId());
+                if (role != null) {
+                    roleName = role.getName();
+                }
+            } catch (Exception e) {
+                // Nếu không lấy được role, dùng default
+                e.printStackTrace();
+            }
+        }
+
+        // thêm sidebar vào layout
         add(nav, BorderLayout.WEST);
 
-        // ── Card Panel ──────────────────────────────
+
+        // Prepare card container
         cardLayout = new CardLayout();
         mainCards = new JPanel(cardLayout);
-        mainCards.add(new TrangChuPanel(), TRANG_CHU);
-        mainCards.add(new SanPhamPanel(), SAN_PHAM);
-        mainCards.add(new KhachHangPanel(), KHACH_HANG);
-        mainCards.add(new NhanVienPanel(), NHAN_VIEN);
-        mainCards.add(new DonHangPanel(), DON_HANG);
-        mainCards.add(new KhoPanel(), KHO);
-        mainCards.add(new NhapKhoPanel(), NHAP_XUAT);
-        mainCards.add(new KhuyenMaiPanel(), KHUYEN_MAI);
+
+        // Add panels và nút dựa trên role
+        if (mainCards == null) {
+            cardLayout = new CardLayout();
+            mainCards = new JPanel(cardLayout);
+        }
+        mainCards.add(new TrangChuPanel(), TRANG_CHU); // Trang chủ luôn có
+
+        if ("ADMIN".equals(roleName) || "MANAGER".equals(roleName) || "CASHIER".equals(roleName)) {
+            mainCards.add(new SanPhamPanel(), SAN_PHAM);
+            btnSanPham = createNavButton("Sản phẩm");
+            btnSanPham.addActionListener(e -> navigate(mainCards, SAN_PHAM, btnSanPham));
+            nav.add(btnSanPham);
+            nav.add(Box.createVerticalStrut(12));
+
+            mainCards.add(new KhachHangPanel(), KHACH_HANG);
+            btnKhachHang = createNavButton("Khách hàng");
+            btnKhachHang.addActionListener(e -> navigate(mainCards, KHACH_HANG, btnKhachHang));
+            nav.add(btnKhachHang);
+            nav.add(Box.createVerticalStrut(12));
+
+            mainCards.add(new DonHangPanel(), DON_HANG);
+            btnDonHang = createNavButton("Đơn hàng");
+            btnDonHang.addActionListener(e -> navigate(mainCards, DON_HANG, btnDonHang));
+            nav.add(btnDonHang);
+            nav.add(Box.createVerticalStrut(12));
+        }
+
+        if ("ADMIN".equals(roleName) || "MANAGER".equals(roleName)) {
+            mainCards.add(new NhanVienPanel(), NHAN_VIEN);
+            btnNhanVien = createNavButton("Nhân viên");
+            btnNhanVien.addActionListener(e -> navigate(mainCards, NHAN_VIEN, btnNhanVien));
+            nav.add(btnNhanVien);
+            nav.add(Box.createVerticalStrut(12));
+
+            mainCards.add(new KhoPanel(), KHO);
+            JButton btnKho = createNavButton("Kho");
+            btnKho.addActionListener(e -> navigate(mainCards, KHO, btnKho));
+            nav.add(btnKho);
+            nav.add(Box.createVerticalStrut(12));
+
+            mainCards.add(new NhapKhoPanel(), NHAP_XUAT);
+            btnNhapXuat = createNavButton("Nhập kho");
+            btnNhapXuat.addActionListener(e -> navigate(mainCards, NHAP_XUAT, btnNhapXuat));
+            nav.add(btnNhapXuat);
+            nav.add(Box.createVerticalStrut(12));
+
+            mainCards.add(new KhuyenMaiPanel(), KHUYEN_MAI);
+            btnKhuyenMai = createNavButton("Khuyến mãi");
+            btnKhuyenMai.addActionListener(e -> navigate(mainCards, KHUYEN_MAI, btnKhuyenMai));
+            nav.add(btnKhuyenMai);
+            nav.add(Box.createVerticalStrut(12));
+        }
+
+        if ("WAREHOUSE".equals(roleName)) {
+            mainCards.add(new KhoPanel(), KHO);
+            JButton btnKho = createNavButton("Kho");
+            btnKho.addActionListener(e -> navigate(mainCards, KHO, btnKho));
+            nav.add(btnKho);
+            nav.add(Box.createVerticalStrut(12));
+
+            mainCards.add(new NhapKhoPanel(), NHAP_XUAT);
+            btnNhapXuat = createNavButton("Nhập kho");
+            btnNhapXuat.addActionListener(e -> navigate(mainCards, NHAP_XUAT, btnNhapXuat));
+            nav.add(btnNhapXuat);
+            nav.add(Box.createVerticalStrut(12));
+        }
+
+        // User panel luôn có
         mainCards.add(new UserPanel(), USER);
+        JButton btnUser = createNavButton("👤 Tài khoản");
+        btnUser.addActionListener(e -> navigate(mainCards, USER, btnUser));
+        nav.add(Box.createVerticalGlue());
+        nav.add(btnUser);
         add(mainCards, BorderLayout.CENTER);
 
         // ── Listeners với highlight sidebar ─────────
         btnTrangChu.addActionListener(e -> navigate(mainCards, TRANG_CHU, btnTrangChu));
-        btnSanPham.addActionListener(e -> navigate(mainCards, SAN_PHAM, btnSanPham));
-        btnKhachHang.addActionListener(e -> navigate(mainCards, KHACH_HANG, btnKhachHang));
-        btnNhanVien.addActionListener(e -> navigate(mainCards, NHAN_VIEN, btnNhanVien));
-        btnDonHang.addActionListener(e -> navigate(mainCards, DON_HANG, btnDonHang));
-        btnKho.addActionListener(e -> navigate(mainCards, KHO, btnKho));
-        btnNhapXuat.addActionListener(e -> navigate(mainCards, NHAP_XUAT, btnNhapXuat));
-        btnKhuyenMai.addActionListener(e -> navigate(mainCards, KHUYEN_MAI, btnKhuyenMai));
-        btnUser.addActionListener(e -> navigate(mainCards, USER, btnUser));
 
         // Highlight Trang chủ mặc định khi mở app
         setActive(btnTrangChu);

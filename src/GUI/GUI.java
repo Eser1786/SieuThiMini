@@ -1,7 +1,7 @@
 package GUI;
 
-import javax.swing.*;
 import java.awt.Dimension;
+import javax.swing.*;
 
 /**
  * Top-level frame. Delegates everything to MainPanel.
@@ -39,14 +39,28 @@ public class GUI extends JFrame {
         setLocationRelativeTo(null);
 
         try {
-            add(new MainPanel());
+            // Hiển thị dialog đăng nhập
+            LoginDialog loginDialog = new LoginDialog(this);
+            loginDialog.setVisible(true);
+
+            if (loginDialog.isLoginSuccess()) {
+                // Đăng nhập thành công, hiển thị MainPanel
+                MainPanel mainPanel = new MainPanel();
+                add(mainPanel);
+                // đảm bảo layout/hiển thị được cập nhật
+                revalidate();
+                repaint();
+            } else {
+                // Đăng nhập thất bại, thoát app
+                System.exit(0);
+            }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                     "Không thể kết nối đến cơ sở dữ liệu MySQL (Cổng 3307)!\n" +
                             "Vui lòng bật XAMPP MySQL hoặc Docker Container trước khi chạy App.\n\n" +
                             "Chi tiết lỗi: " + e.getMessage(),
                     "Lỗi Kết Nối CSDL", JOptionPane.ERROR_MESSAGE);
-            // Vẫn add màn hình rỗng hoặc có thể thoát luôn.
+            System.exit(0);
         }
     }
 

@@ -4,7 +4,6 @@ import DAO.DBConnection;
 import DAO.EmployeeDAO;
 import DTO.EmployeeDTO;
 import DTO.RoleDTO;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -72,9 +71,7 @@ public class EmployeeBUS {
         return hasPermission(employeeId, panelPermission);
     }
 
-    // if (bus.canShowPanel(loggedEmployeeId, "PRODUCT_ADD")) {
-    // panelQuanLySanPham.setVisible(true);
-    // } else {
-    // panelQuanLySanPham.setVisible(false);
-    // }
+    public EmployeeDTO login(String username, String password) {
+        return dao.login(username, password);
+    }
 }

@@ -3,18 +3,18 @@ package GUI.TrangChu;
 import BUS.CustomerBUS;
 import BUS.ProductBUS;
 import BUS.SalesBUS;
-import DTO.SaleDTO;
 import DTO.CustomerDTO;
+import DTO.SaleDTO;
 import GUI.UIUtils;
+import java.awt.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.time.LocalDate;
-import java.time.DayOfWeek;
-import java.time.temporal.TemporalAdjusters;
 
 /**
  * Dashboard / home panel with summary cards and a small chart.
@@ -41,9 +41,13 @@ public class TrangChuPanel extends JPanel {
         topCards.setBackground(new Color(0xF8F7FF));
         topCards.setBorder(BorderFactory.createEmptyBorder(18, 18, 12, 18));
         
-        loadDashboardData();
-        
-        loadDashboardData();
+        try {
+            loadDashboardData();
+        } catch (Exception e) {
+            // Nếu không load được data, hiển thị mặc định
+            e.printStackTrace();
+            // Có thể thêm thông báo lỗi ở đây
+        }
 
         // center area with 3 charts on left and orders table on right
         JPanel centerPanel = new JPanel(new GridLayout(1, 2, 14, 0));

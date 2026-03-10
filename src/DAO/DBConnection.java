@@ -18,6 +18,7 @@ public class DBConnection {
 
     public static Connection getConnection() {
         try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (Exception e) {
             e.printStackTrace();
@@ -30,6 +31,7 @@ public class DBConnection {
 
     public static Boolean openConnection(){
         try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
             con = DriverManager.getConnection(URL, USER, PASSWORD);
             return true;
         } catch(Exception e){

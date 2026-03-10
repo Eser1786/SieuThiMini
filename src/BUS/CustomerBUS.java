@@ -1,11 +1,9 @@
 package BUS;
-import DTO.CustomerDTO;
-
-import java.sql.*;
-import java.util.ArrayList;
-
 import DAO.CustomerDAO;
 import DAO.DBConnection;
+import DTO.CustomerDTO;
+import java.sql.*;
+import java.util.ArrayList;
 public class CustomerBUS {
     private CustomerDAO customerDAO;
 
@@ -14,7 +12,12 @@ public class CustomerBUS {
     }
 
    public ArrayList<CustomerDTO> getAllCustomers() {
-        return customerDAO.getAllCustomers();
+        try {
+            return customerDAO.getAllCustomers();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
     public boolean AddCustomer(CustomerDTO customer) {
         if(customer.getFullName() == null || customer.getFullName().isEmpty()){
