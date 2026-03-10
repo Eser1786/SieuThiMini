@@ -127,8 +127,12 @@ class NhanVienEmployeeDialog {
         // Form fields: [0]Ho ten, [1]Username, [2]SDT, [3]Email, [4]Luong
         JTextField[] tfs = new JTextField[5];
         for (int i = 0; i < tfs.length; i++) {
-            tfs[i] = UIUtils.makeField();
-            tfs[i].setPreferredSize(new Dimension(200, 32));
+            tfs[i] = new JTextField();
+            tfs[i].setFont(new Font("Arial", Font.PLAIN, 13));
+            tfs[i].setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+            tfs[i].setPreferredSize(new Dimension(200, 36));
         }
         UIUtils.attachMoneyFormatter(tfs[4]);
 
@@ -136,15 +140,15 @@ class NhanVienEmployeeDialog {
         JSpinner spNgay = new JSpinner(dateModel);
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spNgay, "dd/MM/yyyy");
         spNgay.setEditor(dateEditor);
-        spNgay.setPreferredSize(new Dimension(200, 32));
+        spNgay.setPreferredSize(new Dimension(200, 36));
         spNgay.setFont(new Font("Arial", Font.PLAIN, 13));
 
         JPasswordField pfPass = new JPasswordField(18);
         pfPass.setFont(new Font("Arial", Font.PLAIN, 13));
-        pfPass.setPreferredSize(new Dimension(200, 32));
+        pfPass.setPreferredSize(new Dimension(200, 36));
         JButton btnShowPass = new JButton(UIUtils.iconEyeOpen(18, ACCENT));
         btnShowPass.setToolTipText("Hiện / Ẩn mật khẩu");
-        btnShowPass.setPreferredSize(new Dimension(32, 32));
+        btnShowPass.setPreferredSize(new Dimension(36, 36));
         btnShowPass.setFocusPainted(false);
         btnShowPass.setBorderPainted(false);
         btnShowPass.setContentAreaFilled(false);
@@ -164,10 +168,14 @@ class NhanVienEmployeeDialog {
             : parent.roles.stream().map(RoleDTO::getName).toArray(String[]::new);
         JComboBox<String> cbRole = new JComboBox<>(roleNames);
         UIUtils.styleComboBox(cbRole);
-        cbRole.setPreferredSize(new Dimension(200, 32));
+        cbRole.setPreferredSize(new Dimension(200, 36));
 
-        JTextField tfMa = UIUtils.makeField();
-        tfMa.setPreferredSize(new Dimension(200, 32));
+        JTextField tfMa = new JTextField();
+        tfMa.setFont(new Font("Arial", Font.PLAIN, 13));
+        tfMa.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(0xBBBBBB)),
+            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+        tfMa.setPreferredSize(new Dimension(200, 36));
         tfMa.setEditable(false);
         tfMa.setBackground(new Color(0xE8E6F0));
         tfMa.setForeground(new Color(0x888888));

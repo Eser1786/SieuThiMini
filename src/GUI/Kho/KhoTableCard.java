@@ -82,6 +82,17 @@ class KhoTableCard extends JPanel {
         JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
         JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
         JButton btnrefresh = new JButton("Làm mới");
+        btnrefresh.setFocusPainted(false);
+        btnrefresh.setBackground(new Color(0xD9D9D9));
+        btnrefresh.setFont(new Font("Arial", Font.BOLD, 13));
+        btnrefresh.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnrefresh.setOpaque(true);
+        btnrefresh.setBorderPainted(false);
+        btnrefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnrefresh.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnrefresh.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnrefresh.setBackground(new Color(0xD9D9D9)); }
+        });
         btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, model, "Danh sách kho"));
         btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, model, "kho"));
         btnImport.addActionListener(e -> {

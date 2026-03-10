@@ -68,13 +68,21 @@ public class TrangChuPanel extends JPanel {
         revenueTitle = new JLabel("Doanh thu tuần này");
         revenueTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
         cbChartPeriod = new JComboBox<>(new String[]{"Tuần", "Tháng", "Năm"});
-        cbChartPeriod.setFont(new Font("Arial", Font.PLAIN, 11));
-        cbChartPeriod.setPreferredSize(new Dimension(80, 24));
+        UIUtils.styleComboBox(cbChartPeriod);
+        cbChartPeriod.setPreferredSize(new Dimension(90, 32));
         cbChartPeriod.addActionListener(e -> refreshChart());
         JButton btnRefresh1 = new JButton("Làm mới");
-        btnRefresh1.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh1.setFocusPainted(false);
+        btnRefresh1.setBackground(new Color(0xD9D9D9));
+        btnRefresh1.setFont(new Font("Arial", Font.BOLD, 13));
+        btnRefresh1.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnRefresh1.setOpaque(true);
+        btnRefresh1.setBorderPainted(false);
         btnRefresh1.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRefresh1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnRefresh1.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnRefresh1.setBackground(new Color(0xD9D9D9)); }
+        });
         btnRefresh1.addActionListener(e -> refreshChart());
         JPanel revenueRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
         revenueRight.setOpaque(false);
@@ -99,9 +107,17 @@ public class TrangChuPanel extends JPanel {
         JLabel customerTitle = new JLabel("Khách hàng mới (tuần này)");
         customerTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
         JButton btnRefresh2 = new JButton("Làm mới");
-        btnRefresh2.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh2.setFocusPainted(false);
+        btnRefresh2.setBackground(new Color(0xD9D9D9));
+        btnRefresh2.setFont(new Font("Arial", Font.BOLD, 13));
+        btnRefresh2.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnRefresh2.setOpaque(true);
+        btnRefresh2.setBorderPainted(false);
         btnRefresh2.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRefresh2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnRefresh2.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnRefresh2.setBackground(new Color(0xD9D9D9)); }
+        });
         btnRefresh2.addActionListener(e -> refreshCustomerChart());
         customerHeaderPanel.add(customerTitle, BorderLayout.WEST);
         customerHeaderPanel.add(btnRefresh2, BorderLayout.EAST);
@@ -118,9 +134,17 @@ public class TrangChuPanel extends JPanel {
         JLabel loyaltyChartTitle = new JLabel("Top 5 Khách Hàng (Loyalty Points)");
         loyaltyChartTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
         JButton btnRefresh3 = new JButton("Làm mới");
-        btnRefresh3.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh3.setFocusPainted(false);
+        btnRefresh3.setBackground(new Color(0xD9D9D9));
+        btnRefresh3.setFont(new Font("Arial", Font.BOLD, 13));
+        btnRefresh3.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnRefresh3.setOpaque(true);
+        btnRefresh3.setBorderPainted(false);
         btnRefresh3.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRefresh3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnRefresh3.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnRefresh3.setBackground(new Color(0xD9D9D9)); }
+        });
         btnRefresh3.addActionListener(e -> refreshLoyaltyPointsChart());
         loyaltyChartHeaderPanel.add(loyaltyChartTitle, BorderLayout.WEST);
         loyaltyChartHeaderPanel.add(btnRefresh3, BorderLayout.EAST);
@@ -149,11 +173,13 @@ public class TrangChuPanel extends JPanel {
         
         filterPanel.add(new JLabel("Trạng thái:"));
         statusFilter = new JComboBox<>(new String[]{"Tất cả", "PENDING", "CONFIRMED", "SHIPPING", "DELIVERING", "COMPLETED", "CANCELLED"});
+        UIUtils.styleComboBox(statusFilter);
         statusFilter.addActionListener(e -> loadRecentOrders());
         filterPanel.add(statusFilter);
         
         filterPanel.add(new JLabel("Thanh toán:"));
         paymentFilter = new JComboBox<>(new String[]{"Tất cả", "CASH", "CARD", "TRANSFER"});
+        UIUtils.styleComboBox(paymentFilter);
         paymentFilter.addActionListener(e -> loadRecentOrders());
         filterPanel.add(paymentFilter);
         

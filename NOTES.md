@@ -117,7 +117,10 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 - **Compile**: `javac -encoding UTF-8 -cp "lib\*" -sourcepath src -d bin "@sources.txt"`
 - **Run**: Debug Configuration đã setup trong `.vscode/launch.json`
 - **Ảnh sản phẩm**: `img/products/` — ảnh icons app: `img/icons/`
-- **Logo app**: `img/icons/Logo.png` — được load vào taskbar icon (`GUI.java`) và header/login (`MainPanel.java`, `LoginDialog.java`)
+- **Logo app**: 3 file logo:
+  - `img/icons/logo transparent.png` — dùng cho header app (`MainPanel.java`) và login dialog (`LoginDialog.java`) — nền transparent, kế bên tên shop
+  - `img/icons/logo (white background).jpg` — dùng cho taskbar icon (`GUI.java`)
+  - `img/icons/Logo.png` — fallback nếu 2 file trên không tìm thấy
 - **Số tiền format**: `String.format("%,.0fđ", amount)` — dấu phẩy ngăn cách hàng nghìn
 
 ---
@@ -148,6 +151,25 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 - **Dialog field sizing**: Dùng `new JTextField()` + `font 13` + `border compound(lineBorder 0xBBBBBB, empty 4,8,4,8)` + `Dimension(260, 36)` — KHÔNG dùng `UIUtils.makeField()` trong dialog vì font 20 cần height >= 44px
 - **UIUtils.makeField()**: Chỉ dùng khi muốn field lớn (font 20) với height tối thiểu 44px
 - **Tab hover contrast**: Khi hover tab button trên nền tối, phải set cả background VÀ foreground (tối/sáng tùy bg hover)
+
+---
+
+## Session 2026-03-10 (phần 3) — UI polish tiếp theo
+
+### Thay đổi
+
+- **GUI.java / LoginDialog.java / MainPanel.java**: Logo split — transparent cho header/login, white background jpg cho taskbar icon
+- **NhanVienEmployeeDialog.java**: Sửa field size — thay `UIUtils.makeField()` (font 20, h32) bằng font 13, border compound, h36; password/spinner/button đều h36; `cbRole` h36
+- **KhachHangTableCard.java**: Fix NPE trong `showDetailDialog()` — thay `.toString()` bằng `Objects.toString(..., "")` null-safe cho tất cả 11 cột (email KH002 trước đây null trong DB cũ → crash Chi tiết button)
+- **KhoTableCard.java**: Style `btnrefresh` giống NhapKho (bg 0xD9D9D9, hover 0xC5B3E6, Arial Bold 13, border empty 9,14)
+- **TrangChuPanel.java**: Style 3 nút "Làm mới" (btnRefresh1/2/3) giống NhapKho; thêm `UIUtils.styleComboBox()` cho `cbChartPeriod`, `statusFilter`, `paymentFilter`
+- **KhuyenMaiPanel.java**: Restyle `btnReset` giống DonHang (bg 0xD9D9D9, hover 0xEF9A9A, Arial Bold 13, border empty 9,10, foreground black)
+
+### Employee login (DB)
+
+- `employees.password_hash` hiện lưu plaintext ("123456") — `EmployeeDAO.login()` so sánh direct (không hash)
+- Seed data: 7 nhân viên; admin: `user_name=admin`, `password_hash=123456`, `role_id=1`
+- Thay đổi mk/tên đăng nhập trong app: khi sửa nhân viên trong NhanVienPanel, giá trị mới sẽ được lưu vào DB và hiệu lực ngay lần đăng nhập tiếp theo
 
 ---
 
