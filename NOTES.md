@@ -117,7 +117,21 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 - **Compile**: `javac -encoding UTF-8 -cp "lib\*" -sourcepath src -d bin "@sources.txt"`
 - **Run**: Debug Configuration đã setup trong `.vscode/launch.json`
 - **Ảnh sản phẩm**: `img/products/` — ảnh icons app: `img/icons/`
+- **Logo app**: `img/icons/Logo.png` — được load vào taskbar icon (`GUI.java`) và header/login (`MainPanel.java`, `LoginDialog.java`)
 - **Số tiền format**: `String.format("%,.0fđ", amount)` — dấu phẩy ngăn cách hàng nghìn
+
+---
+
+## Session 2026-03-10 — UI Overhaul
+
+### Thay đổi
+
+- **GUI.java**: Sửa title "Siu Thị 36" → "Siêu Thị 36"; thêm taskbar icon load từ `img/icons/Logo.png`
+- **LoginDialog.java / MainPanel.java**: Fix logo path (chính xác tại `img/icons/Logo.png`)
+- **SanPhamPanel.java**: Thay `JTabbedPane` bằng custom tab bar (3 JButton styled, dark header `0x2F2C35`, active `0x5C4A7F`); styled `cbLoc` với `UIUtils.styleComboBox()`; `ActionButtonRenderer` wrap button trong `JPanel` với `FlowLayout` để không chiếm hết cell
+- **CategoryPanel.java**: Fix bug `editCategory()` đọc sai cột — đọc `col 0` (STT) thay vì `col 1` (ID) gây `ClassCastException` khi nhấn Sửa
+- **SupplierPanel.java**: Fix layout (2 `add(NORTH)` → `BoxLayout northPanel`); `showSupplierDialog()` restyle đầy đủ (header tím, `UIUtils.makeField()`, footer nút styled); `ActionRenderer`/`ActionEditor` dùng `UIUtils.makeActionButton()`; table header tím `0xAF9FCB`; alternating rows; styled combobox
+- **Emoji fix**: Tất cả `🔄`/`🔍`/`\uD83D\uDD0D` → text thường trên 10 file (TrangChuPanel, CategoryPanel, SupplierPanel, SanPhamPanel, NhanVienPanel, NhapXuatTableCard, DonHangTableCard, KhachHangTableCard, NhapKhoTableCard, KhuyenMaiPanel)
 
 ---
 
