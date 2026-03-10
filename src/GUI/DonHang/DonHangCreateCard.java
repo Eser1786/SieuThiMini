@@ -727,8 +727,6 @@ for(OrderItem it : items){
     item.setSubtotal(BigDecimal.valueOf(it.unitPrice * it.qty));
 
     itemDAO.insert(item);
-<<<<<<< Updated upstream
-    
 }
 
     // Cập nhật last_purchase cho khách hàng
@@ -741,9 +739,7 @@ for(OrderItem it : items){
             System.err.println("Lỗi cập nhật last_purchase cho khách hàng: " + ex.getMessage());
         }
     }
-=======
->>>>>>> Stashed changes
-}
+
             if (!saved) {
                 JOptionPane.showMessageDialog(this, "Lỗi khi lưu đơn hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
