@@ -1,4 +1,4 @@
-﻿package GUI.SanPham;
+package GUI.SanPham;
 
 import BUS.CategoryBUS;
 import BUS.SupplierBUS;
