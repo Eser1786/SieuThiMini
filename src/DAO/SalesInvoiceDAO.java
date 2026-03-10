@@ -54,7 +54,11 @@ public class SalesInvoiceDAO {
 
     private List<SalesInvoiceItemDTO> getItemsByInvoiceId(Long invoiceId) {
         List<SalesInvoiceItemDTO> items = new ArrayList<>();
-        String sql = "SELECT sii.* FROM sales_invoice_items sii WHERE sii.invoice_id = ?";
+        String sql = "SELECT sii.id, sii.invoice_id, sii.product_id, sii.quantity, sii.unit_price, sii.subtotal, sii.notes, " +
+                     "p.product_code, p.name AS product_name " +
+                     "FROM sales_invoice_items sii " +
+                     "LEFT JOIN products p ON sii.product_id = p.product_id " +
+                     "WHERE sii.invoice_id = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
