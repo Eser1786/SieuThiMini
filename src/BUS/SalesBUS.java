@@ -4,18 +4,20 @@ import DAO.SaleDAO;
 import DAO.DBConnection;
 import DTO.SaleDTO;
 import DTO.enums.SaleEnum.SaleStatus;
-
+import DTO.SalesInvoiceDTO;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.sql.*;
-
+import DAO.SalesInvoiceItemDAO;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.temporal.TemporalAdjusters;
-
+import DAO.ProductDAO;
+import DTO.SalesInvoiceItemDTO;
+import java.util.*;
 public class SalesBUS {
     private SaleDAO saleDAO;
-
+    private SalesInvoiceItemDAO saleItemDAO = new SalesInvoiceItemDAO();
+    private ProductDAO productDAO = new ProductDAO();
     public SalesBUS() {
         saleDAO = new SaleDAO();
     }
@@ -62,9 +64,36 @@ public class SalesBUS {
         }
         return saleDAO.addSale(sale);
     }
- public boolean confirmSale(String saleCode){
-        return saleDAO.updateStatus(saleCode, SaleStatus.COMPLETED);
+    
+public boolean confirmSale(String saleCode){
+
+    try{
+
+        // 1. cập nhật trạng thái đơn
+        saleDAO.updateStatus(saleCode, SaleStatus.CONFIRMED);
+
+        // 2. lấy danh sách sản phẩm trong đơn
+        List<SalesInvoiceItemDTO> items = saleItemDAO.getBySaleCode(saleCode);
+
+System.out.println("SaleCode: " + saleCode);
+System.out.println("Items size: " + items.size());
+
+        // 3. trừ kho
+        for(SalesInvoiceItemDTO item : items){
+
+            productDAO.decreaseStock(
+                    item.getProductId(),
+                    item.getQuantity()
+            );
+        }
+
+        return true;
+
+    }catch(Exception e){
+        e.printStackTrace();
+        return false;
     }
+}
     public boolean cancelSale(String saleCode){
         return saleDAO.updateStatus(saleCode, SaleStatus.CANCELLED);
     }

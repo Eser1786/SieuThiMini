@@ -6,11 +6,14 @@ import BUS.ProductBUS;
 import BUS.DiscountBUS;
 import BUS.SalesBUS;
 import DAO.DBConnection;
+import DAO.ProductDAO;
+import DAO.SalesInvoiceItemDAO;
 import DTO.DiscountDTO;
 import DTO.CustomerDTO;
 import DTO.EmployeeDTO;
 import DTO.ProductDTO;
 import DTO.SaleDTO;
+import DTO.SalesInvoiceItemDTO;
 import DTO.enums.SaleEnum.SaleStatus;
 import DTO.enums.SaleEnum.SalePaymentMethod;
 import javax.swing.*;
@@ -231,19 +234,21 @@ class DonHangCreateCard extends JPanel {
     }
 
     /** Add or increment a product by code */
-    private void addProductToOrder(String code, String name, long unitPrice) {
-        for (OrderItem it : items) {
-            if (it.code.equals(code)) {
-                if (it.qty < 9999) it.qty++;
-                rebuildList();
-                updateTotals();
-                return;
-            }
+   private void addProductToOrder(long productId, String code, String name, long unitPrice) {
+
+    for (OrderItem it : items) {
+        if (it.productId == productId) {
+            if (it.qty < 9999) it.qty++;
+            rebuildList();
+            updateTotals();
+            return;
         }
-        items.add(new OrderItem(code, name, unitPrice, 1));
-        rebuildList();
-        updateTotals();
     }
+
+    items.add(new OrderItem(productId, code, name, unitPrice, 1));
+    rebuildList();
+    updateTotals();
+}
 
     // ── main build ───────────────────────────────────────────────────────────
     private void buildUI() {
@@ -662,6 +667,30 @@ class DonHangCreateCard extends JPanel {
             
             // Lưu vào database
             boolean saved = salesBUS.addSale(sale);
+            if(saved){
+
+    // Lấy sale vừa tạo
+    SaleDTO savedSale = salesBUS.getSaleByCode(maDon);
+    Long saleId = savedSale.getSaleID();
+
+    SalesInvoiceItemDAO itemDAO = new SalesInvoiceItemDAO();
+    ProductDAO productDAO = new ProductDAO();
+
+    for(OrderItem it : items){
+
+    SalesInvoiceItemDTO item = new SalesInvoiceItemDTO();
+
+    item.setInvoiceId(saleId);
+    item.setProductId(it.productId);   // dùng trực tiếp
+    item.setQuantity(it.qty);
+    item.setUnitPrice(BigDecimal.valueOf(it.unitPrice));
+    item.setSubtotal(BigDecimal.valueOf(it.unitPrice * it.qty));
+
+    itemDAO.insert(item);
+
+    
+}
+}
             if (!saved) {
                 JOptionPane.showMessageDialog(this, "Lỗi khi lưu đơn hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -810,28 +839,42 @@ class DonHangCreateCard extends JPanel {
     }
 
     /** Add all selected rows to order; dialog stays open */
-    private void pickRows(JTable dlgTable, JLabel lbStatus) {
-        int[] rows = dlgTable.getSelectedRows();
-        if (rows.length == 0) {
-            JOptionPane.showMessageDialog(null,
-                "Vui l\u00f2ng ch\u1ecdn \u00edt nh\u1ea5t m\u1ed9t s\u1ea3n ph\u1ea9m.",
-                "Th\u00f4ng b\u00e1o", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-        for (int row : rows) {
-            String code = (String) dlgTable.getValueAt(row, 0);
-            String name = (String) dlgTable.getValueAt(row, 1);
-            long price  = 0L;
-            for (ProductDTO p : allProducts) {
-                if (p.getCode().equals(code)) {
-                    if (p.getSellingPrice() != null) price = p.getSellingPrice().longValue();
-                    break;
-                }
-            }
-            addProductToOrder(code, name, price);
-        }
-        lbStatus.setText(rows.length + " s\u1ea3n ph\u1ea9m \u0111\u00e3 \u0111\u01b0\u1ee3c th\u00eam v\u00e0o \u0111\u01a1n \u2714");
+   private void pickRows(JTable dlgTable, JLabel lbStatus) {
+    int[] rows = dlgTable.getSelectedRows();
+
+    if (rows.length == 0) {
+        JOptionPane.showMessageDialog(null,
+            "Vui lòng chọn ít nhất một sản phẩm.",
+            "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        return;
     }
+
+    for (int r : rows) {
+
+        String code = dlgTable.getValueAt(r, 0).toString();
+
+        for (ProductDTO p : allProducts) {
+
+            if (p.getCode().equals(code)) {
+
+                long price = p.getSellingPrice() != null
+                        ? p.getSellingPrice().longValue()
+                        : 0;
+
+                addProductToOrder(
+                        p.getId(),   // 🔥 productId đúng
+                        p.getCode(),
+                        p.getName(),
+                        price
+                );
+
+                break;
+            }
+        }
+    }
+
+    lbStatus.setText(rows.length + " sản phẩm đã được thêm vào đơn ✔");
+}
 
     // ── right-column card builders ────────────────────────────────────────────
     private JPanel makeRightCard(String title) {
@@ -923,12 +966,21 @@ class DonHangCreateCard extends JPanel {
 
     // ── inner class ───────────────────────────────────────────────────────────
     private static final class OrderItem {
-        String code; String name; long unitPrice; int qty;
-        OrderItem(String code, String name, long unitPrice, int qty) {
-            this.code = code; this.name = name;
-            this.unitPrice = unitPrice; this.qty = qty;
-        }
+
+    long productId;   // thêm
+    String code;
+    String name;
+    long unitPrice;
+    int qty;
+
+    OrderItem(long productId, String code, String name, long unitPrice, int qty) {
+        this.productId = productId;
+        this.code = code;
+        this.name = name;
+        this.unitPrice = unitPrice;
+        this.qty = qty;
     }
+}
     
     private String generateCustomerCode() {
         String sql = "SELECT MAX(customer_code) FROM customers WHERE customer_code LIKE 'KH%'";

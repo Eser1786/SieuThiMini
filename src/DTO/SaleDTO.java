@@ -35,7 +35,7 @@ public class SaleDTO {
 
 
     //GETTER
-    public int getSaleID(){return saleID;}
+    public long getSaleID(){return saleID;}
     public String getSaleCode(){return saleCode;}
     public LocalDate getSaleDate(){return saleDate;}
     
