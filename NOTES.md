@@ -64,6 +64,23 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 - **Giải pháp**: Viết PowerShell `.ps1` đọc file bằng `[System.IO.File]::ReadAllText`, normalize `\r\n` → `\n`, tìm match, thay thế bằng `.Replace()`, rồi khôi phục CRLF và ghi lại. Chạy qua `powershell -ExecutionPolicy Bypass -File patch.ps1`.
 - **Phòng tránh**: Các file `.java` mới nên được tạo với LF (hoặc chấp nhận dùng script khi cần patch multi-line).
 
+### 11. UTF-8 BOM từ PowerShell WriteAllText gây javac lỗi
+
+- **Vấn đề**: `[System.IO.File]::WriteAllText(path, content)` (không truyền Encoding) ghi file với BOM (`\uFEFF`). `javac` reject file với lỗi `illegal character: '\ufeff'`.
+- **Cách phát hiện**: `[System.IO.File]::ReadAllBytes(file)[0..2]` → `0xEF 0xBB 0xBF` là có BOM.
+- **Giải pháp**: Luôn dùng `New-Object System.Text.UTF8Encoding $false` (false = no BOM) khi WriteAllText cho file `.java`:
+  ```powershell
+  $utf8NoBOM = New-Object System.Text.UTF8Encoding $false
+  [System.IO.File]::WriteAllText($file, $content, $utf8NoBOM)
+  ```
+- **Xử lý khi đã có BOM**: Đọc lại → `if ($content.StartsWith([char]0xFEFF)) { $content = $content.Substring(1) }` → ghi lại với encoding no-BOM.
+
+### 12. NhanVienPanel photo chỉ load từ DB — không có fallback filesystem
+
+- **Vấn đề**: `fillDetail()` chỉ check `photoPathMap.get(ma)` (từ DB `photo_path`). Nếu DB `NULL`, không hiển thị ảnh dù file `img/employees/NV001.jpg` tồn tại trên disk.
+- **UserPanel hoạt động** vì có fallback: `loadEmployeePhoto(code)` scan `img/employees/<maNV>.<ext>`.
+- **Cách sửa**: Sau khi check `photoPathMap` fail, thêm fallback scan filesystem (giống UserPanel).
+
 ### 10. Pattern xác nhận thoát / hủy thao tác
 
 - **Thoát app (X button)**: Trong `GUI.java`, dùng `setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE)` + `addWindowListener(new java.awt.event.WindowAdapter() { windowClosing → JOptionPane.showConfirmDialog → System.exit(0) })`. KHÔNG dùng `EXIT_ON_CLOSE` trực tiếp.

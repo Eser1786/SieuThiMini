@@ -597,6 +597,16 @@ public class NhanVienPanel extends JPanel {
             try { avatarImage = ImageIO.read(new File(path)).getScaledInstance(90, 90, Image.SCALE_SMOOTH); }
             catch (Exception ignored) {}
         }
+        // Fallback: scan img/employees/<maNV>.<ext>
+        if (avatarImage == null) {
+            for (String ext : new String[]{".jpg", ".jpeg", ".png"}) {
+                File f = new File("img/employees/" + ma + ext);
+                if (f.exists()) {
+                    try { avatarImage = ImageIO.read(f).getScaledInstance(90, 90, Image.SCALE_SMOOTH); break; }
+                    catch (Exception ignored) {}
+                }
+            }
+        }
         if (avatarBox != null) avatarBox.repaint();
     }
 
