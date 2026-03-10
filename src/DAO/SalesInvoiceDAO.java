@@ -86,54 +86,41 @@ public class SalesInvoiceDAO {
         return items;
     }
 
-    public boolean addSalesInvoice(SalesInvoiceDTO invoice) {
+    public Long addSalesInvoice(SalesInvoiceDTO invoice) {
 
     String sql = """
         INSERT INTO sales_invoices
-        (invoice_code, sale_id, customer_id, employee_id,
-         subtotal, discount_amount, tax_amount, total_amount,
-         payment_method, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (invoice_code, sale_id, subtotal, discount_amount, tax_amount, total_amount, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """;
 
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    try(Connection conn = getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
 
         ps.setString(1, invoice.getInvoiceCode());
-        ps.setObject(2, invoice.getSaleId());
-        ps.setObject(3, invoice.getCustomerId());
-        ps.setObject(4, invoice.getEmployeeId());
-        ps.setBigDecimal(5, invoice.getSubtotal());
-        ps.setBigDecimal(6, invoice.getDiscountAmount());
-        ps.setBigDecimal(7, invoice.getTaxAmount());
-        ps.setBigDecimal(8, invoice.getTotalAmount());
-        ps.setString(9, invoice.getPaymentMethod());
-        ps.setString(10, invoice.getStatus());
+        ps.setLong(2, invoice.getSaleId());
+        ps.setBigDecimal(3, invoice.getSubtotal());
+        ps.setBigDecimal(4, invoice.getDiscountAmount());
+        ps.setBigDecimal(5, invoice.getTaxAmount());
+        ps.setBigDecimal(6, invoice.getTotalAmount());
+        ps.setString(7, invoice.getStatus());
 
-        int affectedRows = ps.executeUpdate();
+        int rows = ps.executeUpdate();
 
-        if (affectedRows == 0) {
-            return false;
-        }
+        if(rows > 0){
 
-        // lấy invoice_id vừa tạo
-        ResultSet rs = ps.getGeneratedKeys();
-        if (rs.next()) {
-            long invoiceId = rs.getLong(1);   // dùng nội bộ
-            invoice.setInvoiceId(invoiceId);
-            
-            if (invoice.getItems() != null && !invoice.getItems().isEmpty()) {
-                SalesInvoiceItemDAO itemDAO = new SalesInvoiceItemDAO();
-                itemDAO.addItems(invoiceId, invoice.getItems());
+            ResultSet rs = ps.getGeneratedKeys();
+
+            if(rs.next()){
+                return rs.getLong(1); // invoice_id
             }
         }
 
-        return true;
-
-    } catch (SQLException e) {
+    }catch(Exception e){
         e.printStackTrace();
-        return false;
     }
+
+    return null;
 }
 
    

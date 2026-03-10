@@ -31,37 +31,41 @@ public class SalesInvoiceBUS {
         return salesInvoiceDAO.getSalesInvoiceBySaleId(saleId);
     }
 
-    public boolean addSalesInvoice(SalesInvoiceDTO invoice) {
-        if (invoice == null) return false;
+    public Long addSalesInvoice(SalesInvoiceDTO invoice) {
 
-        // Generate invoice code if not provided
-        if (invoice.getInvoiceCode() == null || invoice.getInvoiceCode().isBlank()) {
-            invoice.setInvoiceCode(generateInvoiceCode());
-        }
+    if (invoice == null) return null;
 
-        // Validation
-        if (invoice.getCustomerId() == null || invoice.getCustomerId() <= 0) {
-            System.out.println("Khách hàng không hợp lệ.");
-            return false;
-        }
-        if (invoice.getEmployeeId() == null || invoice.getEmployeeId() <= 0) {
-            System.out.println("Nhân viên không hợp lệ.");
-            return false;
-        }
-        if (invoice.getTotalAmount() == null || invoice.getTotalAmount().signum() <= 0) {
-            System.out.println("Tổng tiền phải lớn hơn 0.");
-            return false;
-        }
-        if (invoice.getItems() == null || invoice.getItems().isEmpty()) {
-            System.out.println("Hóa đơn phải có ít nhất một sản phẩm.");
-            return false;
-        }
-
-        // Calculate totals if not set
-        calculateTotals(invoice);
-
-        return salesInvoiceDAO.addSalesInvoice(invoice);
+    // Generate invoice code if not provided
+    if (invoice.getInvoiceCode() == null || invoice.getInvoiceCode().isBlank()) {
+        invoice.setInvoiceCode(generateInvoiceCode());
     }
+
+    // Validation
+    if (invoice.getCustomerId() == null || invoice.getCustomerId() <= 0) {
+        System.out.println("Khách hàng không hợp lệ.");
+        return null;
+    }
+
+    if (invoice.getEmployeeId() == null || invoice.getEmployeeId() <= 0) {
+        System.out.println("Nhân viên không hợp lệ.");
+        return null;
+    }
+
+    if (invoice.getTotalAmount() == null || invoice.getTotalAmount().signum() <= 0) {
+        System.out.println("Tổng tiền phải lớn hơn 0.");
+        return null;
+    }
+
+    if (invoice.getItems() == null || invoice.getItems().isEmpty()) {
+        System.out.println("Hóa đơn phải có ít nhất một sản phẩm.");
+        return null;
+    }
+
+    // Calculate totals
+    calculateTotals(invoice);
+
+    return salesInvoiceDAO.addSalesInvoice(invoice);
+}
 
     public boolean updateSalesInvoice(SalesInvoiceDTO invoice) {
         if (invoice == null || invoice.getInvoiceId() == null) return false;
