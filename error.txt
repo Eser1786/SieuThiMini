@@ -43,3 +43,5 @@ cuối cùng: thêm logo vào,... chỉnh sửa các nút thao tác chung 1 ki�
 
 
 trang chủ : chỉnh sửa hàm thống kê, cái cuối cùng thống kê theo số điểm tích lũy của khách hàng lấy từ 5 - 10 người xếp hạng từ trên xuống
+
+trang login: chỉnh sửa giao diện cho đẹp tí
