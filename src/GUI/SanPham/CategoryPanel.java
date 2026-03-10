@@ -1,6 +1,7 @@
 package GUI.SanPham;
 
 import BUS.CategoryBUS;
+import BUS.ProductBUS;
 import DTO.CategoryDTO;
 import GUI.ExportUtils;
 import GUI.UIUtils;
@@ -420,7 +421,47 @@ public class CategoryPanel extends JPanel {
             }
         });
 
+        JButton deleteBtn = null;
+        if (category != null) {
+            deleteBtn = new JButton("Xóa");
+            deleteBtn.setFont(new Font("Arial", Font.BOLD, 13));
+            deleteBtn.setBackground(new Color(0xDC3545));
+            deleteBtn.setForeground(Color.WHITE);
+            deleteBtn.setBorder(BorderFactory.createEmptyBorder(9, 22, 9, 22));
+            deleteBtn.setOpaque(true);
+            deleteBtn.setBorderPainted(false);
+            deleteBtn.setFocusPainted(false);
+            deleteBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            deleteBtn.addActionListener(e -> {
+                int confirm = JOptionPane.showConfirmDialog(dialog,
+                        "Bạn có chắc chắn muốn xóa danh mục này?\nTất cả sản phẩm trong danh mục này sẽ bị xóa mềm.",
+                        "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    try {
+                        CategoryBUS categoryBUS = new CategoryBUS();
+                        ProductBUS productBUS = new ProductBUS();
+                        boolean success = categoryBUS.softDeleteCategory(category.getID()) &&
+                                          productBUS.softDeleteProductsByCategory(category.getID());
+                        if (success) {
+                            JOptionPane.showMessageDialog(dialog, "Xóa danh mục và sản phẩm liên quan thành công!",
+                                    "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                            loadCategories(); // Refresh table
+                            dialog.dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(dialog, "Xóa danh mục thất bại!",
+                                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(dialog, "Lỗi: " + ex.getMessage(),
+                                "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            });
+        }
+
         footer.add(saveBtn);
+        if (deleteBtn != null) footer.add(deleteBtn);
         footer.add(cancelBtn);
 
         dialog.add(header, BorderLayout.NORTH);

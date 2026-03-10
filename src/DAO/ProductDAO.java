@@ -111,6 +111,18 @@ public class ProductDAO {
         }
     }
 
+    public boolean softDeleteProductsByCategory(int categoryId) {
+        String sql = "UPDATE products SET isdeleted=1 WHERE category_id=?";
+        try (java.sql.Connection conn = DAO.DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, categoryId);
+            return ps.executeUpdate() >= 0; // >=0 because it might update 0 rows
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean addProduct(DTO.ProductDTO p){
         if(!openConnection()) return false;
         try{

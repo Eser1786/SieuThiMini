@@ -2,6 +2,12 @@
 -- Run this after creating tables
 USE sieuthiminiv2;
 
+-- Add is_deleted to categories table
+ALTER TABLE
+    categories
+ADD
+    COLUMN isdeleted TINYINT(1) NOT NULL DEFAULT 0;
+
 -- Add is_deleted to customers table
 ALTER TABLE
     customers

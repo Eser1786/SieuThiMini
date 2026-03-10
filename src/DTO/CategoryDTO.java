@@ -4,14 +4,17 @@ public class CategoryDTO {
     private int id;
     private String name;
     private String description;
+    private boolean isdeleted;
 
     public int getID(){return id;}
     public String getName(){return name;}
     public String getDescription(){return description;}
+    public boolean isIsdeleted(){return isdeleted;}
 
     public void setID(int id){this.id = id;}
     public void setName(String name){this.name = name;}
     public void setDescription(String description){this.description = description;}
+    public void setIsdeleted(boolean isdeleted){this.isdeleted = isdeleted;}
 
     @Override
     public String toString(){
@@ -19,6 +22,7 @@ public class CategoryDTO {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\''  +
+                ", isdeleted=" + isdeleted +
                 '}';
     }
 }

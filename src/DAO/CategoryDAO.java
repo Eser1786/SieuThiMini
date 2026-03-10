@@ -32,7 +32,7 @@ public class CategoryDAO {
         ArrayList<CategoryDTO> arr = new ArrayList<CategoryDTO>();
         if(openConnection()){
             try{
-                String sql = "SELECT * FROM categories";
+                String sql = "SELECT * FROM categories WHERE isdeleted = 0";
                 Statement stmt = con.createStatement();
                 ResultSet rs = stmt.executeQuery(sql);
                 while(rs.next()){
@@ -40,6 +40,7 @@ public class CategoryDAO {
                     category.setID(rs.getInt("category_id"));
                     category.setName(rs.getString("name"));
                     category.setDescription(rs.getString("description"));
+                    category.setIsdeleted(rs.getBoolean("isdeleted"));
                     arr.add(category);
                 }
             }catch(SQLException e){
@@ -89,6 +90,23 @@ public class CategoryDAO {
         return result;
     }
 
+    public boolean softDeleteCategory(int id){
+        boolean result = false;
+        if(openConnection()){
+            try{
+                String sql = "UPDATE categories SET isdeleted = 1 WHERE category_id = ?";
+                PreparedStatement pstm = con.prepareStatement(sql);
+                pstm.setInt(1, id);
+                result = pstm.executeUpdate() > 0;
+            }catch(SQLException e){
+                System.out.println("Không thể xóa mềm category \n CategoryDAO - softDeleteCategory \n");
+                e.printStackTrace();
+            }finally{
+                closeConnection();
+            }
+        }
+        return result;
+    }
 
     
 

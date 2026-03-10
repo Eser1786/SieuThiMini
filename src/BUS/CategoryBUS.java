@@ -22,5 +22,9 @@ public class CategoryBUS {
         
         return categoryDAO.addCategory(category);
     }
+
+    public boolean softDeleteCategory(int id) {
+        return categoryDAO.softDeleteCategory(id);
+    }
     
 }
