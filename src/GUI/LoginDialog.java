@@ -16,6 +16,8 @@ public class LoginDialog extends JDialog {
     private static final Color BG_COLOR = new Color(0xD1C4E9); // sidebar background
     private static final Color BTN_NORMAL = new Color(0xF8F7FF);
     private static final Color BTN_HOVER = new Color(0x88729B);
+    private static final Color BTN_LOGIN_LIGHT = new Color(0x8B7FA8); // light purple for login button
+    private static final Color BTN_LOGIN_DARK = new Color(0x5C4A7F);  // dark purple for login button hover
     private static final Color HEADER_BG = new Color(0x2F2C35);
 
     private JTextField txtUsername;
@@ -28,7 +30,7 @@ public class LoginDialog extends JDialog {
 
     public LoginDialog(Frame parent) {
         super(parent, "Đăng Nhập Hệ Thống Siêu Thị", true);
-        setSize(420, 380);
+        setSize(550, 380);
         setLocationRelativeTo(parent);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         // when user closes dialog with X before logging in, exit application
@@ -65,7 +67,7 @@ public class LoginDialog extends JDialog {
         // ── Header (logo + tên shop) ──────────────────────────────────────────
         JPanel header = new JPanel(new GridBagLayout());
         header.setBackground(HEADER_BG);
-        header.setPreferredSize(new Dimension(0, 110));
+        header.setPreferredSize(new Dimension(0, 100));
         GridBagConstraints hgbc = new GridBagConstraints();
         hgbc.gridx = 0; hgbc.gridy = 0; hgbc.anchor = GridBagConstraints.CENTER;
 
@@ -92,10 +94,10 @@ public class LoginDialog extends JDialog {
         // ── Center panel ─────────────────────────────────────────────────────
         JPanel center = new JPanel(new GridBagLayout());
         center.setBackground(BG_COLOR);
-        center.setBorder(BorderFactory.createEmptyBorder(20, 30, 10, 30));
+        center.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.insets = new Insets(12, 8, 12, 8);
         Font labelFont = new Font("Arial", Font.BOLD, 14);
         Font fieldFont = new Font("Arial", Font.PLAIN, 14);
 
@@ -140,7 +142,7 @@ public class LoginDialog extends JDialog {
 
         // Login button
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 3; gbc.weightx = 1.0;
-        gbc.insets = new Insets(16, 8, 4, 8);
+        gbc.insets = new Insets(16, 8, 12, 8);
         btnLogin = new JButton("Đăng Nhập") {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -151,7 +153,7 @@ public class LoginDialog extends JDialog {
                 super.paintComponent(g);
             }
         };
-        btnLogin.setBackground(new Color(0x5C4A7F));
+        btnLogin.setBackground(BTN_LOGIN_LIGHT);
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setFont(new Font("Arial", Font.BOLD, 15));
         btnLogin.setFocusPainted(false);
@@ -164,7 +166,7 @@ public class LoginDialog extends JDialog {
         center.add(btnLogin, gbc);
 
         // Message label
-        gbc.gridy = 3; gbc.insets = new Insets(2, 8, 4, 8);
+        gbc.gridy = 3; gbc.insets = new Insets(8, 8, 8, 8);
         lblMessage = new JLabel(" ");
         lblMessage.setFont(new Font("Arial", Font.PLAIN, 13));
         lblMessage.setForeground(Color.RED);
@@ -176,10 +178,10 @@ public class LoginDialog extends JDialog {
         // Hover
         btnLogin.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btnLogin.setBackground(BTN_HOVER);
+                btnLogin.setBackground(BTN_LOGIN_DARK);
             }
             @Override public void mouseExited(java.awt.event.MouseEvent evt) {
-                btnLogin.setBackground(new Color(0x5C4A7F));
+                btnLogin.setBackground(BTN_LOGIN_LIGHT);
             }
         });
 
