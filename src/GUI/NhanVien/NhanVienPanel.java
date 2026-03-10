@@ -556,6 +556,9 @@ public class NhanVienPanel extends JPanel {
                     e.getPasswordHash() != null ? e.getPasswordHash() : "",
                     e.getId()
                 });
+                if (e.getPhotoPath() != null && !e.getPhotoPath().isEmpty()) {
+                    photoPathMap.put(e.getCode(), e.getPhotoPath());
+                }
             }
         } catch (Exception ex) {
             ex.printStackTrace();

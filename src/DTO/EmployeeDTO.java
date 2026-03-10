@@ -16,6 +16,7 @@ public class EmployeeDTO {
     private int roleId;       // foreign key to roles
     private String status;
     private boolean isdeleted;
+    private String photoPath;  // path to avatar image file
 
     // getters/setters
     public void setId(int id) { this.id = id; }
@@ -42,6 +43,8 @@ public class EmployeeDTO {
     public String getStatus() { return status; }
     public void setIsdeleted(boolean isdeleted) { this.isdeleted = isdeleted; }
     public boolean isIsdeleted() { return isdeleted; }
+    public void setPhotoPath(String photoPath) { this.photoPath = photoPath; }
+    public String getPhotoPath() { return photoPath; }
 
     @Override
     public String toString() {
