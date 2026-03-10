@@ -15,7 +15,8 @@ public class GUI extends JFrame {
         setTitle("Siêu Thị 36");
         // Set taskbar / title-bar icon
         try {
-            java.io.File iconFile = new java.io.File("img/icons/Logo.png");
+            java.io.File iconFile = new java.io.File("img/icons/logo (white background).jpg");
+            if (!iconFile.exists()) iconFile = new java.io.File("img/icons/Logo.png");
             if (!iconFile.exists()) iconFile = new java.io.File("img/logo.png");
             if (iconFile.exists())
                 setIconImage(new javax.swing.ImageIcon(iconFile.getAbsolutePath()).getImage());

@@ -7,12 +7,14 @@ import BUS.ProductBUS;
 import BUS.SalesBUS;
 import DAO.DBConnection;
 import DAO.ProductDAO;
+import DAO.SalesInvoiceDAO;
 import DAO.SalesInvoiceItemDAO;
 import DTO.CustomerDTO;
 import DTO.DiscountDTO;
 import DTO.EmployeeDTO;
 import DTO.ProductDTO;
 import DTO.SaleDTO;
+import DTO.SalesInvoiceDTO;
 import DTO.SalesInvoiceItemDTO;
 import DTO.enums.SaleEnum.SalePaymentMethod;
 import DTO.enums.SaleEnum.SaleStatus;
@@ -668,22 +670,34 @@ class DonHangCreateCard extends JPanel {
     // Lấy sale vừa tạo
     SaleDTO savedSale = salesBUS.getSaleByCode(maDon);
     Long saleId = savedSale.getSaleID();
+    SalesInvoiceDAO invoiceDAO = new SalesInvoiceDAO();
 
+SalesInvoiceDTO invoice = new SalesInvoiceDTO();
+
+invoice.setInvoiceCode(invoiceDAO.generateInvoiceCode());
+invoice.setSaleId(saleId);
+invoice.setSubtotal(BigDecimal.valueOf(tongCong + discAmt));
+invoice.setDiscountAmount(BigDecimal.valueOf(discAmt));
+invoice.setTaxAmount(BigDecimal.ZERO);
+invoice.setTotalAmount(BigDecimal.valueOf(tongCong));
+invoice.setStatus("PENDING");
+
+Long invoiceId = invoiceDAO.addSalesInvoice(invoice); // phải return id             
     SalesInvoiceItemDAO itemDAO = new SalesInvoiceItemDAO();
-    ProductDAO productDAO = new ProductDAO();
+    
 
     for(OrderItem it : items){
 
     SalesInvoiceItemDTO item = new SalesInvoiceItemDTO();
-
-    item.setInvoiceId(saleId);
-    item.setProductId(it.productId);   // dùng trực tiếp
+    ProductDAO productDAO = new ProductDAO();
+    item.setInvoiceId(invoiceId);
+    item.setProductId(it.productId);
     item.setQuantity(it.qty);
     item.setUnitPrice(BigDecimal.valueOf(it.unitPrice));
     item.setSubtotal(BigDecimal.valueOf(it.unitPrice * it.qty));
 
     itemDAO.insert(item);
-    
+     productDAO.decreaseStock(it.productId, it.qty);
 }
 
     // Cập nhật last_purchase cho khách hàng

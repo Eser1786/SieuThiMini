@@ -168,4 +168,41 @@ public List<SalesInvoiceItemDTO> getBySaleCode(String saleCode){
 
     return list;
 }
+public void addItems(Long invoiceId, List<SalesInvoiceItemDTO> items) throws SQLException {
+        String sql = "INSERT INTO sales_invoice_items (invoice_id, product_id, quantity, unit_price, subtotal, notes) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            for (SalesInvoiceItemDTO item : items) {
+                ps.setLong(1, invoiceId);
+                ps.setLong(2, item.getProductId());
+                ps.setInt(3, item.getQuantity());
+                ps.setBigDecimal(4, item.getUnitPrice());
+                ps.setBigDecimal(5, item.getSubtotal());
+                ps.setString(6, item.getNotes());
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+        }
+    }
+    public boolean deleteItemsByInvoiceId(Long invoiceId){
+
+    String sql = "DELETE FROM sales_invoice_items WHERE invoice_id = ?";
+
+    try(Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)){
+
+        ps.setLong(1, invoiceId);
+
+        return ps.executeUpdate() > 0;
+
+    }catch(Exception e){
+        e.printStackTrace();
+        return false;
+    }
+}
 }

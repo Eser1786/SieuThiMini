@@ -125,12 +125,17 @@ public class KhuyenMaiPanel extends JPanel {
         JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
         JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
         JButton btnReset = new JButton("Reset");
-        btnReset.setBackground(new Color(108, 117, 125)); // màu xám
-        btnReset.setForeground(Color.WHITE);
         btnReset.setFocusPainted(false);
+        btnReset.setBackground(new Color(0xD9D9D9));
+        btnReset.setFont(new Font("Arial", Font.BOLD, 13));
+        btnReset.setBorder(BorderFactory.createEmptyBorder(9, 10, 9, 10));
+        btnReset.setOpaque(true);
         btnReset.setBorderPainted(false);
-        btnReset.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnReset.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnReset.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnReset.setBackground(new Color(0xEF9A9A)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnReset.setBackground(new Color(0xD9D9D9)); }
+        });
         btnReset.addActionListener(e -> {
             tfTim.setText("");
             cbLoc.setSelectedIndex(0);

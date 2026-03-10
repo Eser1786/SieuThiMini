@@ -58,6 +58,9 @@ INSERT IGNORE INTO customers (customer_code, full_name, phone, email, address, l
     ('KH006', 'Lê Văn Cường',    '0369852411', 'cuong.le@gmail.com',    'Quận 7, TP.HCM',    80,   350000.00, 'REGULAR', 'ACTIVE'),
     ('KH007', 'Phạm Thị Diệu',   '0356789012', 'dieu.pham@gmail.com',  'Bình Thạnh, TP.HCM', 0,        0.00, 'REGULAR', 'ACTIVE');
 
+-- Patch: đảm bảo KH002 có email (INSERT IGNORE không update nếu row đã tồn tại)
+UPDATE customers SET email = 'binhbong@gmail.com' WHERE customer_code = 'KH002' AND (email IS NULL OR email = '');
+
 -- ─── 5. ROLES ────────────────────────────────────────────────────────────────
 INSERT IGNORE INTO roles (role_name, description) VALUES
     ('ADMIN',     'Quản trị toàn hệ thống'),

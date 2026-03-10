@@ -60,7 +60,8 @@ public class MainPanel extends JPanel {
 
         // Logo
         try {
-            java.io.File logoFile = new java.io.File("img/icons/Logo.png");
+            java.io.File logoFile = new java.io.File("img/icons/logo transparent.png");
+            if (!logoFile.exists()) logoFile = new java.io.File("img/icons/Logo.png");
             if (!logoFile.exists()) logoFile = new java.io.File("img/logo.png");
             if (!logoFile.exists()) logoFile = new java.io.File("img/logo.jpg");
             if (logoFile.exists()) {

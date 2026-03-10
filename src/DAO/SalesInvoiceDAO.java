@@ -2,7 +2,7 @@ package DAO;
 
 import DTO.SalesInvoiceDTO;
 import DTO.SalesInvoiceItemDTO;
-
+import DAO.SalesInvoiceDiscountDAO;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,64 +86,44 @@ public class SalesInvoiceDAO {
         return items;
     }
 
-    public boolean addSalesInvoice(SalesInvoiceDTO invoice) {
-        boolean result = false;
-        String sql = "INSERT INTO sales_invoices (invoice_code, sale_id, customer_id, employee_id, subtotal, discount_amount, tax_amount, total_amount, payment_method, status) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public Long addSalesInvoice(SalesInvoiceDTO invoice) {
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    String sql = """
+        INSERT INTO sales_invoices
+        (invoice_code, sale_id, subtotal, discount_amount, tax_amount, total_amount, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """;
 
-            ps.setString(1, invoice.getInvoiceCode());
-            ps.setObject(2, invoice.getSaleId());
-            ps.setObject(3, invoice.getCustomerId());
-            ps.setObject(4, invoice.getEmployeeId());
-            ps.setBigDecimal(5, invoice.getSubtotal());
-            ps.setBigDecimal(6, invoice.getDiscountAmount());
-            ps.setBigDecimal(7, invoice.getTaxAmount());
-            ps.setBigDecimal(8, invoice.getTotalAmount());
-            ps.setString(9, invoice.getPaymentMethod());
-            ps.setString(10, invoice.getStatus());
+    try(Connection conn = getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
 
-            int affectedRows = ps.executeUpdate();
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = ps.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    invoice.setInvoiceId(generatedKeys.getLong(1));
-                }
-                // Thêm chi tiết items
-                addItems(invoice.getInvoiceId(), invoice.getItems());
-                result = true;
+        ps.setString(1, invoice.getInvoiceCode());
+        ps.setLong(2, invoice.getSaleId());
+        ps.setBigDecimal(3, invoice.getSubtotal());
+        ps.setBigDecimal(4, invoice.getDiscountAmount());
+        ps.setBigDecimal(5, invoice.getTaxAmount());
+        ps.setBigDecimal(6, invoice.getTotalAmount());
+        ps.setString(7, invoice.getStatus());
+
+        int rows = ps.executeUpdate();
+
+        if(rows > 0){
+
+            ResultSet rs = ps.getGeneratedKeys();
+
+            if(rs.next()){
+                return rs.getLong(1); // invoice_id
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
 
-        return result;
+    }catch(Exception e){
+        e.printStackTrace();
     }
 
-    private void addItems(Long invoiceId, List<SalesInvoiceItemDTO> items) throws SQLException {
-        String sql = "INSERT INTO sales_invoice_items (invoice_id, product_id, quantity, unit_price, subtotal, notes) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
+    return null;
+}
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            for (SalesInvoiceItemDTO item : items) {
-                ps.setLong(1, invoiceId);
-                ps.setLong(2, item.getProductId());
-                ps.setInt(3, item.getQuantity());
-                ps.setBigDecimal(4, item.getUnitPrice());
-                ps.setBigDecimal(5, item.getSubtotal());
-                ps.setString(6, item.getNotes());
-
-                ps.addBatch();
-            }
-
-            ps.executeBatch();
-        }
-    }
-
+   
     public SalesInvoiceDTO getSalesInvoiceById(Long invoiceId) {
         SalesInvoiceDTO invoice = null;
         String sql = "SELECT si.*, c.full_name AS customer_name, c.phone AS customer_phone, e.name AS employee_name " +
@@ -221,59 +201,74 @@ public class SalesInvoiceDAO {
     }
 
     public boolean updateSalesInvoice(SalesInvoiceDTO invoice) {
-        boolean result = false;
-        String sql = "UPDATE sales_invoices SET invoice_code = ?, sale_id = ?, customer_id = ?, employee_id = ?, " +
-                     "subtotal = ?, discount_amount = ?, tax_amount = ?, total_amount = ?, payment_method = ?, status = ? " +
-                     "WHERE invoice_id = ?";
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    String sql = """
+        UPDATE sales_invoices
+        SET invoice_code = ?, sale_id = ?, customer_id = ?, employee_id = ?,
+            subtotal = ?, discount_amount = ?, tax_amount = ?, total_amount = ?,
+            payment_method = ?, status = ?
+        WHERE invoice_id = ?
+    """;
 
-            ps.setString(1, invoice.getInvoiceCode());
-            ps.setObject(2, invoice.getSaleId());
-            ps.setObject(3, invoice.getCustomerId());
-            ps.setObject(4, invoice.getEmployeeId());
-            ps.setBigDecimal(5, invoice.getSubtotal());
-            ps.setBigDecimal(6, invoice.getDiscountAmount());
-            ps.setBigDecimal(7, invoice.getTaxAmount());
-            ps.setBigDecimal(8, invoice.getTotalAmount());
-            ps.setString(9, invoice.getPaymentMethod());
-            ps.setString(10, invoice.getStatus());
-            ps.setLong(11, invoice.getInvoiceId());
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            int affectedRows = ps.executeUpdate();
-            if (affectedRows > 0) {
-                // Cập nhật items: xóa cũ và thêm mới
-                deleteItemsByInvoiceId(invoice.getInvoiceId());
-                addItems(invoice.getInvoiceId(), invoice.getItems());
-                result = true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        conn.setAutoCommit(false);
+
+        ps.setString(1, invoice.getInvoiceCode());
+        ps.setObject(2, invoice.getSaleId());
+        ps.setObject(3, invoice.getCustomerId());
+        ps.setObject(4, invoice.getEmployeeId());
+        ps.setBigDecimal(5, invoice.getSubtotal());
+        ps.setBigDecimal(6, invoice.getDiscountAmount());
+        ps.setBigDecimal(7, invoice.getTaxAmount());
+        ps.setBigDecimal(8, invoice.getTotalAmount());
+        ps.setString(9, invoice.getPaymentMethod());
+        ps.setString(10, invoice.getStatus());
+        ps.setLong(11, invoice.getInvoiceId());
+
+        int affectedRows = ps.executeUpdate();
+
+        if (affectedRows > 0) {
+
+            SalesInvoiceItemDAO itemDAO = new SalesInvoiceItemDAO();
+
+            itemDAO.deleteItemsByInvoiceId(invoice.getInvoiceId());
+            itemDAO.addItems(invoice.getInvoiceId(), invoice.getItems());
+
+            conn.commit();
+            return true;
         }
 
-        return result;
+        conn.rollback();
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
 
-    public boolean deleteSalesInvoice(Long invoiceId) throws SQLException {
-        boolean result = false;
-        // Xóa items trước
-        deleteItemsByInvoiceId(invoiceId);
+    return false;
+}
+    
+    public String generateInvoiceCode(){
 
-        String sql = "DELETE FROM sales_invoices WHERE invoice_id = ?";
+    String sql = "SELECT MAX(CAST(SUBSTRING(invoice_code,4) AS UNSIGNED)) FROM sales_invoices";
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, invoiceId);
-            result = ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
+    try(Connection conn = getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery()){
+
+        if(rs.next()){
+            int max = rs.getInt(1);
+            return String.format("INV%03d", max + 1);
         }
 
-        return result;
+    }catch(Exception e){
+        e.printStackTrace();
     }
 
-    private void deleteItemsByInvoiceId(Long invoiceId) throws SQLException {
+    return "INV001";
+}
+    public void deleteItemsByInvoiceId(Long invoiceId) throws SQLException {
         String sql = "DELETE FROM sales_invoice_items WHERE invoice_id = ?";
 
         try (Connection conn = getConnection();

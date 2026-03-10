@@ -285,17 +285,17 @@ class KhachHangTableCard extends JPanel {
         header.add(lblTitle);
         detail.add(header, BorderLayout.NORTH);
 
-        String maKH      = parent.tableModel.getValueAt(modelRow, 0).toString();
-        String ten       = parent.tableModel.getValueAt(modelRow, 1).toString();
-        String sdt       = parent.tableModel.getValueAt(modelRow, 2).toString();
-        String email     = parent.tableModel.getValueAt(modelRow, 3).toString();
-        String diaChi    = parent.tableModel.getValueAt(modelRow, 4).toString();
-        String hang      = parent.tableModel.getValueAt(modelRow, 5).toString();
-        String trangThai = parent.tableModel.getValueAt(modelRow, 6).toString();
-        String diem       = parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_DIEM).toString();
-        String tgDK       = parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_TGDK).toString();
-        String lanCuoiMua = parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_LANCUOIMUA).toString();
-        String tongTien   = parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_TONGTIEN).toString();
+        String maKH      = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, 0), "");
+        String ten       = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, 1), "");
+        String sdt       = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, 2), "");
+        String email     = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, 3), "");
+        String diaChi    = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, 4), "");
+        String hang      = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, 5), "");
+        String trangThai = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, 6), "");
+        String diem       = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_DIEM), "");
+        String tgDK       = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_TGDK), "");
+        String lanCuoiMua = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_LANCUOIMUA), "");
+        String tongTien   = java.util.Objects.toString(parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_TONGTIEN), "");
         Object idObj      = parent.tableModel.getValueAt(modelRow, KhachHangPanel.COL_ID);
         int customerId    = (idObj instanceof Integer) ? (Integer) idObj : 0;
 

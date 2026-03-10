@@ -277,7 +277,7 @@ CREATE TABLE sales_invoices (
     tax_amount DECIMAL(15, 2) DEFAULT '0.00',
     total_amount DECIMAL(15, 2) NOT NULL,
     payment_method ENUM('CASH', 'CARD', 'TRANSFER') COLLATE utf8mb4_unicode_ci DEFAULT 'CASH',
-    STATUS ENUM('COMPLETED', 'CANCELLED') COLLATE utf8mb4_unicode_ci DEFAULT 'COMPLETED',
+    STATUS ENUM('COMPLETED','PENDING' ,'CANCELLED') COLLATE utf8mb4_unicode_ci DEFAULT 'COMPLETED',
     PRIMARY KEY (invoice_id),
     UNIQUE KEY invoice_code (invoice_code),
     KEY sale_id (sale_id),
