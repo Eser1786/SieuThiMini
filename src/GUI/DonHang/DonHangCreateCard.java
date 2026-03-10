@@ -8,6 +8,7 @@ import BUS.SalesBUS;
 import DAO.DBConnection;
 import DAO.ProductDAO;
 import DAO.SalesInvoiceDAO;
+import DAO.SalesInvoiceDiscountDAO;
 import DAO.SalesInvoiceItemDAO;
 import DTO.CustomerDTO;
 import DTO.DiscountDTO;
@@ -15,6 +16,7 @@ import DTO.EmployeeDTO;
 import DTO.ProductDTO;
 import DTO.SaleDTO;
 import DTO.SalesInvoiceDTO;
+import DTO.SalesInvoiceDiscountDTO;
 import DTO.SalesInvoiceItemDTO;
 import DTO.enums.SaleEnum.SalePaymentMethod;
 import DTO.enums.SaleEnum.SaleStatus;
@@ -670,6 +672,7 @@ class DonHangCreateCard extends JPanel {
     // Lấy sale vừa tạo
     SaleDTO savedSale = salesBUS.getSaleByCode(maDon);
     Long saleId = savedSale.getSaleID();
+    
     SalesInvoiceDAO invoiceDAO = new SalesInvoiceDAO();
 
 SalesInvoiceDTO invoice = new SalesInvoiceDTO();
@@ -682,7 +685,20 @@ invoice.setTaxAmount(BigDecimal.ZERO);
 invoice.setTotalAmount(BigDecimal.valueOf(tongCong));
 invoice.setStatus("PENDING");
 
-Long invoiceId = invoiceDAO.addSalesInvoice(invoice); // phải return id             
+Long invoiceId = invoiceDAO.addSalesInvoice(invoice); // phải return id   
+if(cbMaKM.getSelectedIndex() > 0){
+
+    DiscountDTO d = activeDiscounts.get(cbMaKM.getSelectedIndex() - 1);
+
+    SalesInvoiceDiscountDAO disDAO = new SalesInvoiceDiscountDAO();
+
+    SalesInvoiceDiscountDTO sid = new SalesInvoiceDiscountDTO();
+
+    sid.setInvoiceId(invoiceId);
+    sid.setDiscountId((long) d.getId());
+
+    disDAO.insert(sid);
+}          
     SalesInvoiceItemDAO itemDAO = new SalesInvoiceItemDAO();
     
 

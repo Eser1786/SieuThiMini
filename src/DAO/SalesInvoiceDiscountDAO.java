@@ -9,7 +9,7 @@ public class SalesInvoiceDiscountDAO {
 
     public boolean insert(SalesInvoiceDiscountDTO dto) {
 
-        String sql = "INSERT INTO sales_invoice_discount (discount_id, invoice_id) VALUES (?, ?)";
+        String sql = "INSERT INTO sale_invoice_discounts (discount_id, invoice_id) VALUES (?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
