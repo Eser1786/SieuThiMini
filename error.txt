@@ -1,0 +1,42 @@
+nên tạo 1 file riêng để lưu các file pdf và excel được khởi tạo
+
+
+- đăng nhập phân quyền:
+    ADMIN: được xem tất cả panel
+    MANAGER: được xem trang chủ, sản phẩm và nhân viên panel
+    CASHIER: được xem trang chủ, đơn hàng panel
+    WAREHOUSE: được xem trang chủ, kho, nhập kho panel
+    SUPPORT: được xem trang chủ, khách hàng panel
+
+Trang chủ: Chỉnh sửa biểu đồ doanh thu ở trang chủ chính để có thể hoạt động dựa theo đơn hàng
+
+Sản phẩm: 
+    - chỉnh sửa đường link ảnh để có thể hiển thị hình ảnh cho từng sản phẩm
+    - Kiểm tra số lượng tổn kho, khi nào cận date cần thông báo chuẩn bị expire
+    - thiếu vị trí để
+    - Trạng thái khi thêm không được đụng tới mà phải là khôgn được edit chỉ có thể biết là hết hàng sau đó phải nhập vào, dựa vào trạng thái của sản phẩm mà quyết định trạng thái của sản phẩm
+
+    Quản lý danh mục: phần thao tác sửa ấn vào nhưng không hoạt động -> cần kiểm tra thêm logic bên trong, thêm phần tìm kiếm nâng cao dựa theo các mục trong database
+    Quản lý nhà cung cấp: nhà cung cấp được xếp hạng theo tên nhà cung cấp chứ khôgn phải mã nhà cung cấp, cần phải xếp theo thứ tự mã từ trên xuống, thao tác sửa xóa ở trang cần cải thiện, hình ảnh hơi xấu, dựa theo các trang khác làm lại nút xóa sửa, Người liên lạc trong phần sửa khôgn tự hiển thị -> cần lấy từ database ra, mã nhà cung cấp cũng cần lấy từ database ra nhưng khôgn được sửa trong phần sửa thông tin, trong phần sửa có sẵn nút xóa rồi nên hủy bỏ nút xóa ở phần thao tác bên ngoài 
+
+Khách hàng:
+    - Nếu khách hàng có email mới có thể xem được chi tiết, còn nếu không có thì không thể thấy được chi tiết của khách hàng -> phải sửa
+    - khi chuyển từ trạng thái hoạt động sang không còn hoạt động nữa thì trên phần thao tác nên thêm 1 thao tác là xóa mềm khách hàng đó, chỉ khôgn hiện lên trong bảng nhưng vẫn còn ở trong database
+    - phần tìm kiếm chưa được đầy đủ hết hãy tìm kiếm dựa theo các trường dữ liệu có trong database
+
+Kho: 
+    - phần tìm kiếm chỉ dựa theo tên sản phẩm chứ không dựa theo số thứ tự hay mã sản phẩm, hãy mở rộng ra tìm kiếm theo nhiều trường khác nhau trong cơ sở dữ liệu
+
+Nhập kho:
+    - Số hóa đơn nhập là cgi? -> tự động tạo mã nhập 
+
+Khuyến mãi: 
+    - Nguyễn sửa theo logic mà nguyễn nói hôm qua
+    - khi tạo 1 mã hãy cho 2 lựa chọn 1 là tạo random cho các dịp bình thường, hai là tạo custom cho các dịp đặc biệt như TET26 các thứ nó sẽ ổn hơn, có hàm rồi gọi lại thôi hay gì đó tui không biết kiểm tra lại dùm tui
+    - kiểm tra lại logic của min order như theo vndd hoặc theo loại thì sao, mua 2 tặng 1 thì không thể nào mà minorder được, kiểm tra lại hộ tui
+
+Nhân viên: hiện tại khi đang viết cái này thì trang nhân viên chưa được hiện lên nên chưa biết có thể bị lỗi gì nhưng theo như tui nhớ thì
+        - ở phần thông tin nhân viên có các trường không có dữ liệu như cmnd,... hãy loại bỏ bớt pahanf nào có thì giữ lại hoặc là sẽ phải thay đổi database để thêm các trường dữ liệu đó vào, tùy thuộc vào thời gian còn lại đủ để làm phần này không
+
+
+cuối cùng: thêm logo vào,... chỉnh sửa các nút thao tác chung 1 kiểu thôi đừng có mỗi panel mỗii kiểu, hiện tại nhiêu đây thôi nào tui đi làm về tui tính tiếp
