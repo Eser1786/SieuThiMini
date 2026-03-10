@@ -96,12 +96,16 @@ public class SanPhamPanel extends JPanel {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                if (btn.getBackground() != CLR_TAB_ACTIVE)
+                if (btn.getBackground() != CLR_TAB_ACTIVE) {
                     btn.setBackground(CLR_TAB_HOVER);
+                    btn.setForeground(new Color(0x2E2640));
+                }
             }
             public void mouseExited(java.awt.event.MouseEvent e) {
-                if (btn.getBackground() == CLR_TAB_HOVER)
+                if (btn.getBackground() == CLR_TAB_HOVER) {
                     btn.setBackground(new Color(0x3A3545));
+                    btn.setForeground(new Color(0xCCBBEE));
+                }
             }
         });
         return btn;

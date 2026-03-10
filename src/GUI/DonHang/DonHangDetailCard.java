@@ -303,7 +303,9 @@ class DonHangDetailCard extends JPanel {
                 long finalSub = sale.getSubTotal() != null ? sale.getSubTotal().longValue() : sub;
                 long finalTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue() : sub;
                 lbTongCong.setText(String.format("%,.0fđ", (double) finalSub));
-                lbVAT.setText(inv.getTaxAmount() != null ? String.format("%,.0fđ", inv.getTaxAmount().doubleValue()) : "0đ");
+                lbVAT.setText(inv.getTaxAmount() != null
+                    ? String.format("%,.0fđ", inv.getTaxAmount().doubleValue())
+                    : String.format("%,.0fđ", (double)(finalTot * 10L / 110)));
                 lbPhiVC.setText("Miễn phí");
                 tfTongTT.setText(String.format("%,.0fđ", (double) finalTot));
             } else {

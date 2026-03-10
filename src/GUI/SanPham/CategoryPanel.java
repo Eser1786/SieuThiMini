@@ -2,6 +2,7 @@ package GUI.SanPham;
 
 import BUS.CategoryBUS;
 import DTO.CategoryDTO;
+import GUI.ExportUtils;
 import GUI.UIUtils;
 import java.awt.*;
 import java.util.List;
@@ -112,9 +113,29 @@ public class CategoryPanel extends JPanel {
             public void changedUpdate(javax.swing.event.DocumentEvent e) { applyFilter.run(); }
         });
 
+        JButton btnPDF    = ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
+        JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
+        JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
+        for (JButton b : new JButton[]{btnPDF, btnExcel, btnImport})
+            b.setFont(new Font("Arial", Font.BOLD, 13));
+        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, model, "Danh sách danh mục"));
+        btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, model, "danh_muc"));
+        btnImport.addActionListener(e -> {
+            List<String[]> rows = ExportUtils.importCSV(this);
+            if (rows == null) return;
+            int stt = model.getRowCount() + 1;
+            for (String[] r : rows) {
+                if (r.length < 2) continue;
+                model.addRow(new Object[]{stt++, 0, r[0], r[1], "Sửa"});
+            }
+        });
+
         top.add(new JLabel("Tìm kiếm:"));
         top.add(searchPanel);
         top.add(addBtn);
+        top.add(btnPDF);
+        top.add(btnExcel);
+        top.add(btnImport);
 
         // Table setup
         String[] columns = {"STT", "ID", "Tên danh mục", "Mô tả", "Thao tác"};
@@ -292,19 +313,22 @@ public class CategoryPanel extends JPanel {
         g.fill = GridBagConstraints.HORIZONTAL;
         g.insets = new Insets(7, 6, 7, 6);
         Font labelFont = new Font("Arial", Font.BOLD, 13);
-        Dimension fieldSize = new Dimension(250, 32);
 
-        JTextField nameField = UIUtils.makeField();
-        nameField.setPreferredSize(fieldSize);
-        if (category != null) {
-            nameField.setText(category.getName());
-        }
+        JTextField nameField = new JTextField();
+        nameField.setFont(new Font("Arial", Font.PLAIN, 13));
+        nameField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+        nameField.setPreferredSize(new Dimension(260, 36));
+        if (category != null) nameField.setText(category.getName());
 
-        JTextField descField = UIUtils.makeField();
-        descField.setPreferredSize(fieldSize);
-        if (category != null) {
-            descField.setText(category.getDescription());
-        }
+        JTextField descField = new JTextField();
+        descField.setFont(new Font("Arial", Font.PLAIN, 13));
+        descField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+        descField.setPreferredSize(new Dimension(260, 36));
+        if (category != null) descField.setText(category.getDescription());
 
         g.gridy = 0;
         g.gridx = 0; g.weightx = 0;

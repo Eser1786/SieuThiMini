@@ -70,7 +70,7 @@ public class TrangChuPanel extends JPanel {
         cbChartPeriod.setFont(new Font("Arial", Font.PLAIN, 11));
         cbChartPeriod.setPreferredSize(new Dimension(80, 24));
         cbChartPeriod.addActionListener(e -> refreshChart());
-        JButton btnRefresh1 = new JButton("Lam moi");
+        JButton btnRefresh1 = new JButton("Làm mới");
         btnRefresh1.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh1.setFocusPainted(false);
         btnRefresh1.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -97,7 +97,7 @@ public class TrangChuPanel extends JPanel {
         customerHeaderPanel.setOpaque(false);
         JLabel customerTitle = new JLabel("Khách hàng mới (tuần này)");
         customerTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
-        JButton btnRefresh2 = new JButton("Lam moi");
+        JButton btnRefresh2 = new JButton("Làm mới");
         btnRefresh2.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh2.setFocusPainted(false);
         btnRefresh2.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -116,7 +116,7 @@ public class TrangChuPanel extends JPanel {
         orderChartHeaderPanel.setOpaque(false);
         JLabel orderChartTitle = new JLabel("Đơn hàng (tuần này)");
         orderChartTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
-        JButton btnRefresh3 = new JButton("Lam moi");
+        JButton btnRefresh3 = new JButton("Làm mới");
         btnRefresh3.setFont(new Font("Arial", Font.PLAIN, 10));
         btnRefresh3.setFocusPainted(false);
         btnRefresh3.setCursor(new Cursor(Cursor.HAND_CURSOR));

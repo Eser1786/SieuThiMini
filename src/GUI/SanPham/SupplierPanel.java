@@ -2,6 +2,7 @@ package GUI.SanPham;
 
 import BUS.SupplierBUS;
 import DTO.SupplierDTO;
+import GUI.ExportUtils;
 import GUI.UIUtils;
 import java.awt.*;
 import java.util.List;
@@ -105,9 +106,28 @@ public class SupplierPanel extends JPanel {
         });
         addBtn.addActionListener(e -> showAddSupplierDialog());
 
+        JButton btnPDF    = ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
+        JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
+        JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
+        for (JButton b : new JButton[]{btnPDF, btnExcel, btnImport})
+            b.setFont(new Font("Arial", Font.BOLD, 13));
+        btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, model, "Danh sách nhà cung cấp"));
+        btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, model, "nha_cung_cap"));
+        btnImport.addActionListener(e -> {
+            List<String[]> rows = ExportUtils.importCSV(this);
+            if (rows == null) return;
+            for (String[] r : rows) {
+                if (r.length < 6) continue;
+                model.addRow(new Object[]{r[0], r[1], r[2], r[3], r[4], r[5], "Chi tiết"});
+            }
+        });
+
         top.add(searchPanel);
         top.add(searchType);
         top.add(addBtn);
+        top.add(btnPDF);
+        top.add(btnExcel);
+        top.add(btnImport);
 
         // Table
         model = new DefaultTableModel(new Object[]{"Mã NCC", "Tên NCC", "Địa chỉ", "Người liên lạc", "SĐT", "Email", "Thao tác"}, 0) {
@@ -253,21 +273,25 @@ public class SupplierPanel extends JPanel {
         g.fill = GridBagConstraints.HORIZONTAL;
         g.insets = new Insets(7, 6, 7, 6);
         Font labelFont = new Font("Arial", Font.BOLD, 13);
-        Dimension fieldSize = new Dimension(260, 32);
+        javax.swing.border.Border fldBorder = BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        Dimension fieldSize = new Dimension(260, 36);
 
         // Mã NCC — read-only styled field
-        JTextField txtCode = UIUtils.makeField();
-        txtCode.setPreferredSize(new Dimension(120, 32));
+        JTextField txtCode = new JTextField();
+        txtCode.setFont(new Font("Arial", Font.BOLD, 13));
+        txtCode.setBorder(fldBorder);
+        txtCode.setPreferredSize(new Dimension(150, 36));
         txtCode.setEditable(false);
         txtCode.setBackground(new Color(0xE8E8E8));
-        txtCode.setFont(new Font("Arial", Font.BOLD, 13));
         txtCode.setText(supplier != null ? supplier.getCode() : supplierBUS.generateSupplierCode());
 
-        JTextField txtName    = UIUtils.makeField(); txtName.setPreferredSize(fieldSize);
-        JTextField txtAddress = UIUtils.makeField(); txtAddress.setPreferredSize(fieldSize);
-        JTextField txtContact = UIUtils.makeField(); txtContact.setPreferredSize(fieldSize);
-        JTextField txtPhone   = UIUtils.makeField(); txtPhone.setPreferredSize(fieldSize);
-        JTextField txtEmail   = UIUtils.makeField(); txtEmail.setPreferredSize(fieldSize);
+        JTextField txtName    = new JTextField(); txtName.setFont(new Font("Arial", Font.PLAIN, 13));    txtName.setBorder(fldBorder);    txtName.setPreferredSize(fieldSize);
+        JTextField txtAddress = new JTextField(); txtAddress.setFont(new Font("Arial", Font.PLAIN, 13)); txtAddress.setBorder(fldBorder); txtAddress.setPreferredSize(fieldSize);
+        JTextField txtContact = new JTextField(); txtContact.setFont(new Font("Arial", Font.PLAIN, 13)); txtContact.setBorder(fldBorder); txtContact.setPreferredSize(fieldSize);
+        JTextField txtPhone   = new JTextField(); txtPhone.setFont(new Font("Arial", Font.PLAIN, 13));   txtPhone.setBorder(fldBorder);   txtPhone.setPreferredSize(fieldSize);
+        JTextField txtEmail   = new JTextField(); txtEmail.setFont(new Font("Arial", Font.PLAIN, 13));   txtEmail.setBorder(fldBorder);   txtEmail.setPreferredSize(fieldSize);
 
         if (supplier != null) {
             txtName.setText(supplier.getName());
