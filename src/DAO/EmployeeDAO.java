@@ -51,6 +51,7 @@ public class EmployeeDAO {
                     emp.setHireDate(ts != null ? ts.toLocalDateTime() : null);
                     emp.setSalary(rs.getBigDecimal("salary"));
                     emp.setRoleId(rs.getInt("role_id"));
+                    emp.setPhotoPath(rs.getString("photo_path"));
                     list.add(emp);
                 }
             }catch(SQLException e){
@@ -65,7 +66,7 @@ public class EmployeeDAO {
     public boolean updateEmployee(EmployeeDTO emp) {
         if (!openConnection()) return false;
         try {
-            String sql = "UPDATE employees SET name=?, user_name=?, password_hash=?, phone=?, email=?, hire_date=?, salary=?, role_id=? WHERE employee_id=?";
+            String sql = "UPDATE employees SET name=?, user_name=?, password_hash=?, phone=?, email=?, hire_date=?, salary=?, role_id=?, photo_path=? WHERE employee_id=?";
             PreparedStatement pstmt = con.prepareStatement(sql);
             pstmt.setString(1, emp.getFullName());
             pstmt.setString(2, emp.getUsername());
@@ -75,7 +76,8 @@ public class EmployeeDAO {
             pstmt.setTimestamp(6, emp.getHireDate() != null ? Timestamp.valueOf(emp.getHireDate()) : null);
             pstmt.setBigDecimal(7, emp.getSalary());
             pstmt.setInt(8, emp.getRoleId());
-            pstmt.setInt(9, emp.getId());
+            pstmt.setString(9, emp.getPhotoPath());
+            pstmt.setInt(10, emp.getId());
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -102,7 +104,7 @@ public class EmployeeDAO {
     public boolean addEmployee(EmployeeDTO emp){
         if(!openConnection()) return false;
         try{
-            String sql = "INSERT INTO employees(employee_code, name, user_name, password_hash, phone, email, hire_date, salary, role_id) VALUES(?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO employees(employee_code, name, user_name, password_hash, phone, email, hire_date, salary, role_id, photo_path) VALUES(?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement pstmt = con.prepareStatement(sql);
             pstmt.setString(1, emp.getCode());
             pstmt.setString(2, emp.getFullName());
@@ -113,6 +115,7 @@ public class EmployeeDAO {
             pstmt.setTimestamp(7, emp.getHireDate() != null ? Timestamp.valueOf(emp.getHireDate()) : null);
             pstmt.setBigDecimal(8, emp.getSalary());
             pstmt.setInt(9, emp.getRoleId());
+            pstmt.setString(10, emp.getPhotoPath());
             return pstmt.executeUpdate() > 0;
         }catch(SQLException e){
             e.printStackTrace();
@@ -236,6 +239,7 @@ public class EmployeeDAO {
                         emp.setHireDate(ts != null ? ts.toLocalDateTime() : null);
                         emp.setSalary(rs.getBigDecimal("salary"));
                         emp.setRoleId(rs.getInt("role_id"));
+                        emp.setPhotoPath(rs.getString("photo_path"));
                     }
                 }
             } catch (SQLException e) {
@@ -282,6 +286,7 @@ public class EmployeeDAO {
                     emp.setHireDate(ts != null ? ts.toLocalDateTime() : null);
                     emp.setSalary(rs.getBigDecimal("salary"));
                     emp.setRoleId(rs.getInt("role_id"));
+                    emp.setPhotoPath(rs.getString("photo_path"));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
