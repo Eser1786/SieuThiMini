@@ -1,14 +1,18 @@
 package BUS;
 
 import DAO.DBConnection;
+import DAO.ProductDAO;
 import DAO.SaleDAO;
+import DAO.SalesInvoiceItemDAO;
 import DTO.SaleDTO;
+import DTO.SalesInvoiceItemDTO;
 import DTO.enums.SaleEnum.SaleStatus;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SalesBUS {
     private SaleDAO saleDAO;

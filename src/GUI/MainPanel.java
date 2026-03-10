@@ -8,7 +8,6 @@ import GUI.DonHang.DonHangPanel;
 import GUI.KhachHang.KhachHangPanel;
 import GUI.Kho.KhoPanel;
 import GUI.KhuyenMai.KhuyenMaiPanel;
-import GUI.NhanVien.NhanVienPanel;
 import GUI.NhapKho.NhapKhoPanel;
 import GUI.SanPham.SanPhamPanel;
 import GUI.TrangChu.TrangChuPanel;
@@ -136,11 +135,11 @@ public class MainPanel extends JPanel {
         }
 
         if ("ADMIN".equals(roleName) || "MANAGER".equals(roleName)) {
-            mainCards.add(new NhanVienPanel(), NHAN_VIEN);
-            btnNhanVien = createNavButton("Nhân viên");
-            btnNhanVien.addActionListener(e -> navigate(mainCards, NHAN_VIEN, btnNhanVien));
-            nav.add(btnNhanVien);
-            nav.add(Box.createVerticalStrut(12));
+            // mainCards.add(new NhanVienPanel(), NHAN_VIEN);
+            // btnNhanVien = createNavButton("Nhân viên");
+            // btnNhanVien.addActionListener(e -> navigate(mainCards, NHAN_VIEN, btnNhanVien));
+            // nav.add(btnNhanVien);
+            // nav.add(Box.createVerticalStrut(12));
 
             mainCards.add(new KhoPanel(), KHO);
             JButton btnKho = createNavButton("Kho");

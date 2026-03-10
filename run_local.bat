@@ -7,7 +7,7 @@ if not exist "lib\openpdf-1.3.39.jar" (
 )
 
 echo Đang biên dịch mã nguồn Java...
-dir /s /b src\*.java > sources.txt
+(for /r src %%f in (*.java) do @echo "%%f") > sources.txt
 javac -encoding UTF-8 -cp "lib/*" -sourcepath src -d bin @sources.txt
 if %errorlevel% neq 0 (
     echo Lỗi trong quá trình biên dịch! Vui lòng kiểm tra lại mã nguồn.

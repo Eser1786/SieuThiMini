@@ -1,4 +1,5 @@
-﻿package GUI.NhanVien;
+﻿// NhanVienPanel.java
+package GUI.NhanVien;
 
 import BUS.EmployeeBUS;
 import BUS.RoleBUS;
