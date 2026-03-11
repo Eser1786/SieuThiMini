@@ -15,7 +15,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-/** Dialog chi tiết + sửa San Pham — tách từ SanPhamPanel */
+
 class SanPhamDetailDialog {
 
     static void showDetail(Component parent, int modelRow, DefaultTableModel model, JTable bang) {
@@ -102,7 +102,7 @@ class SanPhamDetailDialog {
         popup.setResizable(false);
         popup.setLayout(new BorderLayout());
 
-        // ── Header ────────────────────────────────────────────────────────────
+        
         JPanel hdr = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
         hdr.setBackground(new Color(0xAF9FCB));
         JLabel hdrLbl = new JLabel("Chỉnh sửa thông tin");
@@ -110,7 +110,7 @@ class SanPhamDetailDialog {
         hdrLbl.setForeground(Color.WHITE);
         hdr.add(hdrLbl);
 
-        // ── Photo section ────────────────────────────────────────────────────
+        
         final String[] tmpPhotoPath = { model.getValueAt(modelRow, 1) != null ? model.getValueAt(modelRow, 1).toString() : null };
 
         JLabel photoPreview = new JLabel() {
@@ -133,7 +133,7 @@ class SanPhamDetailDialog {
         photoPreview.setOpaque(true);
         photoPreview.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Load existing photo
+        
         if (tmpPhotoPath[0] != null && !tmpPhotoPath[0].isEmpty()) {
             try {
                 BufferedImage img = ImageIO.read(new File(tmpPhotoPath[0]));
@@ -167,7 +167,7 @@ class SanPhamDetailDialog {
                     photoPreview.setIcon(new ImageIcon(img.getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
                     photoPreview.repaint();
                 }
-            } catch (Exception ex) { /* ignore */ }
+            } catch (Exception ex) {  }
         });
 
         JLabel lbPhotoHint = new JLabel("<html><font color='gray' size='2'>JPG / PNG<br>tự động scale</font></html>");
@@ -186,7 +186,7 @@ class SanPhamDetailDialog {
         northPanel.add(photoSection, BorderLayout.SOUTH);
         popup.add(northPanel, BorderLayout.NORTH);
 
-        // ── Form (2-column GridBagLayout, matching SanPhamAddDialog) ─────────
+        
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(new Color(0xF0EFF8));
         form.setBorder(BorderFactory.createEmptyBorder(18, 28, 18, 28));
@@ -196,7 +196,7 @@ class SanPhamDetailDialog {
         Font lf = new Font("Arial", Font.BOLD, 13);
         Dimension fd = new Dimension(200, 32);
 
-        // ── Fields ───────────────────────────────────────────────────────────
+        
         String getMa  = val(model, modelRow, 0);
         String getTen = val(model, modelRow, 2);
         String getMoTa = val(model, modelRow, 9);
@@ -294,7 +294,7 @@ class SanPhamDetailDialog {
         }
         popup.add(form, BorderLayout.CENTER);
 
-        // ── Footer ────────────────────────────────────────────────────────────
+        
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
         footer.setBackground(new Color(0xF0EFF8));
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
@@ -333,7 +333,7 @@ class SanPhamDetailDialog {
             String ngaySX = dcNgaySX.getDate() != null ? sdf.format(dcNgaySX.getDate()) : "";
             String ngayHH = dcNgayHH.getDate() != null ? sdf.format(dcNgayHH.getDate()) : "";
 
-            // Copy new photo to img/products if changed
+            
             if (tmpPhotoPath[0] != null && !tmpPhotoPath[0].isEmpty()) {
                 String existingPath = model.getValueAt(modelRow, 1) != null ? model.getValueAt(modelRow, 1).toString() : "";
                 if (!tmpPhotoPath[0].equals(existingPath)) {

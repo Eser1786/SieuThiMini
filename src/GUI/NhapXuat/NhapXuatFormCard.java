@@ -19,7 +19,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-/** Form t?o / s?a phi?u nh?p kho. Layout 2 c?t gi?ng DonHangCreateCard. */
+
 public class NhapXuatFormCard extends JPanel {
 
     private final Window dialogOwner;
@@ -37,7 +37,7 @@ public class NhapXuatFormCard extends JPanel {
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Simple UI for now
+        
         add(new JLabel("Form phiếu nhập kho - đang phát triển"), BorderLayout.CENTER);
 
         JButton btnClose = new JButton("Đóng");

@@ -40,7 +40,7 @@ public class SalesInvoiceDAO {
                 invoice.setPaymentMethod(rs.getString("payment_method"));
                 invoice.setStatus(rs.getString("status"));
 
-                // Lấy chi tiết items (sales_invoice_items)
+                
                 invoice.setItems(getItemsByInvoiceId(invoice.getInvoiceId()));
 
                 list.add(invoice);
@@ -112,7 +112,7 @@ public class SalesInvoiceDAO {
             ResultSet rs = ps.getGeneratedKeys();
 
             if(rs.next()){
-                return rs.getLong(1); // invoice_id
+                return rs.getLong(1); 
             }
         }
 
@@ -154,7 +154,7 @@ public class SalesInvoiceDAO {
                 invoice.setPaymentMethod(rs.getString("payment_method"));
                 invoice.setStatus(rs.getString("status"));
 
-                // Lấy chi tiết items
+                
                 invoice.setItems(getItemsByInvoiceId(invoice.getInvoiceId()));
             }
         } catch (SQLException e) {
@@ -278,5 +278,5 @@ public class SalesInvoiceDAO {
         }
     }
 
-    // Các phương thức khác: update, delete, getById... (tương tự add, dùng JOIN để lấy customer/employee name)
+    
 }

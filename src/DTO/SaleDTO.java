@@ -11,12 +11,12 @@ public class SaleDTO {
     private String saleCode;
     private LocalDate saleDate;
 
-    // customer
+    
     private int customerID;
     private String customerCode;
     private String customerName;
 
-    // employee
+    
     private int employeeID;
     private String employeeCode;
     private String employeeName;
@@ -34,7 +34,7 @@ public class SaleDTO {
     private boolean isdeleted;
 
 
-    //GETTER
+    
     public long getSaleID(){return saleID;}
     public String getSaleCode(){return saleCode;}
     public LocalDate getSaleDate(){return saleDate;}
@@ -59,7 +59,7 @@ public class SaleDTO {
     public boolean isIsdeleted(){return isdeleted;}
 
     
-    //SETTER 
+    
     public void setSaleID(int saleID){this.saleID = saleID;}
     public void setSaleCode(String saleCode){this.saleCode = saleCode;}
     public void setSaleDate(LocalDate saleDate){this.saleDate = saleDate;}

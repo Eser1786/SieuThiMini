@@ -8,16 +8,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 
-/**
- * Dialog đăng nhập nhỏ
- */
+
 public class LoginDialog extends JDialog {
-    // Bộ màu từ MainPanel
-    private static final Color BG_COLOR = new Color(0xD1C4E9); // sidebar background
+    
+    private static final Color BG_COLOR = new Color(0xD1C4E9); 
     private static final Color BTN_NORMAL = new Color(0xF8F7FF);
     private static final Color BTN_HOVER = new Color(0x88729B);
-    private static final Color BTN_LOGIN_LIGHT = new Color(0x8B7FA8); // light purple for login button
-    private static final Color BTN_LOGIN_DARK = new Color(0x5C4A7F);  // dark purple for login button hover
+    private static final Color BTN_LOGIN_LIGHT = new Color(0x8B7FA8); 
+    private static final Color BTN_LOGIN_DARK = new Color(0x5C4A7F);  
     private static final Color HEADER_BG = new Color(0x2F2C35);
 
     private JTextField txtUsername;
@@ -33,7 +31,7 @@ public class LoginDialog extends JDialog {
         setSize(550, 380);
         setLocationRelativeTo(parent);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        // when user closes dialog with X before logging in, exit application
+        
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
@@ -47,7 +45,7 @@ public class LoginDialog extends JDialog {
         initUI();
     }
 
-    /** Load và scale logo từ img/logo.png, trả null nếu không tìm thấy */
+    
     private ImageIcon loadLogo(int w, int h) {
         try {
             java.io.File f = new java.io.File("img/icons/logo transparent.png");
@@ -65,7 +63,7 @@ public class LoginDialog extends JDialog {
         setLayout(new BorderLayout());
         setBackground(new Color(0xF8F7FF));
 
-        // ── Header (logo + tên shop) ──────────────────────────────────────────
+        
         JPanel header = new JPanel(new GridBagLayout());
         header.setBackground(HEADER_BG);
         header.setPreferredSize(new Dimension(0, 100));
@@ -92,7 +90,7 @@ public class LoginDialog extends JDialog {
 
         add(header, BorderLayout.NORTH);
 
-        // ── Center panel ─────────────────────────────────────────────────────
+        
         JPanel center = new JPanel(new GridBagLayout());
         center.setBackground(BG_COLOR);
         center.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
@@ -102,7 +100,7 @@ public class LoginDialog extends JDialog {
         Font labelFont = new Font("Arial", Font.BOLD, 14);
         Font fieldFont = new Font("Arial", Font.PLAIN, 14);
 
-        // Username row
+        
         gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
         JLabel lbUser = new JLabel("Tên đăng nhập:");
         lbUser.setFont(labelFont);
@@ -117,7 +115,7 @@ public class LoginDialog extends JDialog {
             BorderFactory.createEmptyBorder(4, 8, 4, 8)));
         center.add(txtUsername, gbc);
 
-        // Password row
+        
         gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 1; gbc.weightx = 0;
         JLabel lbPass = new JLabel("Mật khẩu:");
         lbPass.setFont(labelFont);
@@ -141,7 +139,7 @@ public class LoginDialog extends JDialog {
         });
         center.add(chkShowPassword, gbc);
 
-        // Login button
+        
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 3; gbc.weightx = 1.0;
         gbc.insets = new Insets(16, 8, 12, 8);
         btnLogin = new JButton("Đăng Nhập") {
@@ -166,7 +164,7 @@ public class LoginDialog extends JDialog {
         btnLogin.addActionListener(new LoginAction());
         center.add(btnLogin, gbc);
 
-        // Message label
+        
         gbc.gridy = 3; gbc.insets = new Insets(8, 8, 8, 8);
         lblMessage = new JLabel(" ");
         lblMessage.setFont(new Font("Arial", Font.PLAIN, 13));
@@ -176,7 +174,7 @@ public class LoginDialog extends JDialog {
 
         add(center, BorderLayout.CENTER);
 
-        // Hover
+        
         btnLogin.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btnLogin.setBackground(BTN_LOGIN_DARK);
@@ -207,7 +205,7 @@ public class LoginDialog extends JDialog {
                 if (user != null) {
                     UserSession.setCurrentUser(user);
                     loginSuccess = true;
-                    dispose(); // Đóng dialog
+                    dispose(); 
                 } else {
                     lblMessage.setText("Tên đăng nhập hoặc mật khẩu không đúng!");
                     lblMessage.setForeground(Color.RED);

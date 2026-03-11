@@ -10,7 +10,7 @@ class KhachHangFormCard extends JPanel {
         super(new BorderLayout());
         setBackground(new Color(0xF0EFF8));
 
-        // ── HEADER (back button) ─────────────────────────────────────────────
+        
         JPanel formHeader = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 18));
         formHeader.setBackground(new Color(0xF0EFF8));
         formHeader.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xCCCCCC)));
@@ -32,7 +32,7 @@ class KhachHangFormCard extends JPanel {
         formHeader.add(btnQuayLai);
         add(formHeader, BorderLayout.NORTH);
 
-        // ── FORM BODY ────────────────────────────────────────────────────────
+        
         JPanel formBody = new JPanel(new GridBagLayout());
         formBody.setBackground(new Color(0xF0EFF8));
         formBody.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
@@ -42,36 +42,36 @@ class KhachHangFormCard extends JPanel {
         gbc.insets = new Insets(8, 8, 8, 8);
         Font labelFont = new Font("Arial", Font.BOLD, 18);
 
-        // Row 0: Mã KH / Tên
+        
         gbc.gridx = 0; gbc.gridy = 0; formBody.add(lbl("Mã KH:", labelFont), gbc);
         gbc.gridx = 1; formBody.add(parent.tfMaKH, gbc);
         gbc.gridx = 2; formBody.add(lbl("Tên khách hàng:", labelFont), gbc);
         gbc.gridx = 3; formBody.add(parent.tfTen, gbc);
 
-        // Row 1: SĐT / Email
+        
         gbc.gridx = 0; gbc.gridy = 1; formBody.add(lbl("Số điện thoại:", labelFont), gbc);
         gbc.gridx = 1; formBody.add(parent.tfSdt, gbc);
         gbc.gridx = 2; formBody.add(lbl("Email:", labelFont), gbc);
         gbc.gridx = 3; formBody.add(parent.tfEmail, gbc);
 
-        // Row 2: Địa chỉ (full width)
+        
         gbc.gridx = 0; gbc.gridy = 2; formBody.add(lbl("Địa chỉ:", labelFont), gbc);
         gbc.gridx = 1; gbc.gridwidth = 3; formBody.add(parent.tfDiaChi, gbc);
         gbc.gridwidth = 1;
 
-        // Row 3: Điểm / Thời gian ĐK
+        
         gbc.gridx = 0; gbc.gridy = 3; formBody.add(lbl("Điểm tích lũy:", labelFont), gbc);
         gbc.gridx = 1; formBody.add(parent.tfDiem, gbc);
         gbc.gridx = 2; formBody.add(lbl("Thời gian ĐK:", labelFont), gbc);
         gbc.gridx = 3; formBody.add(parent.tfTgDK, gbc);
 
-        // Row 4: Lần cuối mua / Tổng tiền
+        
         gbc.gridx = 0; gbc.gridy = 4; formBody.add(lbl("Lần cuối mua:", labelFont), gbc);
         gbc.gridx = 1; formBody.add(parent.tfLanCuoiMua, gbc);
         gbc.gridx = 2; formBody.add(lbl("Tổng tiền đã mua:", labelFont), gbc);
         gbc.gridx = 3; formBody.add(parent.tfTongTien, gbc);
 
-        // Row 5: Hạng / Trạng thái
+        
         gbc.gridx = 0; gbc.gridy = 5; formBody.add(lbl("Hạng:", labelFont), gbc);
         gbc.gridx = 1; formBody.add(parent.tfHang, gbc);
         gbc.gridx = 2; formBody.add(lbl("Trạng thái:", labelFont), gbc);
@@ -79,7 +79,7 @@ class KhachHangFormCard extends JPanel {
 
         add(formBody, BorderLayout.CENTER);
 
-        // ── BUTTON PANEL ─────────────────────────────────────────────────────
+        
         JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 16));
         btnWrapper.setBackground(new Color(0xF0EFF8));
         btnWrapper.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));

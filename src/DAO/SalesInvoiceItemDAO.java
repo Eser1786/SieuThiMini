@@ -174,7 +174,7 @@ public void addItems(Long invoiceId, List<SalesInvoiceItemDTO> items) throws SQL
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             for (SalesInvoiceItemDTO item : items) {
-                // Validate product is not deleted
+                
                 if (isProductDeleted(item.getProductId())) {
                     throw new SQLException("Sản phẩm ID " + item.getProductId() + " đã bị xóa, không thể bán");
                 }

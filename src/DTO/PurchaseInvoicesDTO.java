@@ -26,7 +26,7 @@ public class PurchaseInvoicesDTO {
     private LocalDateTime updatedAt;
     private List<PurchaseInvoiceItemsDTO> items;
 
-    // Getters and Setters
+    
     public Long getInvoiceId() {
         return invoiceId;
     }
@@ -147,7 +147,7 @@ public class PurchaseInvoicesDTO {
         this.status = status;
     }
 
-    // Backward compatibility methods
+    
     public String getStatusString() {
         return status != null ? status.getValue() : null;
     }

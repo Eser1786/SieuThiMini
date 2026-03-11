@@ -3,13 +3,7 @@ package GUI;
 import java.awt.*;
 import javax.swing.SwingUtilities;
 
-/**
- * A FlowLayout subtype that wraps components to a new row when there is not
- * enough horizontal space, and reports the correct preferred height so that
- * containers placed in BorderLayout.NORTH expand vertically as needed.
- *
- * Based on Rob Camick's WrapLayout (public domain).
- */
+
 public class WrapLayout extends FlowLayout {
 
     public WrapLayout() { super(); }
@@ -28,18 +22,13 @@ public class WrapLayout extends FlowLayout {
         return min;
     }
 
-    /**
-     * Override layoutContainer so that whenever the required height changes
-     * (items wrap/unwrap), we notify the parent to re-layout — this ensures
-     * BorderLayout.NORTH grows/shrinks correctly on every resize including
-     * minimize→maximize cycles.
-     */
+    
     @Override
     public void layoutContainer(Container target) {
         Dimension pref = preferredLayoutSize(target);
         super.layoutContainer(target);
-        // Compare needed height against the container's ACTUAL current height,
-        // not the stale stored preferred size, so maximize/restore is handled.
+        
+        
         if (pref.height != target.getHeight()) {
             target.setPreferredSize(pref);
             Container parent = target.getParent();

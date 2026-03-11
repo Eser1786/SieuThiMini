@@ -12,9 +12,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
-/**
- * Panel for category management within product management.
- */
+
 public class CategoryPanel extends JPanel {
     private DefaultTableModel model;
     private JTable table;
@@ -24,7 +22,7 @@ public class CategoryPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(new Color(0xF8F7FF));
 
-        // Header
+        
         JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
         header.setBackground(new Color(0xF8F7FF));
         header.setBorder(BorderFactory.createCompoundBorder(
@@ -41,7 +39,7 @@ public class CategoryPanel extends JPanel {
         title.setFont(new Font("Arial", Font.BOLD, 20));
         header.add(title);
 
-        // Top panel with filters and buttons
+        
         JPanel top = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
@@ -49,7 +47,7 @@ public class CategoryPanel extends JPanel {
             BorderFactory.createEmptyBorder(8, 10, 8, 10)
         ));
 
-        // Search field
+        
         JPanel searchPanel = new JPanel(new BorderLayout());
         searchPanel.setPreferredSize(new Dimension(250, 36));
         searchPanel.setBackground(Color.WHITE);
@@ -78,7 +76,7 @@ public class CategoryPanel extends JPanel {
         });
         searchPanel.add(searchBtn, BorderLayout.EAST);
 
-        // Add category button
+        
         JButton addBtn = new JButton("+ Thêm danh mục");
         addBtn.setFocusPainted(false);
         addBtn.setBackground(new Color(0xD9D9D9));
@@ -97,13 +95,13 @@ public class CategoryPanel extends JPanel {
         });
         addBtn.addActionListener(e -> showAddCategoryDialog());
 
-        // Apply search filter
+        
         Runnable applyFilter = () -> {
             String keyword = searchField.getText().trim();
             if (keyword.isEmpty()) {
                 sorter.setRowFilter(null);
             } else {
-                sorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword, 2)); // Search in name column (now index 2)
+                sorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword, 2)); 
             }
         };
 
@@ -138,12 +136,12 @@ public class CategoryPanel extends JPanel {
         top.add(btnExcel);
         top.add(btnImport);
 
-        // Table setup
+        
         String[] columns = {"STT", "ID", "Tên danh mục", "Mô tả", "Thao tác"};
         model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int col) {
-                return col == 4; // Only action column is editable
+                return col == 4; 
             }
         };
 
@@ -161,18 +159,18 @@ public class CategoryPanel extends JPanel {
         table.setGridColor(new Color(0xEEEEEE));
         table.setIntercellSpacing(new Dimension(0, 1));
 
-        // Hide ID column (now index 1)
+        
         table.getColumnModel().getColumn(1).setMinWidth(0);
         table.getColumnModel().getColumn(1).setMaxWidth(0);
         table.getColumnModel().getColumn(1).setWidth(0);
 
-        // Set column widths
-        table.getColumnModel().getColumn(0).setPreferredWidth(50);   // STT
-        table.getColumnModel().getColumn(2).setPreferredWidth(200);  // Name
-        table.getColumnModel().getColumn(3).setPreferredWidth(300);  // Description
-        table.getColumnModel().getColumn(4).setPreferredWidth(120);  // Action
+        
+        table.getColumnModel().getColumn(0).setPreferredWidth(50);   
+        table.getColumnModel().getColumn(2).setPreferredWidth(200);  
+        table.getColumnModel().getColumn(3).setPreferredWidth(300);  
+        table.getColumnModel().getColumn(4).setPreferredWidth(120);  
 
-        // Custom renderer for alternating rows
+        
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -190,7 +188,7 @@ public class CategoryPanel extends JPanel {
             table.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
 
-        // Action column renderer (always visible)
+        
         table.getColumnModel().getColumn(4).setCellRenderer((t, val, sel, foc, r, c) -> {
             JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
             panel.setOpaque(true);
@@ -206,7 +204,7 @@ public class CategoryPanel extends JPanel {
             return panel;
         });
 
-        // Action column editor (for keyboard navigation)
+        
         table.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
             private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
             private final JButton editBtn = UIUtils.makeActionButton("Sửa", new Color(0x6677C8));
@@ -239,7 +237,7 @@ public class CategoryPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         UIUtils.styleScrollPane(scrollPane);
 
-        // Layout
+        
         JPanel northPanel = new JPanel();
         northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.Y_AXIS));
         northPanel.add(header);
@@ -248,7 +246,7 @@ public class CategoryPanel extends JPanel {
         add(northPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Load data
+        
         loadCategories();
     }
 
@@ -265,7 +263,7 @@ public class CategoryPanel extends JPanel {
                     category.getID(),
                     category.getName(),
                     category.getDescription() != null ? category.getDescription() : "",
-                    "" // Action column
+                    "" 
                 });
             }
         } catch (Exception e) {
@@ -298,7 +296,7 @@ public class CategoryPanel extends JPanel {
         dialog.setResizable(false);
         dialog.setLayout(new BorderLayout());
 
-        // Header
+        
         JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
         header.setBackground(new Color(0xAF9FCB));
         JLabel titleLabel = new JLabel(category == null ? "Thêm danh mục mới" : "Sửa danh mục");
@@ -306,7 +304,7 @@ public class CategoryPanel extends JPanel {
         titleLabel.setForeground(Color.WHITE);
         header.add(titleLabel);
 
-        // Form
+        
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(new Color(0xF0EFF8));
         form.setBorder(BorderFactory.createEmptyBorder(18, 28, 18, 28));
@@ -349,7 +347,7 @@ public class CategoryPanel extends JPanel {
         g.gridx = 1; g.weightx = 1;
         form.add(descField, g);
 
-        // Footer
+        
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
         footer.setBackground(new Color(0xF0EFF8));
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
@@ -394,11 +392,11 @@ public class CategoryPanel extends JPanel {
 
                 boolean success;
                 if (category == null) {
-                    // Add new category
+                    
                     success = categoryBUS.addCategory(newCategory);
                 } else {
-                    // For update, we would need an update method in BUS/DAO
-                    // For now, just show message that update is not implemented
+                    
+                    
                     JOptionPane.showMessageDialog(dialog, "Chức năng sửa danh mục chưa được triển khai.",
                             "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                     return;
@@ -407,7 +405,7 @@ public class CategoryPanel extends JPanel {
                 if (success) {
                     JOptionPane.showMessageDialog(dialog, "Lưu danh mục thành công!",
                             "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                    loadCategories(); // Refresh table
+                    loadCategories(); 
                     dialog.dispose();
                 } else {
                     JOptionPane.showMessageDialog(dialog, "Lưu danh mục thất bại!",
@@ -445,7 +443,7 @@ public class CategoryPanel extends JPanel {
                         if (success) {
                             JOptionPane.showMessageDialog(dialog, "Xóa danh mục và sản phẩm liên quan thành công!",
                                     "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                            loadCategories(); // Refresh table
+                            loadCategories(); 
                             dialog.dispose();
                         } else {
                             JOptionPane.showMessageDialog(dialog, "Xóa danh mục thất bại!",

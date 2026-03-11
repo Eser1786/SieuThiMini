@@ -1,6 +1,6 @@
 package DTO.enums.SaleEnum;
 
-// import DTO.enums.CustomerEnum.SaleStatus;
+
 
 public enum SaleStatus {
     PENDING("PENDING"), CONFIRMED("CONFIRMED"), SHIPPING("SHIPPING"), DELIVERING("DELIVERING"), COMPLETED("COMPLETED"), CANCELLED("CANCELLED");

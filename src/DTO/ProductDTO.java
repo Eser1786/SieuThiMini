@@ -12,20 +12,20 @@ public class ProductDTO {
     private CategoryDTO category;
     private java.math.BigDecimal costPrice;
     private java.math.BigDecimal sellingPrice;
-    private long totalQuantity; // dynamic but kept for convenience
+    private long totalQuantity; 
     private long minStockLevel;
     private String madeIn;
     private java.time.LocalDate productionDate;
     private java.time.LocalDate expireDate;
     private String position;
     private String unit;
-    private String status;        // store enum as string
+    private String status;        
     private boolean isVisible;
     private boolean isdeleted;
     private java.time.LocalDateTime createdAt;
     private java.time.LocalDateTime updatedAt;
 
-    // getters / setters
+    
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getCode() { return code; }

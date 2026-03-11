@@ -31,7 +31,7 @@ public class UserPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(PAGE_BG);
 
-        // ── Header bar ────────────────────────────────────────────────────
+        
         JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
         header.setBackground(new Color(0x2C2C3A));
         JLabel hTitle = new JLabel("| TÀI KHOẢN");
@@ -40,25 +40,25 @@ public class UserPanel extends JPanel {
         header.add(hTitle);
         add(header, BorderLayout.NORTH);
 
-        // ── Scrollable centre ─────────────────────────────────────────────
+        
         JPanel centre = new JPanel();
         centre.setLayout(new BoxLayout(centre, BoxLayout.Y_AXIS));
         centre.setBackground(PAGE_BG);
         centre.setBorder(BorderFactory.createEmptyBorder(28, 16, 28, 16));
 
-        // Avatar + name card
+        
         JPanel avatarCard = buildAvatarCard();
         avatarCard.setAlignmentX(Component.CENTER_ALIGNMENT);
         centre.add(avatarCard);
         centre.add(Box.createVerticalStrut(20));
 
-        // Info card
+        
         JPanel infoCard = buildInfoCard();
         infoCard.setAlignmentX(Component.CENTER_ALIGNMENT);
         centre.add(infoCard);
         centre.add(Box.createVerticalStrut(20));
 
-        // Action buttons card
+        
         JPanel actionsCard = buildActionsCard();
         actionsCard.setAlignmentX(Component.CENTER_ALIGNMENT);
         centre.add(actionsCard);
@@ -72,7 +72,7 @@ public class UserPanel extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
-    // ── Avatar + display name ─────────────────────────────────────────────
+    
     private JPanel buildAvatarCard() {
         JPanel card = makeCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
@@ -80,7 +80,7 @@ public class UserPanel extends JPanel {
 
         EmployeeDTO user = UserSession.getCurrentUser();
 
-        // Try to load real employee photo: DB path first, then file-system scan
+        
         JLabel avatar;
         if (user != null) {
             String dbPath = user.getPhotoPath();
@@ -123,7 +123,7 @@ public class UserPanel extends JPanel {
         return card;
     }
 
-    // ── Info fields ───────────────────────────────────────────────────────
+    
     private JPanel buildInfoCard() {
         JPanel card = makeCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
@@ -170,7 +170,7 @@ public class UserPanel extends JPanel {
         return card;
     }
 
-    // ── Action buttons ────────────────────────────────────────────────────
+    
     private JPanel buildActionsCard() {
         JPanel card = makeCard();
         card.setLayout(new FlowLayout(FlowLayout.CENTER, 16, 16));
@@ -181,16 +181,16 @@ public class UserPanel extends JPanel {
                 "Bạn có chắc muốn đăng xuất?",
                 "Đăng xuất", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (ok == JOptionPane.YES_OPTION) {
-                // Thực hiện logout
+                
                 UserSession.logout();
-                // Đóng frame hiện tại
+                
                 JFrame mainFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
                 mainFrame.dispose();
-                // Hiển thị login dialog
+                
                 LoginDialog loginDialog = new LoginDialog(null);
                 loginDialog.setVisible(true);
                 if (loginDialog.isLoginSuccess()) {
-                    // Tạo frame mới với MainPanel
+                    
                     JFrame newFrame = new GUI(false);
                     newFrame.setVisible(true);
                 }
@@ -201,7 +201,7 @@ public class UserPanel extends JPanel {
         return card;
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
+    
     private JPanel makeCard() {
         JPanel p = new JPanel();
         p.setBackground(CARD_BG);
@@ -286,7 +286,7 @@ public class UserPanel extends JPanel {
         return b;
     }
 
-    /** Try to load employee photo from img/employees/<code>.<ext> */
+    
     private BufferedImage loadEmployeePhoto(String employeeCode) {
         if (employeeCode == null || employeeCode.isEmpty()) return null;
         String[] exts = {".jpg", ".jpeg", ".png"};
@@ -299,7 +299,7 @@ public class UserPanel extends JPanel {
         return null;
     }
 
-    /** Crop a BufferedImage into a circular shape at given size */
+    
     private BufferedImage makeCircularImage(BufferedImage src, int size) {
         BufferedImage out = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = out.createGraphics();
@@ -310,7 +310,7 @@ public class UserPanel extends JPanel {
         return out;
     }
 
-    /** Circular icon placeholder with person silhouette */
+    
     private ImageIcon makeCircleIcon(int size, Color bg) {
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = img.createGraphics();
@@ -318,11 +318,11 @@ public class UserPanel extends JPanel {
         g2.setClip(new Ellipse2D.Float(0, 0, size, size));
         g2.setColor(bg);
         g2.fillOval(0, 0, size, size);
-        // head
+        
         g2.setColor(new Color(255, 255, 255, 200));
         int hw = size / 3, hh = size / 3;
         g2.fillOval((size - hw) / 2, size / 8, hw, hh);
-        // body
+        
         int bw = (int)(size * 0.55), bh = (int)(size * 0.4);
         g2.fillOval((size - bw) / 2, (int)(size * 0.52), bw, bh);
         g2.dispose();

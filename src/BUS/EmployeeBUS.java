@@ -32,7 +32,7 @@ public class EmployeeBUS {
     }
 
     private String generateEmployeeCode() {
-        // Logic tạo code: 'NV' + số tăng dần (tìm max code từ DB + 1)
+        
         String sql = "SELECT MAX(employee_code) FROM employees WHERE employee_code LIKE 'NV%'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -48,7 +48,7 @@ public class EmployeeBUS {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "default";  // Default nếu lỗi
+        return "default";  
     }
 
 

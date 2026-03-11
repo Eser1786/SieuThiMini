@@ -9,13 +9,9 @@ import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-/**
- * Utility methods for styling components used across multiple panels.
- */
+
 public class UIUtils {
-    /**
-     * Returns a rounded text field used by most forms.
-     */
+    
     public static JTextField makeField() {
         JTextField tf = new JTextField();
         tf.setFont(new Font("Arial", Font.PLAIN, 20));
@@ -25,9 +21,7 @@ public class UIUtils {
         return tf;
     }
 
-    /**
-     * Simple helper that creates a small round button used in table action columns.
-     */
+    
     public static JButton makeActionButton(String text, Color bg) {
         JButton btn = new JButton(text) {
             @Override
@@ -56,15 +50,15 @@ public class UIUtils {
         return btn;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Money formatter — attaches to ANY JTextField that holds a VNĐ amount.
-    // User types digits; listener strips non-digits, re-formats with comma
-    // separators (e.g. 1000000 → "1,000,000"), then restores caret.
-    // Pattern: call UIUtils.attachMoneyFormatter(tf) immediately after creating tf.
-    // To read the raw long value: Long.parseLong(tf.getText().replace(",","").replace(".",""))
-    // ─────────────────────────────────────────────────────────────────────────
+    
+    
+    
+    
+    
+    
+    
     public static void attachMoneyFormatter(JTextField tf) {
-        NumberFormat nf = NumberFormat.getNumberInstance(Locale.US); // comma separators
+        NumberFormat nf = NumberFormat.getNumberInstance(Locale.US); 
         tf.getDocument().addDocumentListener(new DocumentListener() {
             private boolean updating = false;
             private void reformat() {
@@ -91,12 +85,12 @@ public class UIUtils {
         });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Style a JComboBox to match the app's purple/lavender theme.
-    // Replaces the default OS-dependent look with a clean flat style:
-    // white background, Arial 13, thin border, lavender arrow button.
-    // Pattern: call UIUtils.styleComboBox(cb) right after creating the combo.
-    // ─────────────────────────────────────────────────────────────────────────
+    
+    
+    
+    
+    
+    
     public static void styleComboBox(JComboBox<?> cb) {
         cb.setFont(new Font("Arial", Font.PLAIN, 13));
         cb.setBackground(Color.WHITE);
@@ -113,7 +107,7 @@ public class UIUtils {
                         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                         g2.setColor(new Color(0xD1C4E9));
                         g2.fillRect(0, 0, getWidth(), getHeight());
-                        // Draw chevron down – scaled from 24x24 viewBox
+                        
                         int sz = 12;
                         int ox = (getWidth() - sz) / 2;
                         int oy = (getHeight() - sz) / 2;
@@ -144,12 +138,12 @@ public class UIUtils {
         });
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Icon factories — return ImageIcon painted with Java2D, no SVG library needed.
-    // Each icon is rendered into a sz×sz BufferedImage.
-    // ─────────────────────────────────────────────────────────────────────────
+    
+    
+    
+    
 
-    /** Eye-open icon (show password). Color: ACCENT purple by default. */
+    
     public static ImageIcon iconEyeOpen(int sz, Color color) {
         return paintIcon(sz, color, (g2, s) -> {
             g2.setStroke(new BasicStroke(2f * s, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -165,7 +159,7 @@ public class UIUtils {
         });
     }
 
-    /** Eye-slashed icon (hide password). */
+    
     public static ImageIcon iconEyeOff(int sz, Color color) {
         return paintIcon(sz, color, (g2, s) -> {
             g2.setStroke(new BasicStroke(2f * s, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -184,16 +178,16 @@ public class UIUtils {
         });
     }
 
-    /** Pencil/edit icon. */
+    
     public static ImageIcon iconEdit(int sz, Color color) {
         return paintIcon(sz, color, (g2, s) -> {
             g2.setStroke(new BasicStroke(1f));
-            // main pencil body
+            
             Path2D body = new Path2D.Float();
             body.moveTo(3, 17.25f); body.lineTo(3, 21); body.lineTo(6.75f, 21);
             body.lineTo(19.81f, 7.94f); body.lineTo(16.06f, 4.19f); body.closePath();
             g2.fill(body);
-            // tip detail
+            
             Path2D tip = new Path2D.Float();
             tip.moveTo(20.71f, 6.04f);
             tip.curveTo(21.1f, 5.65f, 21.1f, 5.01f, 20.71f, 4.63f);
@@ -204,24 +198,24 @@ public class UIUtils {
         });
     }
 
-    /** Trash-can icon. */
+    
     public static ImageIcon iconTrash(int sz, Color color) {
         return paintIcon(sz, color, (g2, s) -> {
             g2.setStroke(new BasicStroke(1f));
-            // lid
+            
             Path2D lid = new Path2D.Float();
             lid.moveTo(9, 3); lid.lineTo(15, 3); lid.lineTo(16, 5);
             lid.lineTo(21, 5); lid.lineTo(21, 7); lid.lineTo(3, 7);
             lid.lineTo(3, 5); lid.lineTo(8, 5); lid.closePath();
             g2.fill(lid);
-            // bin
+            
             Path2D bin = new Path2D.Float();
             bin.moveTo(6, 9); bin.lineTo(18, 9); bin.lineTo(17, 20);
             bin.curveTo(17, 21, 16, 22, 15, 22);
             bin.lineTo(9, 22);
             bin.curveTo(8, 22, 7, 21, 7, 20); bin.closePath();
             g2.fill(bin);
-            // inner lines
+            
             g2.setColor(new Color(255, 255, 255, 180));
             g2.setStroke(new BasicStroke(1.5f * s));
             g2.drawLine(10, 11, 10, 19);
@@ -229,11 +223,11 @@ public class UIUtils {
         });
     }
 
-    /** Refresh / reload icon. */
+    
     public static ImageIcon iconRefresh(int sz, Color color) {
         return paintIcon(sz, color, (g2, s) -> {
             g2.setStroke(new BasicStroke(1f));
-            // Scale the 65x65 viewBox SVG paths into 24x24 space
+            
             g2.scale(24.0 / 65.0, 24.0 / 65.0);
             Path2D p1 = new Path2D.Float();
             p1.moveTo(32.5f, 5f);
@@ -270,7 +264,7 @@ public class UIUtils {
         Graphics2D g2 = img.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        // scale from 24-unit viewBox to sz pixels
+        
         float scale = sz / 24f;
         g2.scale(scale, scale);
         g2.setColor(color);
@@ -279,11 +273,11 @@ public class UIUtils {
         return new ImageIcon(img);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Style all scroll bars of a JScrollPane with rounded lavender thumb.
-    // Hides the up/down arrows; uses a pill-shaped thumb (0xC5B3E6).
-    // Pattern: call UIUtils.styleScrollPane(scroll) after new JScrollPane(table).
-    // ─────────────────────────────────────────────────────────────────────────
+    
+    
+    
+    
+    
     public static void styleScrollPane(JScrollPane sp) {
         sp.setBorder(BorderFactory.createLineBorder(new Color(0xCCCCCC)));
         sp.getVerticalScrollBar().setUI(new FlatScrollBarUI());
@@ -320,16 +314,14 @@ public class UIUtils {
         }
     }
 
-    /**
-     * Creates a "card" panel used by the dashboard (home) cards. Provides a light drop shadow.
-     */
+    
     public static JPanel createCard() {
         JPanel card = new JPanel(new BorderLayout(0, 8)) {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                // light shadow
+                
                 g2.setColor(new Color(0, 0, 0, 40));
                 g2.fillRoundRect(6, 8, getWidth() - 4, getHeight() - 4, 16, 16);
                 g2.setColor(Color.WHITE);

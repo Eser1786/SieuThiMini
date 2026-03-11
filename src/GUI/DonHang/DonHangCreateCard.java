@@ -32,7 +32,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.text.*;
-// import GUI.MainPanel;
+
 
 class DonHangCreateCard extends JPanel {
 
@@ -40,15 +40,15 @@ class DonHangCreateCard extends JPanel {
     private List<ProductDTO> allProducts = new ArrayList<>();
     private List<CustomerDTO> allCustomers = new ArrayList<>();
 
-    // ordered items + filter
+    
     private final List<OrderItem> items = new ArrayList<>();
     private String itemFilter = "";
 
-    // live list UI
+    
     private JPanel listPanel;
     private JScrollPane listScroll;
 
-    // totals
+    
     private JLabel lbSubVal;
     private JLabel lbTotVal;
     private long discAmt = 0L;
@@ -68,7 +68,7 @@ class DonHangCreateCard extends JPanel {
         buildUI();
     }
 
-    // ── mock data ────────────────────────────────────────────────────────────
+    
     private List<ProductDTO> getMockProducts() {
         List<ProductDTO> list = new ArrayList<>();
         String[][] data = {
@@ -90,7 +90,7 @@ class DonHangCreateCard extends JPanel {
         return list;
     }
 
-    // ── helpers ──────────────────────────────────────────────────────────────
+    
     private static JTextField cf() {
         JTextField tf = new JTextField();
         tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -108,7 +108,7 @@ class DonHangCreateCard extends JPanel {
         lbTotVal.setText(String.format("%,.0f\u0111", (double) tot));
     }
 
-    /** Rebuild list, honouring itemFilter */
+    
     private void rebuildList() {
         listPanel.removeAll();
         GridBagConstraints g = new GridBagConstraints();
@@ -135,7 +135,7 @@ class DonHangCreateCard extends JPanel {
         listPanel.repaint();
     }
 
-    /** Each item row: Ma SP | Ten | Don gia | Spinner | Thanh tien | X */
+    
     private JPanel buildItemRow(OrderItem it, int idx, int vis) {
         JPanel row = new JPanel(new GridBagLayout());
         row.setBackground(vis % 2 == 0 ? Color.WHITE : new Color(0xF7F5FF));
@@ -143,7 +143,7 @@ class DonHangCreateCard extends JPanel {
         GridBagConstraints g = new GridBagConstraints();
         g.gridy = 0; g.anchor = GridBagConstraints.WEST; g.insets = new Insets(0, 0, 0, 8);
 
-        // col 0: Ma SP (fixed 70px)
+        
         JLabel lbCode = new JLabel(it.code);
         lbCode.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lbCode.setForeground(new Color(0x666666));
@@ -151,14 +151,14 @@ class DonHangCreateCard extends JPanel {
         g.gridx = 0; g.weightx = 0; g.fill = GridBagConstraints.NONE;
         row.add(lbCode, g);
 
-        // col 1: Ten (fixed 160px so price/qty/total columns get space too)
+        
         JLabel lbName = new JLabel(it.name);
         lbName.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lbName.setPreferredSize(new Dimension(160, 24));
         g.gridx = 1; g.weightx = 0; g.fill = GridBagConstraints.NONE;
         row.add(lbName, g);
 
-        // col 2: Don gia (right 90px)
+        
         JLabel lbPrice = new JLabel(String.format("%,.0f\u0111", (double) it.unitPrice));
         lbPrice.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lbPrice.setForeground(new Color(0x555555));
@@ -167,14 +167,14 @@ class DonHangCreateCard extends JPanel {
         g.gridx = 2; g.weightx = 0; g.fill = GridBagConstraints.NONE;
         row.add(lbPrice, g);
 
-        // col 4: Thanh tien -- declared before spinner so changeListener can reference
+        
         JLabel lbSub = new JLabel(String.format("%,.0f\u0111", (double)(it.unitPrice * it.qty)));
         lbSub.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lbSub.setForeground(new Color(0x5B4FCC));
         lbSub.setPreferredSize(new Dimension(75, 24));
         lbSub.setHorizontalAlignment(SwingConstants.RIGHT);
 
-        // col 3: Spinner + DocumentFilter (digits only, min 1)
+        
         SpinnerNumberModel mdl = new SpinnerNumberModel(it.qty, 1, 9999, 1);
         JSpinner spinner = new JSpinner(mdl);
         spinner.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -204,7 +204,7 @@ class DonHangCreateCard extends JPanel {
         g.gridx = 4; g.insets = new Insets(0, 0, 0, 8);
         row.add(lbSub, g);
 
-        // col 5: X button with confirm popup
+        
         JButton btnX = new JButton("X");
         btnX.setFont(new Font("Segoe UI", Font.BOLD, 11));
         btnX.setBackground(new Color(0xE53935)); btnX.setForeground(Color.WHITE);
@@ -226,14 +226,14 @@ class DonHangCreateCard extends JPanel {
         g.gridx = 5; g.insets = new Insets(0, 0, 0, 0);
         row.add(btnX, g);
 
-        // col 6: invisible spacer – expands to fill remaining row width
+        
         g.gridx = 6; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
         row.add(new JLabel(), g);
 
         return row;
     }
 
-    /** Add or increment a product by code */
+    
    private void addProductToOrder(long productId, String code, String name, long unitPrice) {
 
     for (OrderItem it : items) {
@@ -250,12 +250,12 @@ class DonHangCreateCard extends JPanel {
     updateTotals();
 }
 
-    // ── main build ───────────────────────────────────────────────────────────
+    
     private void buildUI() {
         Color pageBg = new Color(0xF0EFF8);
         setBackground(pageBg);
 
-        /* ── Header ── */
+        
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(pageBg);
         header.setBorder(BorderFactory.createCompoundBorder(
@@ -275,14 +275,14 @@ class DonHangCreateCard extends JPanel {
         header.add(btnBack, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
 
-        /* ── Totals labels (early so rebuildList can reference) ── */
+        
         lbSubVal = new JLabel("0\u0111");
         lbTotVal = new JLabel("0\u0111");
         lbSubVal.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lbTotVal.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lbTotVal.setForeground(new Color(0x5B4FCC));
 
-        /* ── List header: Ma SP | Ten SP | Don gia | So luong | Thanh tien | "" ── */
+        
         listPanel = new JPanel(new GridBagLayout());
         listPanel.setBackground(Color.WHITE);
 
@@ -319,7 +319,7 @@ class DonHangCreateCard extends JPanel {
         listBox.add(listHeader, BorderLayout.NORTH);
         listBox.add(listScroll, BorderLayout.CENTER);
 
-        /* ── Search (filter existing items) + Browse button ── */
+        
         final String HINT = "T\u00ecm ki\u1ebfm s\u1ea3n ph\u1ea9m \u0111\u00e3 th\u00eam v\u00e0o \u0111\u01a1n...";
         JTextField tfSearch = cf();
         tfSearch.setText(HINT);
@@ -356,7 +356,7 @@ class DonHangCreateCard extends JPanel {
         searchRow.add(tfSearch, BorderLayout.CENTER);
         searchRow.add(btnBrowse, BorderLayout.EAST);
 
-        /* ── Notes ── */
+        
         JTextArea taNotes = new JTextArea(3, 20);
         taNotes.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         taNotes.setLineWrap(true); taNotes.setWrapStyleWord(true);
@@ -364,7 +364,7 @@ class DonHangCreateCard extends JPanel {
         JScrollPane notesScroll = new JScrollPane(taNotes);
         notesScroll.setBorder(BorderFactory.createLineBorder(new Color(0xCCCCCC)));
 
-        /* ── Discount ── */
+        
         java.util.ArrayList<DiscountDTO> activeDiscounts = new java.util.ArrayList<>();
         JComboBox<String> cbMaKM = new JComboBox<>();
         cbMaKM.addItem("(Không áp dụng)");
@@ -417,7 +417,7 @@ class DonHangCreateCard extends JPanel {
         discInfoRow.setBackground(Color.WHITE);
         discInfoRow.add(lbDiscStatus);
 
-        /* ── Summary rows ── */
+        
         JPanel subRow = new JPanel(new BorderLayout());
         subRow.setBackground(Color.WHITE);
         subRow.setBorder(BorderFactory.createEmptyBorder(4, 0, 2, 0));
@@ -436,7 +436,7 @@ class DonHangCreateCard extends JPanel {
         lbTotVal.setHorizontalAlignment(SwingConstants.RIGHT);
         totRow.add(lbTotLbl, BorderLayout.WEST); totRow.add(lbTotVal, BorderLayout.EAST);
 
-        /* ── Left card assembly ── */
+        
         JPanel leftContent = new JPanel(new GridBagLayout());
         leftContent.setBackground(Color.WHITE);
         leftContent.setBorder(BorderFactory.createEmptyBorder(18, 22, 18, 22));
@@ -466,12 +466,12 @@ class DonHangCreateCard extends JPanel {
         leftCard.setBorder(BorderFactory.createLineBorder(new Color(0xDDDDDD), 1));
         leftCard.add(leftContent, BorderLayout.CENTER);
 
-        /* ── Right column ── */
+        
         JTextField tfTenND  = cf();
         JTextField tfSdt    = cf();
         JTextField tfDiaChi = cf();
 
-        // Customer dropdown (auto-fill)
+        
         JComboBox<String> cbKhachHang = new JComboBox<>();
         cbKhachHang.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cbKhachHang.addItem("-- Ch\u1ecdn kh\u00e1ch h\u00e0ng --");
@@ -550,7 +550,7 @@ class DonHangCreateCard extends JPanel {
         rc.gridy = 3; rc.weighty = 1.0; rc.fill = GridBagConstraints.BOTH;
         rightCol.add(new JLabel(), rc);
 
-        /* ── Two-column body ── */
+        
         JPanel twoCol = new JPanel(new GridBagLayout());
         twoCol.setBackground(pageBg);
         twoCol.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -567,14 +567,14 @@ class DonHangCreateCard extends JPanel {
         bodyScroll.getVerticalScrollBar().setUnitIncrement(16);
         add(bodyScroll, BorderLayout.CENTER);
 
-        /* ── Footer ── */
+        
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
         footer.setBackground(pageBg);
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
         JButton btnLuu = DonHangPanel.makeFootBtn("L\u01b0u \u0111\u01a1n h\u00e0ng", new Color(0x5B4FCC));
         JButton btnHuy = DonHangPanel.makeFootBtn("H\u1ee7y b\u1ecf", new Color(0xB83434));
 
-        // Confirm before cancel only when form has data
+        
         btnHuy.addActionListener(e -> {
             boolean dirty = !items.isEmpty()
                 || !tfTenND.getText().trim().isEmpty()
@@ -623,25 +623,25 @@ class DonHangCreateCard extends JPanel {
             tongCong = Math.max(0, tongCong - discAmt);
             int totalQty = 0; for (OrderItem it : items) totalQty += it.qty;
             
-            // Tạo mã đơn tự động
+            
             SalesBUS salesBUS = new SalesBUS();
             String maDon = salesBUS.generateSaleCode();
             
             String nhanVien = cbNhanVien.getSelectedItem().toString();
             
-            // Tạo SaleDTO để lưu vào database
+            
             SaleDTO sale = new SaleDTO();
             sale.setSaleCode(maDon);
             sale.setSaleDate(java.time.LocalDate.now());
             
-            // Tìm customer ID từ tên và SĐT
+            
             CustomerDTO customer = findOrCreateCustomer(ten, sdt, diaChi);
             if (customer != null) {
                 sale.setCustomerID(customer.getId());
                 sale.setCustomerName(customer.getFullName());
             }
             
-            // Tìm employee ID từ tên
+            
             EmployeeDTO employee = findEmployeeByName(nhanVien);
             if (employee != null) {
                 sale.setEmployeeID(employee.getId());
@@ -653,9 +653,9 @@ class DonHangCreateCard extends JPanel {
             sale.setTotalAmount(BigDecimal.valueOf(tongCong));
             sale.setTotalQuantity(totalQty);
             sale.setSaleStatus(SaleStatus.PENDING);
-            sale.setPaymentMethod(SalePaymentMethod.CASH); // Default
+            sale.setPaymentMethod(SalePaymentMethod.CASH); 
             
-            // Tạo note từ items
+            
             StringBuilder itemsNote = new StringBuilder();
             for (OrderItem it : items) {
                 itemsNote.append(it.code).append("|").append(it.name).append("|").append(it.unitPrice).append("|").append(it.qty).append(";");
@@ -666,11 +666,11 @@ class DonHangCreateCard extends JPanel {
             }
             sale.setNote(itemsNote.toString());
             
-            // Lưu vào database
+            
             boolean saved = salesBUS.addSale(sale);
             if(saved){
 
-    // Lấy sale vừa tạo
+    
     SaleDTO savedSale = salesBUS.getSaleByCode(maDon);
     Long saleId = savedSale.getSaleID();
     
@@ -686,7 +686,7 @@ invoice.setTaxAmount(BigDecimal.ZERO);
 invoice.setTotalAmount(BigDecimal.valueOf(tongCong));
 invoice.setStatus("PENDING");
 
-Long invoiceId = invoiceDAO.addSalesInvoice(invoice); // phải return id   
+Long invoiceId = invoiceDAO.addSalesInvoice(invoice); 
 if(cbMaKM.getSelectedIndex() > 0){
 
     DiscountDTO d = activeDiscounts.get(cbMaKM.getSelectedIndex() - 1);
@@ -717,7 +717,7 @@ if(cbMaKM.getSelectedIndex() > 0){
      productDAO.decreaseStock(it.productId, it.qty);
 }
 
-    // Cập nhật last_purchase cho khách hàng
+    
     if (customer != null) {
         customer.setLastPurchaseAt(java.time.LocalDateTime.now());
         try {
@@ -733,10 +733,10 @@ if(cbMaKM.getSelectedIndex() > 0){
                 return;
             }
             
-            // Confirm save
+            
             JOptionPane.showMessageDialog(this, "Đã tạo đơn hàng " + maDon + " thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
             
-            // Refresh table và đóng dialog
+            
             parent.refreshTable();
             parent.showCard(DonHangPanel.CARD_TABLE);
             items.clear(); discAmt = 0; rebuildList(); updateTotals(); cbMaKM.setSelectedIndex(0);
@@ -746,7 +746,7 @@ if(cbMaKM.getSelectedIndex() > 0){
         add(footer, BorderLayout.SOUTH);
     }
 
-    // ── Browse dialog (multi-select, stays open) ──────────────────────────────
+    
     private void openBrowseDialog() {
         Frame owner = null;
         Window w = SwingUtilities.getWindowAncestor(this);
@@ -830,7 +830,7 @@ if(cbMaKM.getSelectedIndex() > 0){
         lbStatus.setFont(new Font("Segoe UI", Font.ITALIC, 12));
         lbStatus.setForeground(new Color(0x2E7D32));
 
-        // Double-click adds, dialog stays open
+        
         dlgTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (e.getClickCount() == 2) pickRows(dlgTable, lbStatus);
@@ -875,7 +875,7 @@ if(cbMaKM.getSelectedIndex() > 0){
         dlg.setVisible(true);
     }
 
-    /** Add all selected rows to order; dialog stays open */
+    
    private void pickRows(JTable dlgTable, JLabel lbStatus) {
     int[] rows = dlgTable.getSelectedRows();
 
@@ -899,7 +899,7 @@ if(cbMaKM.getSelectedIndex() > 0){
                         : 0;
 
                 addProductToOrder(
-                        p.getId(),   // 🔥 productId đúng
+                        p.getId(),   
                         p.getCode(),
                         p.getName(),
                         price
@@ -913,7 +913,7 @@ if(cbMaKM.getSelectedIndex() > 0){
     lbStatus.setText(rows.length + " sản phẩm đã được thêm vào đơn ✔");
 }
 
-    // ── right-column card builders ────────────────────────────────────────────
+    
     private JPanel makeRightCard(String title) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(Color.WHITE);
@@ -950,31 +950,31 @@ if(cbMaKM.getSelectedIndex() > 0){
         cb.addItem("NV003 - Le Van Cuong");
     }
 
-    // Helper methods
+    
     private CustomerDTO findOrCreateCustomer(String name, String phone, String address) {
-        // Tìm customer theo phone
+        
         for (CustomerDTO c : allCustomers) {
             if (phone.equals(c.getPhone())) {
                 return c;
             }
         }
         
-        // Nếu không tìm thấy, tạo customer mới và lưu vào database
+        
         CustomerDTO newCustomer = new CustomerDTO();
         newCustomer.setFullName(name);
         newCustomer.setPhone(phone);
         newCustomer.setAddress(address);
         
-        // Tạo mã code unique
+        
         String code = generateCustomerCode();
         newCustomer.setCode(code);
         
         CustomerBUS customerBUS = new CustomerBUS();
         boolean added = customerBUS.AddCustomer(newCustomer);
         if (added) {
-            // Reload allCustomers để có ID mới
+            
             allCustomers = customerBUS.getAllCustomers();
-            // Tìm customer vừa thêm
+            
             for (CustomerDTO c : allCustomers) {
                 if (code.equals(c.getCode())) {
                     return c;
@@ -982,7 +982,7 @@ if(cbMaKM.getSelectedIndex() > 0){
             }
         }
         
-        return null; // Nếu không thêm được
+        return null; 
     }
     
     private EmployeeDTO findEmployeeByName(String name) {
@@ -994,17 +994,17 @@ if(cbMaKM.getSelectedIndex() > 0){
                 return e;
             }
         }
-        // Nếu không tìm thấy, chọn employee đầu tiên làm mặc định
+        
         if (!employees.isEmpty()) {
             return employees.get(0);
         }
         return null;
     }
 
-    // ── inner class ───────────────────────────────────────────────────────────
+    
     private static final class OrderItem {
 
-    long productId;   // thêm
+    long productId;   
     String code;
     String name;
     long unitPrice;

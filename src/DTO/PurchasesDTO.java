@@ -20,7 +20,7 @@ public class PurchasesDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Getters and Setters
+    
     public Long getPurchaseId() {
         return purchaseId;
     }

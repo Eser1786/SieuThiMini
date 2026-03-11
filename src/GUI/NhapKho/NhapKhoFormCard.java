@@ -20,7 +20,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-/** Form t\u1ea1o / s\u1eefa phi\u1ebfu nh\u1eadp kho. Layout 2 c\u1ed9t gi\u1ed1ng DonHangCreateCard. */
+
 class NhapKhoFormCard extends JPanel {
     private boolean isLoadingData = false;
     private static final Color CLR_PAGE   = new Color(0xF0EFF8);
@@ -28,14 +28,14 @@ class NhapKhoFormCard extends JPanel {
     private static final Color CLR_ACCENT = new Color(0x5C4A7F);
     private static final Color CLR_HDR    = new Color(0xD1C4E9);
 
-    // ───────────────────── Data ──────────────────────────────────────────────
+    
     private List<ProductDTO>     allProducts  = new ArrayList<>();
     private List<EmployeeDTO>    allEmployees = new ArrayList<>();
     private List<SupplierDTO>    allSuppliers = new ArrayList<>();
     private final List<FormItem> items        = new ArrayList<>();
-    private final PurchaseInvoicesDTO editInvoice; // null = create mode
+    private final PurchaseInvoicesDTO editInvoice; 
 
-    // ───────────────────── UI refs ───────────────────────────────────────────
+    
     private JDateChooser        dateChooser;
     private JComboBox<String>   cbEmployee;
     private final JTextArea     txtNote       = new JTextArea(3, 18);
@@ -72,7 +72,7 @@ class NhapKhoFormCard extends JPanel {
         try { allEmployees = new EmployeeBUS().getAllEmployees(); } catch (Exception ignored) {}
         try { allSuppliers = new SupplierBUS().getAllSuppliers(); } catch (Exception ignored) {}
 
-        // Pre-populate items for edit mode
+        
         if (existing != null && existing.getItems() != null) {
             for (PurchaseInvoiceItemsDTO it : existing.getItems()) {
                 FormItem fi  = new FormItem();
@@ -90,7 +90,7 @@ class NhapKhoFormCard extends JPanel {
         add(buildBody(),   BorderLayout.CENTER);
         add(buildFooter(), BorderLayout.SOUTH);
 
-        // Auto-generate invoice ref for new invoices (read-only)
+        
         if (existing == null) {
             String datePart = new java.text.SimpleDateFormat("yyyyMMdd").format(new Date());
             String randPart = String.format("%04d", (int)(Math.random() * 10000));
@@ -99,7 +99,7 @@ class NhapKhoFormCard extends JPanel {
         txtInvoiceRef.setEditable(false);
         txtInvoiceRef.setBackground(new Color(0xE8E6F0));
         txtInvoiceRef.setForeground(new Color(0x888888));
-        // Pre-fill dropdowns for edit mode (combos are built inside buildBody)
+        
         if (existing != null) {
             isLoadingData = true;
             for (int i = 0; i < allEmployees.size(); i++) {
@@ -124,7 +124,7 @@ class NhapKhoFormCard extends JPanel {
         }
     }
 
-    // ── Header ───────────────────────────────────────────────────────────────
+    
 
     private JPanel buildHeader() {
         JPanel p = new JPanel(new BorderLayout());
@@ -142,7 +142,7 @@ class NhapKhoFormCard extends JPanel {
         return p;
     }
 
-    // ── Body (2-column layout) ────────────────────────────────────────────────
+    
 
     private JScrollPane buildBody() {
         JPanel twoCol = new JPanel(new GridBagLayout());
@@ -340,10 +340,10 @@ class NhapKhoFormCard extends JPanel {
         return row;
     }
 
-    // ── Right column ──────────────────────────────────────────────────────────
+    
 
     private JPanel buildRightCol() {
-        // Date picker (min = today, no past dates)
+        
         dateChooser = new JDateChooser();
         dateChooser.setDateFormatString("dd/MM/yyyy");
         dateChooser.setDate(new Date());
@@ -351,7 +351,7 @@ class NhapKhoFormCard extends JPanel {
         dateChooser.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         dateChooser.setPreferredSize(new Dimension(0, 34));
 
-        // Card 1: Th\u00f4ng tin chung
+        
         JPanel infoCard = makeRightCard("Th\u00f4ng tin chung");
 
         cbEmployee = new JComboBox<>();
@@ -369,7 +369,7 @@ class NhapKhoFormCard extends JPanel {
         addFieldToCard(infoCard, "Nh\u00e2n vi\u00ean:", cbEmployee);
         addFieldToCard(infoCard, "Ghi ch\u00fa:", noteSP);
 
-        // Card 2: Nh\u00e0 cung c\u1ea5p
+        
         JPanel supplierCard = makeRightCard("Nh\u00e0 cung c\u1ea5p");
         cbSupplier = new JComboBox<>();
         cbSupplier.addActionListener(e -> {
@@ -388,7 +388,7 @@ class NhapKhoFormCard extends JPanel {
         addFieldToCard(supplierCard, "Nh\u00e0 cung c\u1ea5p:", cbSupplier);
         addFieldToCard(supplierCard, "S\u1ed1 H\u0110 nh\u1eadp:", txtInvoiceRef);
 
-        // Card 3: T\u1ed5ng k\u1ebft
+        
         JPanel summaryCard = makeRightCard("T\u1ed5ng k\u1ebft phi\u1ebfu");
         for (JLabel l : new JLabel[]{lblTotalItems, lblTotalQty, lblTotalMoney}) {
             l.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -447,7 +447,7 @@ class NhapKhoFormCard extends JPanel {
         card.putClientProperty("nr", nr + 1);
     }
 
-    // ── Footer ────────────────────────────────────────────────────────────────
+    
 
     private JPanel buildFooter() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
@@ -464,11 +464,11 @@ class NhapKhoFormCard extends JPanel {
         return p;
     }
 
-    // ── Product picker (multi-select) ─────────────────────────────────────────
+    
 
     private void openProductPicker() {
         
-           // 🔴 BẮT BUỘC CHỌN NHÀ CUNG CẤP TRƯỚC
+           
     if (cbSupplier.getSelectedIndex() <= 0) {
         JOptionPane.showMessageDialog(
             this,
@@ -578,7 +578,7 @@ long supplierId = selectedSupplier.getID();
         dlg.setVisible(true);
     }
 
-    // ── Save handler ──────────────────────────────────────────────────────────
+    
 
     private void handleSave() {
         int empIdx = cbEmployee.getSelectedIndex();
@@ -649,9 +649,9 @@ if (purchaseId <= 0) {
         boolean ok;
 
         if (editInvoice == null) {
-            // Create: status = PENDING, no stock update
+            
             PurchaseInvoicesDTO inv = new PurchaseInvoicesDTO();
-            inv.setPurchaseId(purchaseId);   // 🔴 QUAN TRỌNG
+            inv.setPurchaseId(purchaseId);   
             inv.setEmployeeId((long) emp.getId());
             inv.setEmployeeName(emp.getFullName());
             inv.setSupplierId((long) sup.getID());
@@ -669,7 +669,7 @@ if (purchaseId <= 0) {
             ok = bus.addPurchaseInvoice(inv);
             
         } else {
-            // Edit: keep status as PENDING (only editable when PENDING anyway)
+            
             editInvoice.setEmployeeId((long) emp.getId());
             editInvoice.setEmployeeName(emp.getFullName());
             editInvoice.setSupplierId((long) sup.getID());
@@ -684,7 +684,7 @@ if (purchaseId <= 0) {
         if (!ok) throw new RuntimeException("L\u01b0u phi\u1ebfu nh\u1eadp th\u1ea5t b\u1ea1i.");
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    
 
     private void closeDialog() {
         Window w = SwingUtilities.getWindowAncestor(this);
@@ -727,9 +727,9 @@ if (purchaseId <= 0) {
     }
     private void onSupplierChanged() {
 
-    if (isLoadingData) return;   // 🔴 chặn khi load
+    if (isLoadingData) return;   
 
-    if (items.isEmpty()) return; // 🔴 không cần hỏi nếu chưa có SP
+    if (items.isEmpty()) return; 
 
     int confirm = JOptionPane.showConfirmDialog(
         this,

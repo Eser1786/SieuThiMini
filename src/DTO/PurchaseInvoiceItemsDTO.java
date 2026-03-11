@@ -13,7 +13,7 @@ public class PurchaseInvoiceItemsDTO {
     private BigDecimal subtotal;
     private String notes;
 
-    // Getters and Setters
+    
     public Long getId() {
         return id;
     }

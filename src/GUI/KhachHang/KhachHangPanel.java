@@ -23,7 +23,7 @@ public class KhachHangPanel extends JPanel {
     public static final String CARD_TABLE = "TABLE";
     public static final String CARD_THEM  = "THEM";
 
-    // Hidden column indices
+    
     static final int COL_DIEM       = 8;
     static final int COL_TGDK       = 9;
     static final int COL_LANCUOIMUA = 10;
@@ -65,7 +65,7 @@ public class KhachHangPanel extends JPanel {
 
     private KhachHangTableCard tableCard;
 
-    /** Dùng từ panel khác (vd: DonHang) để mở popup thêm khách hàng */
+    
     public void triggerAddCustomer() {
         innerCard.show(this, CARD_TABLE);
         if (tableCard != null) tableCard.triggerAdd();
@@ -188,7 +188,7 @@ public class KhachHangPanel extends JPanel {
         }
     }
 
-    /** Used by DonHangCreateCard to navigate directly to the add form. */
+    
     public void showCard(String card) {
         innerCard.show(this, card);
     }

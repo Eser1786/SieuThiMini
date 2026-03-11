@@ -1,6 +1,6 @@
 package DTO.enums.SaleEnum;
 
-// import DTO.enums.CustomerEnum.SalePaymentMethod;
+
 
 public enum SalePaymentMethod {
     CASH("CASH"), CARD("CARD"), TRANSFER("TRANSFER");

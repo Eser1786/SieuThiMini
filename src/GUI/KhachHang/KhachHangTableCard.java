@@ -23,14 +23,14 @@ class KhachHangTableCard extends JPanel {
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(parent.tableModel);
         bang.setRowSorter(sorter);
 
-        // ── TOP TOOLBAR ─────────────────────────────────────────────────────
+        
         JPanel top = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)));
 
-        // Left: filter + search — each pair added directly to top
+        
         String[] boloc = { "Tất cả", "Đồng", "Bạc", "Vàng", "Kim cương", "Hoạt động", "Không hoạt động" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
         cbLoc.setPreferredSize(new Dimension(200, 36));
@@ -71,7 +71,7 @@ class KhachHangTableCard extends JPanel {
         JPanel pLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pLoc.setOpaque(false); pLoc.add(lbLoc); pLoc.add(cbLoc);
         JPanel pTim = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTim.setOpaque(false); pTim.add(lbTim); pTim.add(timkiem);
 
-        // Right: Thêm + export buttons
+        
         JButton them = new JButton("+ Thêm khách hàng");
         them.setFocusPainted(false);
         them.setBackground(new Color(0xD9D9D9));
@@ -142,7 +142,7 @@ class KhachHangTableCard extends JPanel {
         top.add(btnExcel);
         top.add(btnImport);
 
-        // ── TABLE STYLING ────────────────────────────────────────────────────
+        
         bang.setRowHeight(52);
         bang.setFont(new Font("Arial", Font.PLAIN, 16));
         bang.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
@@ -162,7 +162,7 @@ class KhachHangTableCard extends JPanel {
         bang.getColumnModel().getColumn(5).setPreferredWidth(80);
         bang.getColumnModel().getColumn(6).setPreferredWidth(100);
         bang.getColumnModel().getColumn(7).setPreferredWidth(100);
-        // Hide metadata columns
+        
         for (int i = 8; i <= 12; i++) {
             bang.getColumnModel().getColumn(i).setMinWidth(0);
             bang.getColumnModel().getColumn(i).setMaxWidth(0);
@@ -244,7 +244,7 @@ class KhachHangTableCard extends JPanel {
         content.setBackground(new Color(0xF8F7FF));
         content.add(bangScroll, BorderLayout.CENTER);
 
-        // ── HEADER ──────────────────────────────────────────────────────────
+        
         JPanel khHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
         khHeader.setBackground(new Color(0xF8F7FF));
         khHeader.setBorder(BorderFactory.createCompoundBorder(
@@ -373,7 +373,7 @@ class KhachHangTableCard extends JPanel {
         detail.setVisible(true);
     }
 
-    /** Gọi từ ngoài package — mở popup thêm khách hàng */
+    
     void triggerAdd() { showAddDialog(); }
 
     private void showAddDialog() {
@@ -382,7 +382,7 @@ class KhachHangTableCard extends JPanel {
         dlg.setResizable(false);
         dlg.setLayout(new BorderLayout());
 
-        // ── Header ────────────────────────────────────────────────────────
+        
         JPanel hdr = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
         hdr.setBackground(new Color(0xAF9FCB));
         JLabel hdrLbl = new JLabel("Thêm khách hàng mới");
@@ -391,7 +391,7 @@ class KhachHangTableCard extends JPanel {
         hdr.add(hdrLbl);
         dlg.add(hdr, BorderLayout.NORTH);
 
-        // ── Form (2-column GridBagLayout) ─────────────────────────────────
+        
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(new Color(0xF0EFF8));
         form.setBorder(BorderFactory.createEmptyBorder(18, 28, 18, 28));
@@ -433,7 +433,7 @@ class KhachHangTableCard extends JPanel {
             g.gridx = 3; g.weightx = 1;
             form.add((Component) rows[i][3], g);
         }
-        // Địa chỉ — full width
+        
         g.gridy = rows.length; g.gridx = 0; g.weightx = 0; g.gridwidth = 1;
         JLabel lbDC = new JLabel("Địa chỉ:"); lbDC.setFont(lf);
         form.add(lbDC, g);
@@ -443,7 +443,7 @@ class KhachHangTableCard extends JPanel {
 
         dlg.add(form, BorderLayout.CENTER);
 
-        // ── Footer ────────────────────────────────────────────────────────
+        
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
         footer.setBackground(new Color(0xF0EFF8));
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));

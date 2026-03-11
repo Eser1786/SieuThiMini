@@ -17,9 +17,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Dashboard / home panel with summary cards and a small chart.
- */
+
 public class TrangChuPanel extends JPanel {
     
     private JPanel topCards;
@@ -39,7 +37,7 @@ public class TrangChuPanel extends JPanel {
         setLayout(new BorderLayout(0, 0));
         setBackground(new Color(0xF8F7FF));
 
-        // four summary cards
+        
         topCards = new JPanel(new GridLayout(1, 4, 30, 0));
         topCards.setBackground(new Color(0xF8F7FF));
         topCards.setBorder(BorderFactory.createEmptyBorder(18, 18, 12, 18));
@@ -47,21 +45,21 @@ public class TrangChuPanel extends JPanel {
         try {
             loadDashboardData();
         } catch (Exception e) {
-            // Nếu không load được data, hiển thị mặc định
+            
             e.printStackTrace();
-            // Có thể thêm thông báo lỗi ở đây
+            
         }
 
-        // center area with 3 charts on left and orders table on right
+        
         JPanel centerPanel = new JPanel(new GridLayout(1, 2, 14, 0));
         centerPanel.setBackground(new Color(0xF8F7FF));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(0, 18, 18, 18));
 
-        // ===== LEFT PANEL: 3 Charts =====
+        
         JPanel chartsPanel = new JPanel(new GridLayout(3, 1, 0, 14));
         chartsPanel.setBackground(new Color(0xF8F7FF));
 
-        // ===== Chart 1: Revenue Chart =====
+        
         JPanel revenueCard = UIUtils.createCard();
         JPanel revenueHeader = new JPanel(new BorderLayout());
         revenueHeader.setOpaque(false);
@@ -100,7 +98,7 @@ public class TrangChuPanel extends JPanel {
         revenueCard.add(revenueHeader, BorderLayout.NORTH);
         revenueCard.add(chartPanel, BorderLayout.CENTER);
 
-        // ===== Chart 2: Customer Chart=====
+        
         JPanel customerCard = UIUtils.createCard();
         JPanel customerHeaderPanel = new JPanel(new BorderLayout());
         customerHeaderPanel.setOpaque(false);
@@ -127,7 +125,7 @@ public class TrangChuPanel extends JPanel {
         customerCard.add(customerHeaderPanel, BorderLayout.NORTH);
         customerCard.add(customerChart, BorderLayout.CENTER);
 
-        // ===== Chart 3: Loyalty Points Chart =====
+        
         JPanel loyaltyCard = UIUtils.createCard();
         JPanel loyaltyChartHeaderPanel = new JPanel(new BorderLayout());
         loyaltyChartHeaderPanel.setOpaque(false);
@@ -154,12 +152,12 @@ public class TrangChuPanel extends JPanel {
         loyaltyCard.add(loyaltyChartHeaderPanel, BorderLayout.NORTH);
         loyaltyCard.add(loyaltyChart, BorderLayout.CENTER);
 
-        // Add 3 charts to left panel
+        
         chartsPanel.add(revenueCard);
         chartsPanel.add(customerCard);
         chartsPanel.add(loyaltyCard);
 
-        // ===== RIGHT PANEL: Recent Orders Table =====
+        
         orderCard = UIUtils.createCard();
         JPanel orderHeader = new JPanel(new BorderLayout());
         orderHeader.setOpaque(false);
@@ -167,7 +165,7 @@ public class TrangChuPanel extends JPanel {
         JLabel orderTitle = new JLabel("Đơn hàng gần đây");
         orderTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
         
-        // Filter controls
+        
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         filterPanel.setOpaque(false);
         
@@ -213,7 +211,7 @@ public class TrangChuPanel extends JPanel {
                 if (!sel) {
                     setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
                 }
-                if (col == 2) { // Status column
+                if (col == 2) { 
                     String val = v == null ? "" : v.toString();
                     switch (val) {
                         case "PENDING" -> { setForeground(new Color(0xFF9800)); setText("Chờ xác nhận"); }
@@ -224,7 +222,7 @@ public class TrangChuPanel extends JPanel {
                         case "CANCELLED" -> { setForeground(new Color(0xF44336)); setText("Đã hủy"); }
                         default -> setForeground(Color.BLACK);
                     }
-                } else if (col == 3) { // Payment column
+                } else if (col == 3) { 
                     String val = v == null ? "" : v.toString();
                     switch (val) {
                         case "CASH" -> setText("Tiền mặt");
@@ -249,7 +247,7 @@ public class TrangChuPanel extends JPanel {
                 if (!sel) {
                     setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
                 }
-                if (col == 4 && v != null) { // Money column
+                if (col == 4 && v != null) { 
                     try {
                         double amount = Double.parseDouble(v.toString());
                         setText(String.format("%,.0f đ", amount));
@@ -262,54 +260,54 @@ public class TrangChuPanel extends JPanel {
             }
         };
 
-        orderTable.getColumnModel().getColumn(0).setCellRenderer(statusRenderer); // Code
-        orderTable.getColumnModel().getColumn(1).setCellRenderer(statusRenderer); // Customer
-        orderTable.getColumnModel().getColumn(2).setCellRenderer(statusRenderer); // Status
-        orderTable.getColumnModel().getColumn(3).setCellRenderer(statusRenderer); // Payment
-        orderTable.getColumnModel().getColumn(4).setCellRenderer(moneyRenderer);  // Amount
+        orderTable.getColumnModel().getColumn(0).setCellRenderer(statusRenderer); 
+        orderTable.getColumnModel().getColumn(1).setCellRenderer(statusRenderer); 
+        orderTable.getColumnModel().getColumn(2).setCellRenderer(statusRenderer); 
+        orderTable.getColumnModel().getColumn(3).setCellRenderer(statusRenderer); 
+        orderTable.getColumnModel().getColumn(4).setCellRenderer(moneyRenderer);  
 
         orderCard.add(orderHeader, BorderLayout.NORTH);
         orderCard.add(new JScrollPane(orderTable), BorderLayout.CENTER);
 
-        // Add left and right panels to center
+        
         centerPanel.add(chartsPanel);
         centerPanel.add(orderCard);
 
         add(topCards, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
         
-        // Load initial data
+        
         loadRecentOrders();
     }
     
     private void loadDashboardData() {
         try {
-            // Get data from database
+            
             SalesBUS salesBUS = new SalesBUS();
             CustomerBUS customerBUS = new CustomerBUS();
             ProductBUS productBUS = new ProductBUS();
             
-            // Total sales (doanh thu - chỉ đếm đơn đã hoàn thành)
+            
             List<SaleDTO> allSales = salesBUS.getAllSales();
             int totalSales = (int) allSales.stream()
                 .filter(s -> "COMPLETED".equals(s.getSaleStatus().name()))
                 .count();
             
-            // Pending orders (đơn hàng đang chờ)
+            
             int pendingOrders = (int) allSales.stream()
                 .filter(s -> "PENDING".equals(s.getSaleStatus().name()))
                 .count();
             
-            // Low stock products
+            
             List<DTO.ProductDTO> allProducts = productBUS.getAllProducts();
             int lowStockCount = (int) allProducts.stream()
                 .filter(p -> p.getTotalQuantity() <= p.getMinStockLevel())
                 .count();
             
-            // Total customers
+            
             int totalCustomers = customerBUS.getAllCustomers().size();
             
-            // Create card data
+            
             Object[][] cardData = {
                     { "💰", "Doanh thu:", totalSales + " đơn", new Color(0xD4F4E2), new Color(0x5CB85C) },
                     { "🕒", "Đơn hàng đang chờ:", pendingOrders + " đơn", new Color(0xFFF3CD), new Color(0xF0AD4E) },
@@ -319,7 +317,7 @@ public class TrangChuPanel extends JPanel {
                     { "👥", "Tổng khách hàng:", totalCustomers + " khách", new Color(0xF5D0F5), new Color(0xAB47BC) },
             };
 
-            // Clear existing cards
+            
             topCards.removeAll();
             
             for (Object[] d : cardData) {
@@ -369,14 +367,12 @@ public class TrangChuPanel extends JPanel {
             
         } catch (Exception e) {
             e.printStackTrace();
-            // Fallback to default data
+            
             JOptionPane.showMessageDialog(this, "Lỗi tải dữ liệu dashboard: " + e.getMessage());
         }
     }
     
-    /**
-    * Load dữ liệu doanh thu theo kỳ được chọn và chuyển sang phần trăm cho đồ thị
-    */
+    
     private void loadChartData() {
         try {
             SalesBUS salesBUS = new SalesBUS();
@@ -407,9 +403,7 @@ public class TrangChuPanel extends JPanel {
         }
     }
 
-    /**
-     * Tạo panel đồ thị với dữ liệu hiện tại
-     */
+    
     private JPanel createChart() {
         JPanel chart = new JPanel() {
             @Override
@@ -424,7 +418,7 @@ public class TrangChuPanel extends JPanel {
                 int chartH = h - padT - padB;
                 int n = chartValues.length;
 
-                // Vẽ lưới ngang
+                
                 g2.setColor(new Color(0xDDDDDD));
                 g2.setStroke(
                         new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 4 }, 0));
@@ -437,7 +431,7 @@ public class TrangChuPanel extends JPanel {
                     g2.setColor(new Color(0xDDDDDD));
                 }
 
-                // Tạo các điểm cho đồ thị
+                
                 int[] xs = new int[n + 2];
                 int[] ys = new int[n + 2];
                 for (int i = 0; i < n; i++) {
@@ -449,26 +443,26 @@ public class TrangChuPanel extends JPanel {
                 xs[n + 1] = padL;
                 ys[n + 1] = padT + chartH;
 
-                // Fill màu phía dưới đường
+                
                 g2.setColor(new Color(0xB8A9D9));
                 g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
                 g2.fillPolygon(xs, ys, n + 2);
                 g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
-                // Vẽ đường nối
+                
                 g2.setStroke(new BasicStroke(2.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                 g2.setColor(new Color(0x7B68AE));
                 for (int i = 0; i < n - 1; i++) {
                     g2.drawLine(xs[i], ys[i], xs[i + 1], ys[i + 1]);
                 }
 
-                // Vẽ các điểm tròn
+                
                 g2.setColor(new Color(0x7B68AE));
                 for (int i = 0; i < n; i++) {
                     g2.fillOval(xs[i] - 4, ys[i] - 4, 8, 8);
                 }
 
-                // Vẽ nhãn ngày
+                
                 g2.setColor(new Color(0x666666));
                 g2.setFont(new Font("Arial", Font.PLAIN, 11));
                 for (int i = 0; i < chartLabels.length; i++) {
@@ -483,15 +477,13 @@ public class TrangChuPanel extends JPanel {
     }
 
 
-    /**
-     * Làm mới đồ thị với dữ liệu mới nhất theo kỳ đã chọn
-     */
+    
     private void refreshChart() {
         loadChartData();
         chartPanel.repaint();
     }
 
-    // ===== CUSTOMER CHART =====
+    
     private int[] customerChartValues;
     private JPanel customerChartPanel;
     
@@ -503,7 +495,7 @@ public class TrangChuPanel extends JPanel {
             LocalDate today = LocalDate.now();
             LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
             
-            // Tính số khách hàng mới từng ngày trong tuần
+            
             customerChartValues = new int[7];
             int maxCustomers = 0;
             
@@ -521,7 +513,7 @@ public class TrangChuPanel extends JPanel {
                 }
             }
             
-            // Nếu không có khách hàng mới, set về 0
+            
             if (maxCustomers == 0) {
                 for (int i = 0; i < 7; i++) {
                     customerChartValues[i] = 0;
@@ -550,14 +542,14 @@ public class TrangChuPanel extends JPanel {
                 int chartH = h - padT - padB;
                 int n = customerChartValues.length;
                 
-                // Tìm max value
+                
                 int maxVal = 0;
                 for (int v : customerChartValues) {
                     if (v > maxVal) maxVal = v;
                 }
-                if (maxVal == 0) maxVal = 10; // Default max nếu không có data
+                if (maxVal == 0) maxVal = 10; 
 
-                // Vẽ lưới ngang
+                
                 g2.setColor(new Color(0xDDDDDD));
                 g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 4 }, 0));
                 for (int i = 0; i <= 4; i++) {
@@ -570,7 +562,7 @@ public class TrangChuPanel extends JPanel {
                     g2.setColor(new Color(0xDDDDDD));
                 }
 
-                // Vẽ cột biểu đồ
+                
                 int barWidth = chartW / (n * 2);
                 g2.setColor(new Color(0x66BB6A));
                 for (int i = 0; i < n; i++) {
@@ -580,7 +572,7 @@ public class TrangChuPanel extends JPanel {
                     
                     g2.fillRoundRect(x - barWidth / 2, y, barWidth, barHeight, 4, 4);
                     
-                    // Hiển thị giá trị trên cột
+                    
                     g2.setColor(Color.BLACK);
                     g2.setFont(new Font("Arial", Font.BOLD, 10));
                     String valStr = String.valueOf(customerChartValues[i]);
@@ -589,7 +581,7 @@ public class TrangChuPanel extends JPanel {
                     g2.setColor(new Color(0x66BB6A));
                 }
 
-                // Vẽ nhãn ngày
+                
                 g2.setColor(new Color(0x666666));
                 g2.setFont(new Font("Arial", Font.PLAIN, 11));
                 for (int i = 0; i < chartLabels.length; i++) {
@@ -610,7 +602,7 @@ public class TrangChuPanel extends JPanel {
         customerChartPanel.repaint();
     }
 
-    // ===== LOYALTY POINTS CHART =====
+    
     private ArrayList<CustomerDTO> topLoyaltyCustomers;
     private JPanel loyaltyChartPanel;
     
@@ -619,7 +611,7 @@ public class TrangChuPanel extends JPanel {
             CustomerBUS customerBUS = new CustomerBUS();
             ArrayList<CustomerDTO> allCustomers = customerBUS.getAllCustomers();
             
-            // Sort by loyalty points and take top 5
+            
             topLoyaltyCustomers = allCustomers.stream()
                 .sorted((a, b) -> Integer.compare(b.getLoyaltyPoints(), a.getLoyaltyPoints()))
                 .limit(5)
@@ -658,14 +650,14 @@ public class TrangChuPanel extends JPanel {
                     return;
                 }
                 
-                // Tìm max loyalty points
+                
                 int maxVal = topLoyaltyCustomers.stream()
                     .mapToInt(CustomerDTO::getLoyaltyPoints)
                     .max()
                     .orElse(100);
                 if (maxVal == 0) maxVal = 100;
 
-                // Vẽ lưới ngang
+                
                 g2.setColor(new Color(0xDDDDDD));
                 g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 4 }, 0));
                 for (int i = 0; i <= 4; i++) {
@@ -678,12 +670,12 @@ public class TrangChuPanel extends JPanel {
                     g2.setColor(new Color(0xDDDDDD));
                 }
 
-                // Vẽ cột biểu đồ với tên và màu theo rank
+                
                 int barWidth = chartW / (n * 2);
                 for (int i = 0; i < n; i++) {
                     CustomerDTO customer = topLoyaltyCustomers.get(i);
                     
-                    // Chọn màu dựa trên customer type (rank)
+                    
                     Color barColor = getColorForRank(customer.getType());
                     g2.setColor(barColor);
                     
@@ -693,14 +685,14 @@ public class TrangChuPanel extends JPanel {
                     
                     g2.fillRoundRect(x - barWidth / 2, y, barWidth, barHeight, 4, 4);
                     
-                    // Hiển thị giá trị trên cột
+                    
                     g2.setColor(Color.BLACK);
                     g2.setFont(new Font("Arial", Font.BOLD, 9));
                     String valStr = String.valueOf(customer.getLoyaltyPoints());
                     int strWidth = g2.getFontMetrics().stringWidth(valStr);
                     g2.drawString(valStr, x - strWidth / 2, y - 5);
                     
-                    // Vẽ tên khách hàng với màu theo rank
+                    
                     g2.setColor(barColor);
                     g2.setFont(new Font("Arial", Font.BOLD, 10));
                     String name = customer.getFullName();
@@ -713,12 +705,12 @@ public class TrangChuPanel extends JPanel {
             }
             
             private Color getColorForRank(CustomerType type) {
-                if (type == null) return new Color(0xB8860B); // default bronze
+                if (type == null) return new Color(0xB8860B); 
                 switch (type) {
-                    case DIAMOND -> { return new Color(0x00CED1); } // cyan/turquoise
-                    case GOLD -> { return new Color(0xFFD700); } // gold
-                    case SILVER -> { return new Color(0xC0C0C0); } // silver
-                    default -> { return new Color(0xB8860B); } // bronze
+                    case DIAMOND -> { return new Color(0x00CED1); } 
+                    case GOLD -> { return new Color(0xFFD700); } 
+                    case SILVER -> { return new Color(0xC0C0C0); } 
+                    default -> { return new Color(0xB8860B); } 
                 }
             }
         };
@@ -732,7 +724,7 @@ public class TrangChuPanel extends JPanel {
         loyaltyChartPanel.repaint();
     }
 
-    // ===== ORDER CHART =====
+    
     private int[] orderChartValues;
     private JPanel orderChartPanel;
     
@@ -744,7 +736,7 @@ public class TrangChuPanel extends JPanel {
             LocalDate today = LocalDate.now();
             LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
             
-            // Tính số đơn hàng từng ngày trong tuần
+            
             orderChartValues = new int[7];
             int maxOrders = 0;
             
@@ -784,14 +776,14 @@ public class TrangChuPanel extends JPanel {
                 int chartH = h - padT - padB;
                 int n = orderChartValues.length;
                 
-                // Tìm max value
+                
                 int maxVal = 0;
                 for (int v : orderChartValues) {
                     if (v > maxVal) maxVal = v;
                 }
-                if (maxVal == 0) maxVal = 10; // Default max nếu không có data
+                if (maxVal == 0) maxVal = 10; 
 
-                // Vẽ lưới ngang
+                
                 g2.setColor(new Color(0xDDDDDD));
                 g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] { 4 }, 0));
                 for (int i = 0; i <= 4; i++) {
@@ -804,7 +796,7 @@ public class TrangChuPanel extends JPanel {
                     g2.setColor(new Color(0xDDDDDD));
                 }
 
-                // Vẽ cột biểu đồ
+                
                 int barWidth = chartW / (n * 2);
                 g2.setColor(new Color(0x42A5F5));
                 for (int i = 0; i < n; i++) {
@@ -814,7 +806,7 @@ public class TrangChuPanel extends JPanel {
                     
                     g2.fillRoundRect(x - barWidth / 2, y, barWidth, barHeight, 4, 4);
                     
-                    // Hiển thị giá trị trên cột
+                    
                     g2.setColor(Color.BLACK);
                     g2.setFont(new Font("Arial", Font.BOLD, 10));
                     String valStr = String.valueOf(orderChartValues[i]);
@@ -823,7 +815,7 @@ public class TrangChuPanel extends JPanel {
                     g2.setColor(new Color(0x42A5F5));
                 }
 
-                // Vẽ nhãn ngày
+                
                 g2.setColor(new Color(0x666666));
                 g2.setFont(new Font("Arial", Font.PLAIN, 11));
                 for (int i = 0; i < chartLabels.length; i++) {
@@ -849,7 +841,7 @@ public class TrangChuPanel extends JPanel {
             SalesBUS salesBUS = new SalesBUS();
             List<SaleDTO> sales = salesBUS.getAllSales();
             
-            // Apply filters
+            
             String statusFilterValue = (String) statusFilter.getSelectedItem();
             String paymentFilterValue = (String) paymentFilter.getSelectedItem();
             
@@ -865,17 +857,17 @@ public class TrangChuPanel extends JPanel {
                     .toList();
             }
             
-            // Sort by date (newest first) and limit to 10
+            
             sales = sales.stream()
-                .filter(s -> s.getSaleDate() != null) // Filter out null dates
+                .filter(s -> s.getSaleDate() != null) 
                 .sorted((a, b) -> b.getSaleDate().compareTo(a.getSaleDate()))
                 .limit(10)
                 .toList();
             
-            // Clear table
+            
             orderModel.setRowCount(0);
             
-            // Add data to table
+            
             for (SaleDTO sale : sales) {
                 String customerName = sale.getCustomerName() != null ? sale.getCustomerName() : "Khách lẻ";
                 orderModel.addRow(new Object[]{

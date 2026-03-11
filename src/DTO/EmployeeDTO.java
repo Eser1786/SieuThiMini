@@ -13,12 +13,12 @@ public class EmployeeDTO {
     private String email;
     private java.time.LocalDateTime hireDate;
     private java.math.BigDecimal salary;
-    private int roleId;       // foreign key to roles
+    private int roleId;       
     private String status;
     private boolean isdeleted;
-    private String photoPath;  // path to avatar image file
+    private String photoPath;  
 
-    // getters/setters
+    
     public void setId(int id) { this.id = id; }
     public int getId() { return id; }
     public void setCode(String code) { this.code = code; }

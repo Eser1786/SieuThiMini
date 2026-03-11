@@ -60,21 +60,21 @@ public class SupplierBUS {
     }
 
     public boolean deleteSupplier(int id) {
-        // When deleting a supplier, also soft-delete all its products
+        
         ProductBUS productBUS = new ProductBUS();
         productBUS.softDeleteProductsBySupplier(id);
-        // Then delete the supplier
+        
         return supplierDAO.deleteSupplier(id);
     }
 
-    // helper to lookup internal id by supplier_code stored in UI table
+    
     public int getIdByCode(String code) {
         return supplierDAO.getIdByCode(code);
     } 
 
-    // make public so UI can generate new codes
+    
     public String generateSupplierCode() {
-        // Logic tạo code: 'NCC' + số tăng dần
+        
         String sql = "SELECT MAX(supplier_code) FROM suppliers WHERE supplier_code LIKE 'NCC%'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -90,7 +90,7 @@ public class SupplierBUS {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "NCC000";  // Default nếu lỗi
+        return "NCC000";  
     }
     
 }

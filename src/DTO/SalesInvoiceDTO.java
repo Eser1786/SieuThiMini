@@ -21,7 +21,7 @@ public class SalesInvoiceDTO {
     private String status;
     private List<SalesInvoiceItemDTO> items;
 
-    // Getters and Setters
+    
     public Long getInvoiceId() {
         return invoiceId;
     }

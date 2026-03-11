@@ -28,17 +28,17 @@ public class PurchasesBUS {
 
     if (purchase == null) return -1;
 
-    // Generate purchase code if not provided
+    
     if (purchase.getPurchaseCode() == null || purchase.getPurchaseCode().isBlank()) {
         purchase.setPurchaseCode(generatePurchaseCode());
     }
 
-    // Set purchase date if not provided
+    
     if (purchase.getPurchaseDate() == null) {
         purchase.setPurchaseDate(LocalDateTime.now());
     }
 
-    // Validation
+    
     if (purchase.getSupplierId() == null || purchase.getSupplierId() <= 0) {
         System.out.println("Nhà cung cấp không hợp lệ.");
         return -1;
@@ -54,15 +54,15 @@ public class PurchasesBUS {
         return -1;
     }
 
-    // Calculate totals if not set
+    
     calculateTotals(purchase);
 
-    return purchasesDAO.insert(purchase); // trả về purchase_id
+    return purchasesDAO.insert(purchase); 
 }
     public boolean updatePurchase(PurchasesDTO purchase) {
         if (purchase == null || purchase.getPurchaseId() == null) return false;
 
-        // Validation
+        
         if (purchase.getSupplierId() == null || purchase.getSupplierId() <= 0) {
             System.out.println("Nhà cung cấp không hợp lệ.");
             return false;
@@ -76,7 +76,7 @@ public class PurchasesBUS {
             return false;
         }
 
-        // Calculate totals
+        
         calculateTotals(purchase);
 
         return purchasesDAO.updatePurchase(purchase);
@@ -88,12 +88,12 @@ public class PurchasesBUS {
     }
 
     private String generatePurchaseCode() {
-        // Format: PM + YYYYMMDD + - + 3-digit number
+        
         LocalDateTime now = LocalDateTime.now();
         String datePart = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String prefix = "PM" + datePart + "-";
 
-        // Find the next available number
+        
         List<PurchasesDTO> allPurchases = getAllPurchases();
         int maxNumber = 0;
         for (PurchasesDTO pur : allPurchases) {
@@ -103,7 +103,7 @@ public class PurchasesBUS {
                     int num = Integer.parseInt(numStr);
                     if (num > maxNumber) maxNumber = num;
                 } catch (NumberFormatException e) {
-                    // Ignore
+                    
                 }
             }
         }

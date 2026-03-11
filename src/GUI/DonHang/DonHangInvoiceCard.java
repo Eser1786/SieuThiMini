@@ -18,7 +18,7 @@ class DonHangInvoiceCard extends JPanel {
     private void buildUI() {
         setBackground(new Color(0xF4F4F4));
 
-        /* Header */
+        
         JPanel ivHeader = new JPanel(new BorderLayout());
         ivHeader.setBackground(new Color(0xF4F4F4));
         ivHeader.setBorder(BorderFactory.createCompoundBorder(
@@ -171,7 +171,7 @@ class DonHangInvoiceCard extends JPanel {
             }
     }
 
-    /* ── receipt helpers ── */
+    
     private JLabel rLine(String t, Font f) {
         JLabel l = new JLabel(t, SwingConstants.CENTER);
         l.setFont(f); l.setAlignmentX(Component.CENTER_ALIGNMENT);

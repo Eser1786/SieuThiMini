@@ -14,9 +14,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import javax.imageio.ImageIO;
 
-/**
- * Dialog Thêm / Sửa nhân viên — tách từ NhanVienPanel.showEmployeeDialog.
- */
+
 class NhanVienEmployeeDialog {
 
     private static final Color ACCENT    = new Color(0x5C4A7F);
@@ -32,7 +30,7 @@ class NhanVienEmployeeDialog {
         dlg.setResizable(false);
         dlg.setLayout(new BorderLayout());
 
-        // Header
+        
         JPanel hdr = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
         hdr.setBackground(new Color(0xAF9FCB));
         JLabel hdrLbl = new JLabel(isEdit ? "Sửa thông tin nhân viên" : "Thêm nhân viên mới");
@@ -40,7 +38,7 @@ class NhanVienEmployeeDialog {
         hdrLbl.setForeground(Color.WHITE);
         hdr.add(hdrLbl);
 
-        // Photo section
+        
         final String[] tmpPhotoPath = {null};
         JPanel photoSection = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 8));
         photoSection.setBackground(new Color(0xF3F0FA));
@@ -127,7 +125,7 @@ class NhanVienEmployeeDialog {
         northPanel.add(photoSection, BorderLayout.SOUTH);
         dlg.add(northPanel, BorderLayout.NORTH);
 
-        // Form fields: [0]Ho ten, [1]Username, [2]SDT, [3]Email, [4]Luong
+        
         JTextField[] tfs = new JTextField[5];
         for (int i = 0; i < tfs.length; i++) {
             tfs[i] = new JTextField();
@@ -193,7 +191,7 @@ class NhanVienEmployeeDialog {
             for (int i = 0; i < cbRole.getItemCount(); i++) {
                 if (cbRole.getItemAt(i).equals(currentRole)) { cbRole.setSelectedIndex(i); break; }
             }
-            // Prefill username, salary, password from DB
+            
             int empId = (Integer) parent.tableModel.getValueAt(prefilledRow, NhanVienPanel.COL_ID);
             EmployeeDTO existing = new EmployeeBUS().getEmployeeById(empId);
             if (existing != null) {
@@ -320,21 +318,21 @@ class NhanVienEmployeeDialog {
 
             String ma = isEdit ? parent.tableModel.getValueAt(prefilledRow, COL_MA).toString() : parent.generateMaNV();
 
-            // Resolve final photo path (copy new image, delete old if changed)
+            
             String originalPhotoPath = isEdit ? parent.photoPathMap.get(ma) : null;
-            String finalPhotoPath = originalPhotoPath; // default: keep existing
+            String finalPhotoPath = originalPhotoPath; 
             if (tmpPhotoPath[0] != null && !tmpPhotoPath[0].isEmpty()
                     && !tmpPhotoPath[0].equals(originalPhotoPath)) {
-                // User selected a new photo — delete old file first
+                
                 if (originalPhotoPath != null) {
                     new File(originalPhotoPath).delete();
                 } else if (isEdit) {
-                    // Fallback: delete any existing file matching the employee code
+                    
                     for (String ext : new String[]{".jpg", ".jpeg", ".png"}) {
                         new File("img/employees/" + ma + ext).delete();
                     }
                 }
-                // Copy new photo to img/employees/
+                
                 try {
                     File src = new File(tmpPhotoPath[0]);
                     String ext = tmpPhotoPath[0].contains(".") ? tmpPhotoPath[0].substring(tmpPhotoPath[0].lastIndexOf('.')) : ".png";
@@ -355,13 +353,13 @@ class NhanVienEmployeeDialog {
                 ? parent.tableModel.getValueAt(prefilledRow, COL_PASS).toString()
                 : pass;
 
-            // Resolve role ID from selected role name
+            
             String selectedRoleName = cbRole.getSelectedItem().toString();
             int selectedRoleId = parent.roles.stream()
                 .filter(r -> r.getName().equals(selectedRoleName))
                 .mapToInt(DTO.RoleDTO::getId).findFirst().orElse(1);
 
-            // Parse salary (strip formatting chars)
+            
             BigDecimal salaryVal = BigDecimal.ZERO;
             String salaryStr = tfs[4].getText().replaceAll("[^0-9]", "");
             if (!salaryStr.isEmpty()) salaryVal = new BigDecimal(salaryStr);

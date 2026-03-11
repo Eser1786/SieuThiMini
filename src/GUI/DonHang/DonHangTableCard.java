@@ -27,7 +27,7 @@ class DonHangTableCard extends JPanel {
     }
 
     private void build() {
-        /* ── Khởi tạo tableModel trên parent ── */
+        
         String[] cols = { "Mã đơn", "Người mua", "Số lượng SP", "Giảm giá",
                 "Tổng số tiền", "Phương thức", "Tình trạng", "Thao tác" };
         parent.tableModel = new DefaultTableModel(cols, 0) {
@@ -36,20 +36,20 @@ class DonHangTableCard extends JPanel {
         };
         loadSalesFromDatabase();
 
-        /* Toolbar */
+        
         String[] trangThais = {
                 "Tất cả", "Chờ xác nhận", "Đã xác nhận",
                 "Chờ vận chuyển", "Đang giao", "Đã giao", "Đã hủy"
         };
 
-        // Single-row: filters LEFT, buttons RIGHT
+        
         JPanel top = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)));
 
-        // Left: filter combo + search field — each pair added directly to top
+        
         JComboBox<String> cbLoc = new JComboBox<>(trangThais);
         cbLoc.setPreferredSize(new Dimension(200, 36));
         UIUtils.styleComboBox(cbLoc);
@@ -90,7 +90,7 @@ class DonHangTableCard extends JPanel {
         JPanel pLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pLoc.setOpaque(false); pLoc.add(lbLoc); pLoc.add(cbLoc);
         JPanel pTim = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTim.setOpaque(false); pTim.add(lbTim); pTim.add(timPanel);
 
-        // Right: Tạo + export buttons added directly to top
+        
         JButton btnTao = new JButton("+ T\u1ea1o \u0111\u01a1n h\u00e0ng");
         btnTao.setFocusPainted(false);
         btnTao.setBackground(new Color(0xD9D9D9));
@@ -114,7 +114,7 @@ class DonHangTableCard extends JPanel {
         top.add(pLoc);
         top.add(pTim);
 
-        // Date range pickers
+        
         Runnable[] filterRef = {null};
         dcFrom = new JDateChooser();
         dcFrom.setPreferredSize(new Dimension(130, 36));
@@ -186,7 +186,7 @@ class DonHangTableCard extends JPanel {
         top.add(btnPDF);
         top.add(btnExcel);
 
-        /* Bảng */
+        
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(parent.tableModel);
         JTable bang = new JTable(parent.tableModel);
         bang.setRowSorter(sorter);
@@ -250,7 +250,7 @@ class DonHangTableCard extends JPanel {
             @Override public Object getCellEditorValue() { return ""; }
         });
 
-        /* Lọc & tìm kiếm */
+        
         Runnable applyFilter = () -> {
             String kw  = tfTim.getText().trim();
             int    idx = cbLoc.getSelectedIndex();
@@ -277,7 +277,7 @@ class DonHangTableCard extends JPanel {
         JScrollPane scroll = new JScrollPane(bang);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        // Header
+        
         JPanel dhHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
         dhHeader.setBackground(new Color(0xF8F7FF));
         dhHeader.setBorder(BorderFactory.createCompoundBorder(
@@ -391,7 +391,7 @@ class DonHangTableCard extends JPanel {
         String trangThai = parent.tableModel.getValueAt(modelRow, 6).toString();
         Color  rowBg     = viewRow % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA);
 
-        // Inner panel holds the buttons with FlowLayout (wraps if needed)
+        
         JPanel inner = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 4));
         inner.setOpaque(false);
 
@@ -432,11 +432,11 @@ class DonHangTableCard extends JPanel {
         if (withAction)
             btnXem.addActionListener(e -> { stopEdit(table); parent.showDetail(modelRow); });
 
-        // Outer panel centers inner both vertically and horizontally
+        
         JPanel outer = new JPanel(new GridBagLayout());
         outer.setBackground(rowBg);
         outer.setOpaque(true);
-        outer.add(inner); // GridBagLayout default: center
+        outer.add(inner); 
         return outer;
     }
 
@@ -457,7 +457,7 @@ class DonHangTableCard extends JPanel {
                 "Thành công",
                 JOptionPane.INFORMATION_MESSAGE);
 
-        loadSalesFromDatabase(); // reload bảng
+        loadSalesFromDatabase(); 
     }
 }
 

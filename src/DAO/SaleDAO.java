@@ -227,7 +227,7 @@ public class SaleDAO {
         sale.setSaleID(rs.getInt("sale_id"));
         sale.setSaleCode(rs.getString("sale_code"));
         
-        // Set sale date
+        
         Date saleDate = rs.getDate("sale_date");
         if (saleDate != null) {
             sale.setSaleDate(saleDate.toLocalDate());
@@ -337,13 +337,13 @@ public class SaleDAO {
     private static String fixEncoding(String s) {
         if (s == null) return null;
         for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) > 0xFF) return s; // Already proper Unicode, no fix needed
+            if (s.charAt(i) > 0xFF) return s; 
         }
         try {
             String d = new String(s.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1),
                                   java.nio.charset.StandardCharsets.UTF_8);
             for (int i = 0; i < d.length(); i++) {
-                if (d.charAt(i) > 0xFF) return d; // Successfully decoded mojibake
+                if (d.charAt(i) > 0xFF) return d; 
             }
         } catch (Exception ignored) {}
         return s;

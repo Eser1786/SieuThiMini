@@ -52,7 +52,7 @@ public class DiscountBUS {
         String code
 ){
 
-    // ===== VALIDATE =====
+    
 
     if(name == null || name.trim().isEmpty())
         return "Tên khuyến mãi không được để trống";
@@ -72,7 +72,7 @@ public class DiscountBUS {
         return "Giá trị giảm phải > 0";
 
 
-    // ===== TYPE =====
+    
 
     DiscountType discountType;
 
@@ -82,7 +82,7 @@ public class DiscountBUS {
         return "Loại giảm chỉ được là PERCENT hoặc FIXED";
     }
 
-    // ===== SCOPE VALIDATION =====
+    
     if (discountType == DiscountType.PERCENT && productId != null)
         return "Khŋyến mãi PERCENT áp dụng cho toàn hóa đơn, không gắn với sản phẩm cụ thể";
 
@@ -96,7 +96,7 @@ try{
 }catch(Exception e){
     return "Trạng thái chỉ được là ACTIVE hoặc EXPIRED";
 }
-    // ===== DATE =====
+    
 
     LocalDate startDate;
     LocalDate endDate;
@@ -112,7 +112,7 @@ try{
         return "Ngày kết thúc phải sau ngày bắt đầu";
 
 
-    // ===== MIN ORDER =====
+    
 
     BigDecimal min = BigDecimal.ZERO;
 
@@ -130,7 +130,7 @@ try{
         return "Giá trị đơn hàng tối thiểu (Min order) không được là số âm";
 
 
-    // ===== KIEM TRA GIA TRI GIAM vs GIA SAN PHAM (chi FIXED) =====
+    
 
     if (discountType == DiscountType.FIXED && productId != null) {
         ProductBUS productBUS = new ProductBUS();
@@ -150,7 +150,7 @@ try{
     }
 
 
-    // ===== CREATE DTO =====
+    
 
     DiscountDTO d = new DiscountDTO();
 
@@ -223,11 +223,11 @@ public String updateDiscount(
         String status,
         Integer productId
 ){
-    // ===== VALIDATE minOrder =====
+    
     if (minOrder < 0)
         return "Giá trị đơn hàng tối thiểu (Min order) không được là số âm";
 
-    // ===== VALIDATE FIXED value vs product price =====
+    
     if ("FIXED".equals(type) && productId != null) {
         ProductBUS productBUS = new ProductBUS();
         ProductDTO product = null;
@@ -257,10 +257,10 @@ public String updateDiscount(
 
         DiscountProductDAO dpDAO = new DiscountProductDAO();
 
-        // xóa sản phẩm cũ
+        
         dpDAO.deleteByDiscountId(id);
 
-        // thêm sản phẩm mới
+        
         if(productId != null){
 
             DiscountProductDTO dp = new DiscountProductDTO();

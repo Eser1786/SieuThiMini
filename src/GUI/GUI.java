@@ -3,9 +3,7 @@ package GUI;
 import java.awt.Dimension;
 import javax.swing.*;
 
-/**
- * Top-level frame. Delegates everything to MainPanel.
- */
+
 public class GUI extends JFrame {
     public GUI() {
         this(true);
@@ -13,7 +11,7 @@ public class GUI extends JFrame {
 
     public GUI(boolean showLogin) {
         setTitle("Siêu Thị 36");
-        // Set taskbar / title-bar icon
+        
         try {
             java.io.File iconFile = new java.io.File("img/icons/logo (white background).jpg");
             if (!iconFile.exists()) iconFile = new java.io.File("img/icons/Logo.png");
@@ -52,19 +50,19 @@ public class GUI extends JFrame {
 
         if (showLogin) {
             try {
-                // Hiển thị dialog đăng nhập
+                
                 LoginDialog loginDialog = new LoginDialog(this);
                 loginDialog.setVisible(true);
 
                 if (loginDialog.isLoginSuccess()) {
-                    // Đăng nhập thành công, hiển thị MainPanel
+                    
                     MainPanel mainPanel = new MainPanel();
                     add(mainPanel);
-                    // đảm bảo layout/hiển thị được cập nhật
+                    
                     revalidate();
                     repaint();
                 } else {
-                    // Đăng nhập thất bại, thoát app
+                    
                     System.exit(0);
                 }
             } catch (Exception e) {
@@ -76,7 +74,7 @@ public class GUI extends JFrame {
                 System.exit(0);
             }
         } else {
-            // Đăng nhập đã thành công, hiển thị MainPanel trực tiếp
+            
             MainPanel mainPanel = new MainPanel();
             add(mainPanel);
             revalidate();

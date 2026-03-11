@@ -34,7 +34,7 @@ public class KhuyenMaiPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(PAGE_BG);
 
-        // ── Model ─────────────────────────────────────────────────────────────
+        
         String[] cols = { "Mã", "Tên khuyến mãi", "Giá trị", "Loại giảm",
                 "Ngày bắt đầu", "Ngày kết thúc", "Trạng thái", "Thao tác" };
         tableModel = new DefaultTableModel(cols, 0) {
@@ -42,7 +42,7 @@ public class KhuyenMaiPanel extends JPanel {
         };
         sorter = new TableRowSorter<>(tableModel);
 
-        // ── Header ────────────────────────────────────────────────────────────
+        
         JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
         header.setBackground(PAGE_BG);
         header.setBorder(BorderFactory.createCompoundBorder(
@@ -57,7 +57,7 @@ public class KhuyenMaiPanel extends JPanel {
         hdrTitle.setFont(new Font("Arial", Font.BOLD, 20));
         header.add(hdrTitle);
 
-        // ── Toolbar ───────────────────────────────────────────────────────────
+        
         JPanel toolbar = new JPanel(new WrapLayout(FlowLayout.LEFT, 8, 4));
         toolbar.setBackground(PAGE_BG);
         toolbar.setBorder(BorderFactory.createCompoundBorder(
@@ -159,7 +159,7 @@ public class KhuyenMaiPanel extends JPanel {
         north.add(toolbar);
         add(north, BorderLayout.NORTH);
 
-        // ── Table ─────────────────────────────────────────────────────────────
+        
         JTable bang = new JTable(tableModel);
         bang.setRowSorter(sorter);
         bang.setRowHeight(52);
@@ -263,7 +263,7 @@ public class KhuyenMaiPanel extends JPanel {
         loadDiscountTables();
     }
 
-    // ── Action cell ───────────────────────────────────────────────────────────
+    
     private JPanel buildActionCell(JTable t, int row, boolean isEditor) {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 8));
         p.setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
@@ -279,7 +279,7 @@ public class KhuyenMaiPanel extends JPanel {
         return p;
     }
 
-    // ── Load data ─────────────────────────────────────────────────────────────
+    
    void loadDiscountTables() {
 
     ArrayList<DiscountDTO> list = discountBUS.getAllDiscounts();
@@ -289,7 +289,7 @@ public class KhuyenMaiPanel extends JPanel {
 
     for (DiscountDTO d : list) {
 
-        // bỏ qua INACTIVE
+        
         if(d.getStatus() != null && d.getStatus().name().equals("INACTIVE"))
             continue;
 
@@ -306,7 +306,7 @@ public class KhuyenMaiPanel extends JPanel {
     }
 }
 
-    // ── Detail dialog ─────────────────────────────────────────────────────────
+    
     private void showDetailDialog(int modelRow) {
         if (modelRow < 0 || modelRow >= tableModel.getRowCount()) return;
 
@@ -354,7 +354,7 @@ public class KhuyenMaiPanel extends JPanel {
         }
         body.add(infoGrid, BorderLayout.NORTH);
 
-        // Load products that apply to this discount
+        
         if (dto != null) {
             DiscountProductBUS dpBUS2 = new DiscountProductBUS();
             ArrayList<Integer> pids = dpBUS2.getProductsByDiscount(dto.getId());
@@ -430,7 +430,7 @@ public class KhuyenMaiPanel extends JPanel {
         dlg.setVisible(true);
     }
 
-    // ── Add dialog ────────────────────────────────────────────────────────────
+    
     private void showAddDialog() {
         JDialog dlg = makeFormDialog("Thêm khuyến mãi mới", "Thêm khuyến mãi");
         JTextField fName     = formField(); JTextField fDesc  = formField();
@@ -451,7 +451,7 @@ public class KhuyenMaiPanel extends JPanel {
         productTable.setRowHeight(25);
         productModel.addTableModelListener(e -> {
 
-    if(e.getColumn() == 0){ // cột checkbox
+    if(e.getColumn() == 0){ 
 
         int selectedRow = e.getFirstRow();
         Boolean checked = (Boolean) productModel.getValueAt(selectedRow,0);
@@ -554,7 +554,7 @@ JPanel productPanel = new JPanel(new BorderLayout());
 productPanel.add(filterPanel, BorderLayout.NORTH);
 productPanel.add(productScroll, BorderLayout.CENTER);
 cbCategory.addActionListener(e -> applyFilter.run());
-        // ── Code row: text field + Random button ──────────────────────────────
+        
         JTextField fCode = formField();
         fCode.setToolTipText("Nhập mã tùy chỉnh hoặc bấm Random");
         JButton btnRandom = new JButton("Random");
@@ -647,7 +647,7 @@ cbCategory.addActionListener(e -> applyFilter.run());
         dlg.setVisible(true);
     }
 
-    // ── Edit dialog ───────────────────────────────────────────────────────────
+    
     private void showEditDialog(DiscountDTO d) {
 
     JDialog dlg = makeFormDialog("Sửa thông tin khuyến mãi", "Sửa khuyến mãi");
@@ -682,7 +682,7 @@ cbCategory.addActionListener(e -> applyFilter.run());
     if (d.getEndDate() != null)
         dcEnd.setDate(java.sql.Date.valueOf(d.getEndDate()));
 
-    // ================= PRODUCT TABLE =================
+    
 
     String[] cols = {"Chọn", "ID", "Tên sản phẩm"};
 
@@ -696,7 +696,7 @@ cbCategory.addActionListener(e -> applyFilter.run());
     JTable productTable = new JTable(productModel);
     productTable.setRowHeight(25);
 
-    // chỉ chọn 1 checkbox
+    
     productModel.addTableModelListener(e -> {
 
         if(e.getColumn() == 0){
@@ -721,11 +721,11 @@ cbCategory.addActionListener(e -> applyFilter.run());
     JScrollPane productScroll = new JScrollPane(productTable);
     productScroll.setPreferredSize(new Dimension(300,120));
 
-    // load sản phẩm
+    
     ProductBUS productBUS = new ProductBUS();
     ArrayList<ProductDTO> products = productBUS.getAllProducts();
 
-    // lấy sản phẩm hiện tại của discount
+    
     DiscountProductBUS dpBUS = new DiscountProductBUS();
     ArrayList<Integer> productIds = dpBUS.getProductsByDiscount(d.getId());
 
@@ -751,7 +751,7 @@ cbCategory.addActionListener(e -> applyFilter.run());
 
     productPanel.setVisible(d.getDiscountType().name().equals("FIXED"));
 
-    // ================= FORM =================
+    
 
     JPanel form = buildFormGrid(new Object[][]{
             {"Tên khuyến mãi *:", fName, "Loại giảm:", cbType},
@@ -763,7 +763,7 @@ cbCategory.addActionListener(e -> applyFilter.run());
 
     dlg.add(form, BorderLayout.CENTER);
 
-    // ================= FOOTER =================
+    
 
     JPanel footer = makeFooter();
 
@@ -786,7 +786,7 @@ cbCategory.addActionListener(e -> applyFilter.run());
                 return;
             }
 
-            // lấy productId
+            
             Integer productId = null;
 
             for(int i=0;i<productModel.getRowCount();i++){
@@ -833,7 +833,7 @@ cbCategory.addActionListener(e -> applyFilter.run());
     dlg.setLocationRelativeTo(this);
     dlg.setVisible(true);
 }
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    
     private String cell(int row, int col) {
         Object v = tableModel.getValueAt(row, col);
         return v == null ? "-" : v.toString();

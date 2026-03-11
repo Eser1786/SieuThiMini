@@ -16,19 +16,9 @@ import java.awt.print.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Tiện ích xuất dữ liệu bảng ra file CSV (mở được bằng Excel)
- * và xuất PDF trực tiếp ra file.
- */
 public class ExportUtils {
 
-    /*
-     * ─────────────────────────────────────────────
-     * Helper: Tạo JFileChooser với System Look And Feel
-     * ─────────────────────────────────────────────
-     */
     private static JFileChooser getSystemFileChooser(String title, String extDesc, String ext) {
-        // Lưu lại L&F hiện tại
         LookAndFeel oldLaf = UIManager.getLookAndFeel();
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -39,7 +29,6 @@ public class ExportUtils {
         fc.setDialogTitle(title);
         fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(extDesc, ext));
 
-        // Khôi phục L&F cũ để không ảnh hưởng app
         try {
             UIManager.setLookAndFeel(oldLaf);
         } catch (Exception ignored) {
@@ -47,11 +36,6 @@ public class ExportUtils {
         return fc;
     }
 
-    /*
-     * ─────────────────────────────────────────────
-     * XUẤT CSV (Excel đọc được)
-     * ─────────────────────────────────────────────
-     */
     public static void xuatCSV(Component parent, DefaultTableModel model, String tenFile) {
         JFileChooser fc = getSystemFileChooser("Lưu file Excel (CSV)", "CSV Files (*.csv)", "csv");
         fc.setSelectedFile(new File(tenFile + ".csv"));
@@ -66,10 +50,8 @@ public class ExportUtils {
         try (BufferedWriter bw = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
 
-            // BOM UTF-8 để Excel đọc đúng tiếng Việt
             bw.write('\uFEFF');
 
-            // Ghi header
             int cols = model.getColumnCount();
             StringBuilder sb = new StringBuilder();
             for (int c = 0; c < cols; c++) {
@@ -82,7 +64,6 @@ public class ExportUtils {
             bw.write(sb.toString());
             bw.newLine();
 
-            // Ghi dữ liệu
             for (int r = 0; r < model.getRowCount(); r++) {
                 sb.setLength(0);
                 boolean dau = true;
@@ -111,11 +92,6 @@ public class ExportUtils {
         }
     }
 
-    /*
-     * ─────────────────────────────────────────────
-     * XUẤT PDF (ghi trực tiếp ra file, không mở Print dialog)
-     * ─────────────────────────────────────────────
-     */
     public static void xuatPDF(Component parent, DefaultTableModel model, String tieuDe) {
         JFileChooser fc = getSystemFileChooser("Lưu file PDF", "PDF Files (*.pdf)", "pdf");
         fc.setSelectedFile(new File(tieuDe + ".pdf"));
@@ -193,22 +169,16 @@ public class ExportUtils {
         }
     }
 
-    /*
-     * ─────────────────────────────────────────────
-     * Printable nội bộ — vẽ bảng lên Graphics2D
-     * ─────────────────────────────────────────────
-     */
     private static class TablePrintable implements Printable {
         private final DefaultTableModel model;
         private final String tieuDe;
 
-        // Phân trang
-        private int[] pageStartRows; // dòng bắt đầu của mỗi trang
+        private int[] pageStartRows;
         private boolean initialized = false;
 
-        private static final int ROW_H = 22; // chiều cao mỗi dòng (px)
-        private static final int HEADER_H = 30; // chiều cao header bảng
-        private static final int TITLE_H = 40; // chiều cao tiêu đề trang
+        private static final int ROW_H = 22;
+        private static final int HEADER_H = 30;
+        private static final int TITLE_H = 40;
 
         TablePrintable(DefaultTableModel model, String tieuDe) {
             this.model = model;
@@ -227,7 +197,6 @@ public class ExportUtils {
             double ih = pageFormat.getImageableHeight();
             g2.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
-            // Khởi tạo phân trang lần đầu
             if (!initialized) {
                 int rowsPerPage = (int) ((ih - TITLE_H - HEADER_H) / ROW_H);
                 int totalRows = model.getRowCount();
@@ -242,28 +211,24 @@ public class ExportUtils {
                 return NO_SUCH_PAGE;
 
             int cols = model.getColumnCount();
-            // Lọc bỏ cột "Thao tác"
             java.util.List<Integer> visibleCols = new java.util.ArrayList<>();
             for (int c = 0; c < cols; c++)
                 if (!model.getColumnName(c).equalsIgnoreCase("Thao tác"))
                     visibleCols.add(c);
 
             int vcnt = visibleCols.size();
-            double cw = iw / vcnt; // chiều rộng mỗi cột (đều nhau)
+            double cw = iw / vcnt;
 
-            // ── Tiêu đề trang ──
             g2.setFont(new Font("Arial", Font.BOLD, 16));
             g2.setColor(new Color(0x2F2C35));
             FontMetrics fm = g2.getFontMetrics();
             int tx = (int) (iw / 2 - fm.stringWidth(tieuDe) / 2);
             g2.drawString(tieuDe, tx, 24);
 
-            // Số trang
             g2.setFont(new Font("Arial", Font.PLAIN, 10));
             String pg = "Trang " + (pageIndex + 1) + "/" + pageStartRows.length;
             g2.drawString(pg, (int) (iw - g2.getFontMetrics().stringWidth(pg)), 24);
 
-            // ── Header bảng ──
             int y = TITLE_H;
             g2.setColor(new Color(0xAF9FCB));
             g2.fillRect(0, y, (int) iw, HEADER_H);
@@ -277,18 +242,15 @@ public class ExportUtils {
             }
             y += HEADER_H;
 
-            // ── Dữ liệu ──
             g2.setFont(new Font("Arial", Font.PLAIN, 10));
             int startRow = pageStartRows[pageIndex];
             int rowsPerPage = (int) ((ih - TITLE_H - HEADER_H) / ROW_H);
             int endRow = Math.min(startRow + rowsPerPage, model.getRowCount());
 
             for (int r = startRow; r < endRow; r++) {
-                // Màu xen kẽ
                 g2.setColor(r % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
                 g2.fillRect(0, y, (int) iw, ROW_H);
 
-                // Đường kẻ ngang
                 g2.setColor(new Color(0xDDDDDD));
                 g2.drawLine(0, y + ROW_H - 1, (int) iw, y + ROW_H - 1);
 
@@ -298,7 +260,6 @@ public class ExportUtils {
                     int ci = visibleCols.get(i);
                     Object val = model.getValueAt(r, ci);
                     String cell = val == null ? "" : val.toString();
-                    // Cắt ngắn nếu quá dài
                     while (cell.length() > 2 && rowFM.stringWidth(cell) > cw - 6)
                         cell = cell.substring(0, cell.length() - 1);
                     int cx = (int) (i * cw + 4);
@@ -307,7 +268,6 @@ public class ExportUtils {
                 y += ROW_H;
             }
 
-            // Viền ngoài bảng
             g2.setColor(new Color(0xAAAAAA));
             g2.drawRect(0, TITLE_H, (int) iw - 1, (HEADER_H + (endRow - startRow) * ROW_H));
 
@@ -315,13 +275,7 @@ public class ExportUtils {
         }
     }
 
-    /*
-     * ─────────────────────────────────────────────
-     * HELPER — tạo nút xuất chuẩn style app
-     * ─────────────────────────────────────────────
-     */
     public static JButton makeExportButton(String label, Color bg) {
-        // Strip emoji – Java's default font on Windows can't render them
         String cleanLabel = label.replace("\uD83D\uDCC4", "").replace("\uD83D\uDCCA", "").replace("📄", "").replace("📊", "").trim();
         JButton btn = new JButton(cleanLabel);
         btn.setFont(new Font("Arial", Font.BOLD, 13));
@@ -343,24 +297,10 @@ public class ExportUtils {
         return btn;
     }
 
-    /*
-     * ─────────────────────────────────────────────
-     * TẠO NÚT NHẬP — style giống makeExportButton, màu xanh dương
-     * ─────────────────────────────────────────────
-     */
     public static JButton makeImportButton(String label) {
         return makeExportButton(label, new Color(0x1565C0));
     }
 
-    /*
-     * ─────────────────────────────────────────────
-     * NHẬP CSV — đọc file CSV, trả List<String[]> (bỏ header dòng 0).
-     * Hỗ trợ quoted fields ("a,b","c"). Trả null nếu user hủy.
-     * Cách dùng:
-     *   List<String[]> rows = ExportUtils.importCSV(this);
-     *   if (rows != null) { for (String[] r : rows) { tableModel.addRow(r); } }
-     * ─────────────────────────────────────────────
-     */
     public static java.util.List<String[]> importCSV(Component parent) {
         JFileChooser fc = getSystemFileChooser("Chọn file CSV", "CSV Files (*.csv)", "csv");
         if (fc.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION) return null;
@@ -372,7 +312,6 @@ public class ExportUtils {
             String line;
             boolean firstLine = true;
             while ((line = br.readLine()) != null) {
-                // Strip BOM if present
                 if (firstLine && line.startsWith("\uFEFF")) line = line.substring(1);
                 firstLine = false;
                 if (line.trim().isEmpty()) continue;
@@ -390,11 +329,10 @@ public class ExportUtils {
                     "Th\u00f4ng b\u00e1o", JOptionPane.WARNING_MESSAGE);
             return null;
         }
-        result.remove(0); // bỏ dòng header
+        result.remove(0);
         return result;
     }
 
-    /** Parse one CSV line, handling double-quoted fields with embedded commas/quotes. */
     private static String[] parseCsvLine(String line) {
         java.util.List<String> fields = new java.util.ArrayList<>();
         StringBuilder sb = new StringBuilder();
@@ -404,7 +342,7 @@ public class ExportUtils {
             if (inQuote) {
                 if (c == '"') {
                     if (i + 1 < line.length() && line.charAt(i + 1) == '"') {
-                        sb.append('"'); i++; // escaped ""
+                        sb.append('"'); i++;
                     } else {
                         inQuote = false;
                     }

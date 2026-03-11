@@ -42,22 +42,18 @@ public class ProductBUS {
         return dao.softDeleteProductsBySupplier(supplierId);
     }
 
-    /** delta > 0 nhập kho, delta < 0 xuất kho */
+    
     public boolean updateStock(long productId, long delta) {
         return dao.updateStock(productId, delta);
     }
 
-    /**
-     * Lấy tồn kho tính từ giao dịch:
-     * tổng nhập (phiếu RECEIVED) − tổng bán (hóa đơn COMPLETED).
-     * Phối hợp nhập kho và đơn hàng ⇒ tồn kho chính xác.
-     */
+    
     public long getComputedStock(long productId) {
         return dao.getComputedStock(productId);
     }
 
     private String generateProductCode() {
-        // Logic tạo code: 'NV' + số tăng dần (tìm max code từ DB + 1)
+        
         String sql = "SELECT MAX(product_code) FROM products WHERE product_code LIKE 'SP%'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -73,7 +69,7 @@ public class ProductBUS {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "default";  // Default nếu lỗi
+        return "default";  
     }
 
     public boolean deleteProduct(int id) {

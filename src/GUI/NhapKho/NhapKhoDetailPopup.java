@@ -10,7 +10,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 
-/** Popup xem chi ti\u1ebft phi\u1ebfu nh\u1eadp kho. */
+
 class NhapKhoDetailPopup extends JDialog {
 
     private static final DateTimeFormatter FMT       = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -37,7 +37,7 @@ class NhapKhoDetailPopup extends JDialog {
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(CLR_PAGE);
 
-        // ── Header ────────────────────────────────────────────────────────────
+        
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(CLR_PAGE);
         header.setBorder(BorderFactory.createCompoundBorder(
@@ -50,7 +50,7 @@ class NhapKhoDetailPopup extends JDialog {
         titleLbl.setForeground(CLR_ACCENT);
         header.add(titleLbl, BorderLayout.WEST);
 
-        // Status badge
+        
         boolean isPending = invoice.getStatus() == null || "PENDING".equals(invoice.getStatus());
         JLabel statusLbl = new JLabel(mapStatus(invoice.getStatus()));
         statusLbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -62,12 +62,12 @@ class NhapKhoDetailPopup extends JDialog {
 
         root.add(header, BorderLayout.NORTH);
 
-        // ── Body ──────────────────────────────────────────────────────────────
+        
         JPanel body = new JPanel(new BorderLayout(0, 12));
         body.setBackground(CLR_PAGE);
         body.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
 
-        // Info grid (4 columns: key-value pairs)
+        
         JPanel infoPanel = new JPanel(new GridLayout(0, 4, 16, 8));
         infoPanel.setBackground(CLR_WHITE);
         infoPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -83,7 +83,7 @@ class NhapKhoDetailPopup extends JDialog {
         addInfo(infoPanel, "Tr\u1ea1ng th\u00e1i:",      mapStatus(invoice.getStatus()));
         body.add(infoPanel, BorderLayout.NORTH);
 
-        // Items table
+        
         String[] cols = {"M\u00e3 SP", "T\u00ean s\u1ea3n ph\u1ea9m", "S\u1ed1 l\u01b0\u1ee3ng", "\u0110\u01a1n gi\u00e1 (\u0111)", "Th\u00e0nh ti\u1ec1n (\u0111)"};
         DefaultTableModel tm = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
@@ -126,7 +126,7 @@ class NhapKhoDetailPopup extends JDialog {
 
         root.add(body, BorderLayout.CENTER);
 
-        // ── Footer ────────────────────────────────────────────────────────────
+        
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12));
         footer.setBackground(CLR_PAGE);
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
@@ -134,7 +134,7 @@ class NhapKhoDetailPopup extends JDialog {
         JButton btnClose = makeBtn("\u0110\u00f3ng", new Color(0x607D8B));
         btnClose.addActionListener(e -> dispose());
 
-        // Show Sua + Xac nhan when invoice is PENDING (or null/unknown = treat as PENDING)
+        
         boolean canEdit = invoice.getStatus() == null 
         || invoice.getStatus() == PurchaseInvoicesStatus.PENDING;
 
@@ -243,7 +243,7 @@ btnPayment.setVisible(
         );
     }
 }
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    
 
     private static void addInfo(JPanel p, String key, String value) {
         JLabel kLbl = new JLabel(key);

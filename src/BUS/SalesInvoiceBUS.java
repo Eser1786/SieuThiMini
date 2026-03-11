@@ -35,12 +35,12 @@ public class SalesInvoiceBUS {
 
     if (invoice == null) return null;
 
-    // Generate invoice code if not provided
+    
     if (invoice.getInvoiceCode() == null || invoice.getInvoiceCode().isBlank()) {
         invoice.setInvoiceCode(generateInvoiceCode());
     }
 
-    // Validation
+    
     if (invoice.getCustomerId() == null || invoice.getCustomerId() <= 0) {
         System.out.println("Khách hàng không hợp lệ.");
         return null;
@@ -61,7 +61,7 @@ public class SalesInvoiceBUS {
         return null;
     }
 
-    // Calculate totals
+    
     calculateTotals(invoice);
 
     return salesInvoiceDAO.addSalesInvoice(invoice);
@@ -70,7 +70,7 @@ public class SalesInvoiceBUS {
     public boolean updateSalesInvoice(SalesInvoiceDTO invoice) {
         if (invoice == null || invoice.getInvoiceId() == null) return false;
 
-        // Validation
+        
         if (invoice.getCustomerId() == null || invoice.getCustomerId() <= 0) {
             System.out.println("Khách hàng không hợp lệ.");
             return false;
@@ -88,7 +88,7 @@ public class SalesInvoiceBUS {
             return false;
         }
 
-        // Calculate totals
+        
         calculateTotals(invoice);
 
         return salesInvoiceDAO.updateSalesInvoice(invoice);
@@ -96,12 +96,12 @@ public class SalesInvoiceBUS {
 
 
     private String generateInvoiceCode() {
-        // Format: HD + YYYYMMDD + - + 3-digit number
+        
         LocalDateTime now = LocalDateTime.now();
         String datePart = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String prefix = "HD" + datePart + "-";
 
-        // Find the next available number
+        
         List<SalesInvoiceDTO> allInvoices = getAllSalesInvoices();
         int maxNumber = 0;
         for (SalesInvoiceDTO inv : allInvoices) {
@@ -111,7 +111,7 @@ public class SalesInvoiceBUS {
                     int num = Integer.parseInt(numStr);
                     if (num > maxNumber) maxNumber = num;
                 } catch (NumberFormatException e) {
-                    // Ignore
+                    
                 }
             }
         }

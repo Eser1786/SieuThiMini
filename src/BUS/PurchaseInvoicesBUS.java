@@ -36,17 +36,17 @@ public class PurchaseInvoicesBUS {
     public boolean addPurchaseInvoice(PurchaseInvoicesDTO invoice) {
         if (invoice == null) return false;
 
-        // Generate invoice code if not provided
+        
         if (invoice.getInvoiceCode() == null || invoice.getInvoiceCode().isBlank()) {
             invoice.setInvoiceCode(generateInvoiceCode());
         }
 
-        // Set date_in if not provided
+        
         if (invoice.getDateIn() == null) {
             invoice.setDateIn(LocalDateTime.now());
         }
 
-        // Validation
+        
         if (invoice.getSupplierId() == null || invoice.getSupplierId() <= 0) {
             System.out.println("Nhà cung cấp không hợp lệ.");
             return false;
@@ -64,14 +64,14 @@ public class PurchaseInvoicesBUS {
             return false;
         }
 
-        // Calculate totals if not set
+        
         calculateTotals(invoice);
 
         return purchaseInvoicesDAO.addPurchaseInvoice(invoice);
-        // Stock is NOT updated on create - only updated when invoice is confirmed
+        
     }
 
-    /** Xác nhận phiếu nhập: status PENDING → RECEIVED, cộng tồn kho */
+    
     public boolean confirmPurchaseInvoice(Long invoiceId) {
 
     PurchaseInvoicesDTO inv = getPurchaseInvoiceById(invoiceId);
@@ -98,7 +98,7 @@ public class PurchaseInvoicesBUS {
     public boolean updatePurchaseInvoice(PurchaseInvoicesDTO invoice) {
         if (invoice == null || invoice.getInvoiceId() == null) return false;
 
-        // Validation
+        
         if (invoice.getSupplierId() == null || invoice.getSupplierId() <= 0) {
             System.out.println("Nhà cung cấp không hợp lệ.");
             return false;
@@ -116,7 +116,7 @@ public class PurchaseInvoicesBUS {
             return false;
         }
 
-        // Calculate totals
+        
         calculateTotals(invoice);
 
         return purchaseInvoicesDAO.updatePurchaseInvoice(invoice);
@@ -128,12 +128,12 @@ public class PurchaseInvoicesBUS {
     }
 
     private String generateInvoiceCode() {
-        // Format: PN + YYYYMMDD + - + 3-digit number
+        
         LocalDateTime now = LocalDateTime.now();
         String datePart = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String prefix = "PN" + datePart + "-";
 
-        // Find the next available number
+        
         List<PurchaseInvoicesDTO> allInvoices = getAllPurchaseInvoices();
         int maxNumber = 0;
         for (PurchaseInvoicesDTO inv : allInvoices) {
@@ -143,7 +143,7 @@ public class PurchaseInvoicesBUS {
                     int num = Integer.parseInt(numStr);
                     if (num > maxNumber) maxNumber = num;
                 } catch (NumberFormatException e) {
-                    // Ignore
+                    
                 }
             }
         }

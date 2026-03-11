@@ -40,7 +40,7 @@ public DiscountDTO(int id, String name, DiscountType discountType, BigDecimal va
         this.updatedAt = updatedAt;
     }    
 
-    // Getters & Setters
+    
 
     public int getId() {
         return id;

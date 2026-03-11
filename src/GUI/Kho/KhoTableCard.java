@@ -14,9 +14,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * KhoTableCard — tách từ KhoPanel, chứa toàn bộ nội dung hiển thị kho.
- */
+
 class KhoTableCard extends JPanel {
     private JComboBox<String> cbStatus;
     private JTextField txtSearch;
@@ -28,7 +26,7 @@ class KhoTableCard extends JPanel {
         setLayout(new BorderLayout());
         setBackground(new Color(0xF8F7FF));
 
-        // ── HEADER ──────────────────────────────────────────────────────────
+        
         JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
         header.setBackground(new Color(0xF8F7FF));
         header.setBorder(BorderFactory.createCompoundBorder(
@@ -43,14 +41,14 @@ class KhoTableCard extends JPanel {
         hdrTitle.setFont(new Font("Arial", Font.BOLD, 20));
         header.add(hdrTitle);
 
-        // ── TOP TOOLBAR (single row: filters LEFT, buttons RIGHT) ───────────
+        
         JPanel topPanel = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         topPanel.setBackground(new Color(0xF8F7FF));
         topPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xCCCCCC)),
                 BorderFactory.createEmptyBorder(8, 16, 8, 16)));
 
-        // Left: search + filters — each pair added directly to topPanel
+        
         JLabel lbSearch = new JLabel("Tìm kiếm:");
         lbSearch.setFont(new Font("Arial", Font.PLAIN, 13));
         txtSearch = new JTextField();
@@ -104,7 +102,7 @@ class KhoTableCard extends JPanel {
        topPanel.add(btnPDF); topPanel.add(btnExcel); topPanel.add(btnImport);
         topPanel.add(btnrefresh);
         btnrefresh.addActionListener(e -> loadData());
-        // Stack header + toolbar in NORTH
+        
         JPanel northArea = new JPanel();
         northArea.setLayout(new BoxLayout(northArea, BoxLayout.Y_AXIS));
         northArea.add(header);
@@ -123,11 +121,11 @@ class KhoTableCard extends JPanel {
         };
         table = new JTable(model);
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
-        sorter.setSortable(0, false); // image column: no sort
+        sorter.setSortable(0, false); 
         table.setRowSorter(sorter);
         table.setRowHeight(55);
 
-        // renderer for image column
+        
         table.getColumnModel().getColumn(0).setCellRenderer(
                 new DefaultTableCellRenderer() {
                     @Override
@@ -167,7 +165,7 @@ class KhoTableCard extends JPanel {
                     }
                 });
 
-        // Table style
+        
         table.setRowHeight(55);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         table.setShowVerticalLines(false);
@@ -181,7 +179,7 @@ class KhoTableCard extends JPanel {
         table.getTableHeader().setPreferredSize(new Dimension(100, 40));
         table.getTableHeader().setReorderingAllowed(false);
 
-        // Zebra row renderer
+        
         table.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(

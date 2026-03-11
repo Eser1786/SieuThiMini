@@ -14,9 +14,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.AbstractCellEditor;
 
-/**
- * Panel for supplier management within product management.
- */
+
 public class SupplierPanel extends JPanel {
     private DefaultTableModel model;
     private JTable table;
@@ -28,7 +26,7 @@ public class SupplierPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(new Color(0xF8F7FF));
 
-        // Header
+        
         JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
         header.setBackground(new Color(0xF8F7FF));
         header.setBorder(BorderFactory.createCompoundBorder(
@@ -45,7 +43,7 @@ public class SupplierPanel extends JPanel {
         title.setFont(new Font("Arial", Font.BOLD, 20));
         header.add(title);
 
-        // Top panel with filters and buttons
+        
         JPanel top = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
@@ -53,7 +51,7 @@ public class SupplierPanel extends JPanel {
             BorderFactory.createEmptyBorder(8, 10, 8, 10)
         ));
 
-        // Search field
+        
         JPanel searchPanel = new JPanel(new BorderLayout());
         searchPanel.setPreferredSize(new Dimension(250, 36));
         searchPanel.setBackground(Color.WHITE);
@@ -82,12 +80,12 @@ public class SupplierPanel extends JPanel {
         });
         searchPanel.add(searchBtn, BorderLayout.EAST);
 
-        // ComboBox for search type
+        
         JComboBox<String> searchType = new JComboBox<>(new String[]{"Tất cả", "Mã NCC", "Tên NCC", "Địa chỉ", "Người liên lạc", "SĐT", "Email"});
         searchType.setPreferredSize(new Dimension(150, 36));
         UIUtils.styleComboBox(searchType);
 
-        // Add supplier button
+        
         JButton addBtn = new JButton("+ Thêm nhà cung cấp");
         addBtn.setFocusPainted(false);
         addBtn.setBackground(new Color(0xD9D9D9));
@@ -129,19 +127,19 @@ public class SupplierPanel extends JPanel {
         top.add(btnExcel);
         top.add(btnImport);
 
-        // Table
+        
         model = new DefaultTableModel(new Object[]{"Mã NCC", "Tên NCC", "Địa chỉ", "Người liên lạc", "SĐT", "Email", "Thao tác"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 6; // Only action column editable
+                return column == 6; 
             }
         };
         table = new JTable(model);
         sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
-        // default sort by supplier name (column index 1)
+        
         sorter.setSortKeys(java.util.Collections.singletonList(new javax.swing.RowSorter.SortKey(1, javax.swing.SortOrder.ASCENDING)));
-        table.setRowHeight(50); // make rows taller
+        table.setRowHeight(50); 
         table.setFont(new Font("Arial", Font.PLAIN, 13));
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
         table.getTableHeader().setBackground(new Color(0xAF9FCB));
@@ -150,7 +148,7 @@ public class SupplierPanel extends JPanel {
         table.setShowVerticalLines(false);
         table.setSelectionBackground(new Color(0xC5B3E6));
 
-        // Alternating row renderer
+        
         DefaultTableCellRenderer altRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value, boolean isSelected,
@@ -163,19 +161,19 @@ public class SupplierPanel extends JPanel {
         };
         for (int i = 0; i < 6; i++) table.getColumnModel().getColumn(i).setCellRenderer(altRenderer);
 
-        // Center align for some columns
+        
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer); // Mã NCC
+        table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer); 
 
-        // Action column renderer and editor
+        
         table.getColumnModel().getColumn(6).setCellRenderer(new ActionRenderer());
         table.getColumnModel().getColumn(6).setCellEditor(new ActionEditor());
 
         JScrollPane scrollPane = new JScrollPane(table);
         UIUtils.styleScrollPane(scrollPane);
 
-        // Apply search filter (unchanged)
+        
         Runnable applyFilter = () -> {
             String keyword = searchField.getText().trim();
             String type = (String) searchType.getSelectedItem();
@@ -229,7 +227,7 @@ public class SupplierPanel extends JPanel {
             List<SupplierDTO> suppliers = supplierBUS.getAllSuppliers();
             model.setRowCount(0);
             for (SupplierDTO s : suppliers) {
-                // display supplier code instead of internal ID
+                
                 model.addRow(new Object[]{s.getCode(), s.getName(), s.getAddress(), s.getContactPerson(), s.getPhone(), s.getEmail(), "Chi tiết"});
             }
         } catch (Exception e) {
@@ -257,7 +255,7 @@ public class SupplierPanel extends JPanel {
         dialog.setResizable(false);
         dialog.setLayout(new BorderLayout());
 
-        // Header
+        
         JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
         header.setBackground(new Color(0xAF9FCB));
         JLabel titleLabel = new JLabel(supplier == null ? "Thêm nhà cung cấp mới" : "Sửa nhà cung cấp");
@@ -265,7 +263,7 @@ public class SupplierPanel extends JPanel {
         titleLabel.setForeground(Color.WHITE);
         header.add(titleLabel);
 
-        // Form
+        
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(new Color(0xF0EFF8));
         form.setBorder(BorderFactory.createEmptyBorder(18, 28, 18, 28));
@@ -278,7 +276,7 @@ public class SupplierPanel extends JPanel {
                 BorderFactory.createEmptyBorder(4, 8, 4, 8));
         Dimension fieldSize = new Dimension(260, 36);
 
-        // Mã NCC — read-only styled field
+        
         JTextField txtCode = new JTextField();
         txtCode.setFont(new Font("Arial", Font.BOLD, 13));
         txtCode.setBorder(fldBorder);
@@ -327,7 +325,7 @@ public class SupplierPanel extends JPanel {
         JLabel lbEmail = new JLabel("Email:"); lbEmail.setFont(labelFont); form.add(lbEmail, g);
         g.gridx = 1; g.weightx = 1; form.add(txtEmail, g);
 
-        // Footer buttons
+        
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         footer.setBackground(new Color(0xF0EFF8));
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
@@ -388,7 +386,7 @@ public class SupplierPanel extends JPanel {
         }
     }
 
-    // Action renderer and editor for table
+    
     private class ActionRenderer extends JPanel implements TableCellRenderer {
         private final JButton editBtn   = UIUtils.makeActionButton("Sửa",  new Color(0x6677C8));
         private final JButton deleteBtn = UIUtils.makeActionButton("Xóa",  new Color(0xC62828));

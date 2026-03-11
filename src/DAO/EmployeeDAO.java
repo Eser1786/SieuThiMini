@@ -175,7 +175,7 @@ public class EmployeeDAO {
                     role.setName(rs.getString("role_name"));
                     role.setDescription(rs.getString("description"));
 
-                    // Lấy danh sách quyền
+                    
                     role.setPermissions(getPermissionsByRoleId(role.getId()));
                 }   
             }catch(SQLException e){
@@ -214,7 +214,7 @@ public class EmployeeDAO {
         return permissions;
     }
 
-    //Sau khi có đăng nhập dùng bus của nhân viên rồi chọn có thể hiện panel nào
+    
 
     public EmployeeDTO login(String username, String password) {
         EmployeeDTO emp = null;
@@ -226,7 +226,7 @@ public class EmployeeDAO {
                 ResultSet rs = pstmt.executeQuery();
                 if (rs.next()) {
                     String storedHash = rs.getString("password_hash");
-                    if (storedHash.equals(password)) {  // Giả sử password không hash
+                    if (storedHash.equals(password)) {  
                         emp = new EmployeeDTO();
                         emp.setId(rs.getInt("employee_id"));
                         emp.setCode(rs.getString("employee_code"));

@@ -12,7 +12,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.math.BigDecimal;
 
-/** Popup chi tiết phiếu nhập kho với khả năng xác nhận nhập kho */
+
 public class NhapXuatDetailPopup extends JDialog {
 
     private final PurchaseInvoicesDTO invoice;
@@ -26,7 +26,7 @@ public class NhapXuatDetailPopup extends JDialog {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
-        // Header
+        
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(new Color(0xF8F7FF));
         header.setBorder(BorderFactory.createCompoundBorder(
@@ -49,7 +49,7 @@ public class NhapXuatDetailPopup extends JDialog {
 
         add(header, BorderLayout.NORTH);
 
-        // Body
+        
         JPanel body = new JPanel(new GridBagLayout());
         body.setBackground(Color.WHITE);
         body.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -61,7 +61,7 @@ public class NhapXuatDetailPopup extends JDialog {
         Font labelFont = new Font("Arial", Font.BOLD, 14);
         Font valueFont = new Font("Arial", Font.PLAIN, 14);
 
-        // Row 1: Mã phiếu, Ngày nhập
+        
         g.gridy = 0;
         body.add(createLabel("Mã phiếu:", labelFont), g);
         g.gridx = 1;
@@ -71,7 +71,7 @@ public class NhapXuatDetailPopup extends JDialog {
         g.gridx = 3;
         body.add(createValue(invoice.getDateIn() != null ? invoice.getDateIn().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "-", valueFont), g);
 
-        // Row 2: Nhà cung cấp, Nhân viên
+        
         g.gridy = 1; g.gridx = 0;
         body.add(createLabel("Nhà cung cấp:", labelFont), g);
         g.gridx = 1;
@@ -81,7 +81,7 @@ public class NhapXuatDetailPopup extends JDialog {
         g.gridx = 3;
         body.add(createValue(invoice.getEmployeeName() != null ? invoice.getEmployeeName() : "-", valueFont), g);
 
-        // Row 3: Tổng tiền, Trạng thái
+        
         g.gridy = 2; g.gridx = 0;
         body.add(createLabel("Tổng tiền:", labelFont), g);
         g.gridx = 1;
@@ -97,13 +97,13 @@ public class NhapXuatDetailPopup extends JDialog {
         };
         body.add(createValue(statusDisplay, valueFont), g);
 
-        // Items table
+        
         g.gridy = 3; g.gridx = 0; g.gridwidth = 4; g.fill = GridBagConstraints.BOTH; g.weightx = 1.0; g.weighty = 1.0;
         body.add(createItemsTable(), g);
 
         add(body, BorderLayout.CENTER);
 
-        // Footer with buttons
+        
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         footer.setBackground(Color.WHITE);
         footer.setBorder(BorderFactory.createCompoundBorder(
@@ -123,7 +123,7 @@ public class NhapXuatDetailPopup extends JDialog {
         btnConfirm.setForeground(Color.WHITE);
         btnConfirm.setFocusPainted(false);
 
-        // Only show confirm button if status is PENDING
+        
         if (invoice.getStatus() == PurchaseInvoicesStatus.PENDING) {
             btnConfirm.addActionListener(e -> confirmReceipt());
             footer.add(btnConfirm);
@@ -207,13 +207,13 @@ public class NhapXuatDetailPopup extends JDialog {
                     "Thành công",
                     JOptionPane.INFORMATION_MESSAGE);
 
-                // Update local invoice status
+                
                 invoice.setStatus(PurchaseInvoicesStatus.RECEIVED);
 
-                // Refresh parent table
+                
                 parent.showTable();
 
-                // Close dialog
+                
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(this,

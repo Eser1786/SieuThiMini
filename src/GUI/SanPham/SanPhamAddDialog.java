@@ -18,7 +18,7 @@ import GUI.UIUtils;
 import com.toedter.calendar.JDateChooser;
 import java.time.LocalDateTime;
 
-/** Dialog add San Pham mới — tách từ SanPhamPanel.showThemPopup */
+
 class SanPhamAddDialog {
 
     static void show(Component parent, DefaultTableModel model) {
@@ -27,7 +27,7 @@ class SanPhamAddDialog {
         popup.setResizable(false);
         popup.setLayout(new BorderLayout());
 
-        // ── Header ────────────────────────────────────────────────────────────
+        
         JPanel hdr = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
         hdr.setBackground(new Color(0xAF9FCB));
         JLabel hdrLbl = new JLabel("Thêm sản phẩm mới");
@@ -35,7 +35,7 @@ class SanPhamAddDialog {
         hdrLbl.setForeground(Color.WHITE);
         hdr.add(hdrLbl);
 
-        // ── Photo section (NhanVien style) ────────────────────────────────────
+        
         final String[] tmpPhotoPath = {null};
 
         JLabel photoPreview = new JLabel() {
@@ -84,7 +84,7 @@ class SanPhamAddDialog {
                     photoPreview.setIcon(new ImageIcon(img.getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
                     photoPreview.repaint();
                 }
-            } catch (Exception ex) { /* ignore */ }
+            } catch (Exception ex) {  }
         });
 
         JLabel lbPhotoHint = new JLabel("<html><font color='gray' size='2'>JPG / PNG<br>tự động scale</font></html>");
@@ -104,7 +104,7 @@ class SanPhamAddDialog {
         northPanel.add(photoSection, BorderLayout.SOUTH);
         popup.add(northPanel, BorderLayout.NORTH);
 
-        // ── Form (2-column GridBagLayout) ─────────────────────────────────────
+        
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(new Color(0xF0EFF8));
         form.setBorder(BorderFactory.createEmptyBorder(18, 28, 18, 28));
@@ -122,7 +122,7 @@ class SanPhamAddDialog {
         JTextField fTen    = UIUtils.makeField(); fTen.setPreferredSize(fd);
         JTextField fMoTa   = UIUtils.makeField(); fMoTa.setPreferredSize(fd);
         
-        // Combo boxes for category, supplier, and status
+        
         JComboBox<String> cbNCC = new JComboBox<>();
         cbNCC.setPreferredSize(fd);
         UIUtils.styleComboBox(cbNCC);
@@ -145,7 +145,7 @@ class SanPhamAddDialog {
         
         JComboBox<String> cbTT = new JComboBox<>(new String[]{"ACTIVE", "INACTIVE", "DISCONTINUED"});
         cbTT.setPreferredSize(fd);
-        cbTT.setSelectedItem("ACTIVE"); // Default to ACTIVE for new products
+        cbTT.setSelectedItem("ACTIVE"); 
         UIUtils.styleComboBox(cbTT);
 
         JDateChooser dcNgaySX = new JDateChooser();
@@ -155,20 +155,20 @@ class SanPhamAddDialog {
         dcNgayHH.setDateFormatString("dd/MM/yyyy");
         dcNgayHH.setPreferredSize(fd);
 
-        // Load data for combo boxes
+        
         try {
-            // Load suppliers
+            
             SupplierBUS supplierBUS = new SupplierBUS();
             List<SupplierDTO> suppliers = supplierBUS.getAllSuppliers();
-            cbNCC.addItem(""); // Empty option
+            cbNCC.addItem(""); 
             for (SupplierDTO supplier : suppliers) {
                 cbNCC.addItem(supplier.getName());
             }
             
-            // Load categories
+            
             CategoryBUS categoryBUS = new CategoryBUS();
             List<CategoryDTO> categories = categoryBUS.getAllCategories();
-            cbDM.addItem(""); // Empty option
+            cbDM.addItem(""); 
             for (CategoryDTO category : categories) {
                 cbDM.addItem(category.getName());
             }
@@ -204,7 +204,7 @@ class SanPhamAddDialog {
         }
         popup.add(form, BorderLayout.CENTER);
 
-        // ── Footer ────────────────────────────────────────────────────────────
+        
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
         footer.setBackground(new Color(0xF0EFF8));
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
@@ -227,7 +227,7 @@ class SanPhamAddDialog {
         btnHuy.addActionListener(e -> popup.dispose());
 
         btnLuu.addActionListener(e -> {
-            // ── Validation ────────────────────────────────────────────────────
+            
             if (fTen.getText().trim().isEmpty()) {
                 JOptionPane.showMessageDialog(popup, "Tên sản phẩm không được để trống.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
                 fTen.requestFocus(); return;
@@ -267,16 +267,16 @@ class SanPhamAddDialog {
                 JOptionPane.showMessageDialog(popup, "Ngày hết hạn phải sau ngày sản xuất.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            // ── Save ──────────────────────────────────────────────────────────
+            
             try {
-                // Create ProductDTO to save to database
+                
                 ProductDTO newProduct = new ProductDTO();
                 newProduct.setCode(fMa.getText());
                 newProduct.setImagePath(tmpPhotoPath[0] != null ? tmpPhotoPath[0] : "");
                 newProduct.setName(fTen.getText());
                 newProduct.setDescription(fMoTa.getText());
                 
-                // Get supplier
+                
                 String nccName = (String) cbNCC.getSelectedItem();
                 if (nccName != null && !nccName.isEmpty()) {
                     SupplierBUS supplierBUS = new SupplierBUS();
@@ -289,7 +289,7 @@ class SanPhamAddDialog {
                     }
                 }
                 
-                // Get category
+                
                 String dmName = (String) cbDM.getSelectedItem();
                 if (dmName != null && !dmName.isEmpty()) {
                     CategoryBUS categoryBUS = new CategoryBUS();
@@ -304,7 +304,7 @@ class SanPhamAddDialog {
                 
                 newProduct.setCostPrice(new java.math.BigDecimal(fGiaVon.getText()));
                 newProduct.setSellingPrice(new java.math.BigDecimal(fGiaBan.getText()));
-                newProduct.setTotalQuantity(0); // Always 0 for new products
+                newProduct.setTotalQuantity(0); 
                 
                 if (!fTonMin.getText().trim().isEmpty()) {
                     newProduct.setMinStockLevel(Long.parseLong(fTonMin.getText().trim()));
@@ -325,12 +325,12 @@ class SanPhamAddDialog {
                 newProduct.setCreatedAt(LocalDateTime.now());
                 newProduct.setUpdatedAt(LocalDateTime.now());
                 
-                // Save to database
+                
                 ProductBUS productBUS = new ProductBUS();
                 if (productBUS.addProduct(newProduct)) {
                     JOptionPane.showMessageDialog(popup, "Thêm sản phẩm thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                     
-                    // Reload products in parent panel
+                    
                     if (parent instanceof SanPhamPanel) {
                         ((SanPhamPanel) parent).loadProducts();
                     }

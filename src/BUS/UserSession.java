@@ -2,9 +2,7 @@ package BUS;
 
 import DTO.EmployeeDTO;
 
-/**
- * Class để quản lý phiên đăng nhập của người dùng hiện tại.
- */
+
 public class UserSession {
     private static EmployeeDTO currentUser = null;
 

@@ -47,17 +47,17 @@ public class ProductDAO {
 
                 p.setId(rs.getInt("product_id"));
                 p.setCode(rs.getString("product_code"));
-                p.setImagePath(rs.getString("image_path")); // thêm trường đường dẫn ảnh
+                p.setImagePath(rs.getString("image_path")); 
                 p.setName(rs.getString("name"));
                 p.setDescription(rs.getString("description"));
 
-                // 🔥 Supplier
+                
                 DTO.SupplierDTO sup = new DTO.SupplierDTO();
                 sup.setID(rs.getInt("supplier_id"));
-                sup.setName(rs.getString("supplier_name")); // 👈 LẤY TÊN Ở ĐÂY
+                sup.setName(rs.getString("supplier_name")); 
                 p.setSupplier(sup);
 
-                // Category giữ nguyên nếu chưa cần name
+                
                 DTO.CategoryDTO cat = new DTO.CategoryDTO();
                 cat.setID(rs.getInt("category_id"));
                 cat.setName(rs.getString("category_name"));
@@ -116,7 +116,7 @@ public class ProductDAO {
         try (java.sql.Connection conn = DAO.DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, categoryId);
-            return ps.executeUpdate() >= 0; // >=0 because it might update 0 rows
+            return ps.executeUpdate() >= 0; 
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -141,7 +141,7 @@ public class ProductDAO {
             String sql = "INSERT INTO products(product_code,image_path,name,description,category_id,supplier_id,cost_price,selling_price,total_quantity,min_stock_level,made_in,production_date,expire_date,position,unit,status,is_visible,isdeleted,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement pstmt = con.prepareStatement(sql);
             pstmt.setString(1, p.getCode());
-            pstmt.setString(2, p.getImagePath()); // đường dẫn hình
+            pstmt.setString(2, p.getImagePath()); 
             pstmt.setString(3, p.getName());
             pstmt.setString(4, p.getDescription());
             pstmt.setInt(5, p.getCategory()!=null ? p.getCategory().getID() : 0);
@@ -185,14 +185,8 @@ public class ProductDAO {
         }
     }
 
-    /**
-     * Cộng/trừ tồn kho. delta > 0 là nhập, delta < 0 là xuất.
-     * Dùng atomic UPDATE để tránh race condition.
-     */
-    /**
-     * Cộng/trừ tồn kho. delta > 0 là nhập, delta < 0 là xuất.
-     * Dùng atomic UPDATE để tránh race condition.
-     */
+    
+    
     public boolean updateStock(long productId, long delta) {
         String sql = "UPDATE products SET total_quantity = total_quantity + ?, updated_at = NOW() WHERE product_id = ?";
         try (java.sql.Connection conn = DAO.DBConnection.getConnection();
@@ -206,10 +200,7 @@ public class ProductDAO {
         }
     }
 
-    /**
-     * Tính tồn kho thực tế từ giao dịch:
-     * Tồn = tổng nhập (phiếu RECEIVED) − tổng bán (hóa đơn COMPLETED).
-     */
+    
     public long getComputedStock(long productId) {
         String sql =
             "SELECT " +

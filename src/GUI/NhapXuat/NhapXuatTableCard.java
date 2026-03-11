@@ -14,7 +14,7 @@ import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/** B\u1ea3ng l\u1ecbch s\u1eed phi\u1ebfu nh\u1eadp kho, ki\u1ec3u d\u00e1ng gi\u1ed1ng \u0110\u01a1n H\u00e0ng. */
+
 class NhapXuatTableCard extends JPanel {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -31,13 +31,13 @@ class NhapXuatTableCard extends JPanel {
         setLayout(new BorderLayout(0, 0));
         setBackground(new Color(0xF8F7FF));
 
-        // ─── Column model ─────────────────────────────────────────
+        
         String[] cols = {"Mã phiếu", "Ngày nhập", "Nhà cung cấp", "Nhân viên", "Tổng tiền (đ)", "TT Thanh toán", "Trạng thái", "Thao tác"};
         model = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
-        // ─── Table ────────────────────────────────────────────────
+        
         JTable table = new JTable(model);
         sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
@@ -49,13 +49,13 @@ class NhapXuatTableCard extends JPanel {
         table.setSelectionBackground(new Color(0xEDE7F6));
         table.setSelectionForeground(Color.BLACK);
 
-        // Header style
+        
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         table.getTableHeader().setBackground(HDR_BG);
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setPreferredSize(new Dimension(0, 44));
 
-        // Alternating row renderer
+        
         DefaultTableCellRenderer altRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean foc, int row, int col) {
@@ -120,7 +120,7 @@ class NhapXuatTableCard extends JPanel {
         for (int i = 0; i < widths.length; i++)
             table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
 
-        // ─── Action column renderer ───────────────────────────────
+        
         table.getColumnModel().getColumn(7).setCellRenderer(
             new javax.swing.table.TableCellRenderer() {
                 @Override
@@ -136,7 +136,7 @@ class NhapXuatTableCard extends JPanel {
                 }
             });
 
-        // ─── Click handler for action column ─────────────────────
+        
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -155,7 +155,7 @@ class NhapXuatTableCard extends JPanel {
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBorder(BorderFactory.createEmptyBorder());
 
-        // ─── Toolbar (DonHang-style) ──────────────────────────────
+        
         JPanel top = new JPanel(new WrapLayout(FlowLayout.LEFT, 8, 4));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
@@ -244,7 +244,7 @@ class NhapXuatTableCard extends JPanel {
         top.add(btnRefresh);
         top.add(btnNew);
 
-        // ─── Page header ──────────────────────────────────────────
+        
         JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
         header.setBackground(new Color(0xF8F7FF));
         header.setBorder(BorderFactory.createCompoundBorder(
@@ -270,9 +270,9 @@ class NhapXuatTableCard extends JPanel {
         refresh();
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Data
-    // ─────────────────────────────────────────────────────────────
+    
+    
+    
     void refresh() {
         model.setRowCount(0);
         invoiceList.clear();

@@ -15,18 +15,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
-/**
- * Panel for product management. Contains a card layout switching between
- * the table and the add/edit form.
- *
- * Visible columns (indices):
- *   0=Mã SP, 1=Ảnh, 2=Tên sản phẩm, 3=Giá bán, 4=Số lượng,
- *   5=Kho, 6=Ngày hết hạn, 7=Khuyến mãi, 8=Thao tác
- * Hidden columns (indices):
- *   9=Mô tả, 10=Nhà cung cấp, 11=Danh mục, 12=Giá vốn,
- *   13=Tồn kho tối thiểu, 14=Xuất xứ, 15=Ngày sản xuất,
- *   16=Vị trí, 17=Đơn vị, 18=Trạng thái
- */
+
 public class SanPhamPanel extends JPanel {
     private static final Color CLR_TAB_ACTIVE = new Color(0x5C4A7F);
     private static final Color CLR_TAB_HOVER  = new Color(0xC5B3E6);
@@ -50,7 +39,7 @@ public class SanPhamPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(new Color(0xF8F7FF));
 
-        // ── Custom tab bar ────────────────────────────────────────────────────
+        
         tabBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         tabBar.setBackground(new Color(0x2F2C35));
         tabBar.setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 0));
@@ -63,7 +52,7 @@ public class SanPhamPanel extends JPanel {
         tabBar.add(btnTabNCC);
         setTabActive(btnTabSP);
 
-        // ── Content panels ────────────────────────────────────────────────────
+        
         tabCards = new CardLayout();
         contentCards = new JPanel(tabCards);
 
@@ -130,12 +119,12 @@ public class SanPhamPanel extends JPanel {
         productCard = new CardLayout();
         panel.setLayout(productCard);
 
-        // ---- All columns (visible + hidden) ----
+        
         String[] columns = {
             "Mã SP", "Ảnh", "Tên sản phẩm", "Giá bán",
             "Giá vốn", "Tồn kho tối thiểu",
             "Ngày hết hạn", "Danh mục", "Thao tác",
-            // hidden
+            
             "Mô tả", "Nhà cung cấp", "Danh mục", "Số lượng",
             "Kho", "Xuất xứ", "Ngày sản xuất",
             "Vị trí", "Đơn vị", "Trạng thái", "product_id"
@@ -145,14 +134,14 @@ public class SanPhamPanel extends JPanel {
         };
         loadProducts();
 
-        // ---- Table card ----
+        
         JPanel tableCard = new JPanel(new BorderLayout());
 
         JTable bang = new JTable(productModel);
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(productModel);
         bang.setRowSorter(sorter);
 
-        // Hide columns 9–19
+        
         for (int i = 9; i <= 19; i++) {
             bang.getColumnModel().getColumn(i).setMinWidth(0);
             bang.getColumnModel().getColumn(i).setMaxWidth(0);
@@ -160,7 +149,7 @@ public class SanPhamPanel extends JPanel {
             bang.getColumnModel().getColumn(i).setPreferredWidth(0);
         }
 
-        // ── TOP PANEL: filters LEFT, buttons RIGHT (single row) ──────────
+        
         JPanel top = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         top.setBackground(new Color(0xF8F7FF));
         top.setBorder(BorderFactory.createCompoundBorder(
@@ -168,7 +157,7 @@ public class SanPhamPanel extends JPanel {
             BorderFactory.createEmptyBorder(8, 10, 8, 10)
         ));
 
-        // Left: filter combo + search
+        
         String[] boloc = { "Tất cả", "Còn hàng", "Hết hàng", "Có khuyến mãi", "Cận date" };
         JComboBox<String> cbLoc = new JComboBox<>(boloc);
         cbLoc.setPreferredSize(new Dimension(200, 36));
@@ -209,7 +198,7 @@ public class SanPhamPanel extends JPanel {
         JPanel pLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pLoc.setOpaque(false); pLoc.add(lbLoc); pLoc.add(cbLoc);
         JPanel pTim = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0)); pTim.setOpaque(false); pTim.add(lbTim); pTim.add(timkiem);
 
-        // Right: Thêm + export/import buttons
+        
         JButton them = new JButton("+ Thêm sản phẩm");
         them.setFocusPainted(false);
         them.setBackground(new Color(0xD9D9D9));
@@ -355,7 +344,7 @@ public class SanPhamPanel extends JPanel {
     }
 });
 
-        // Custom renderer and editor for action column
+        
         ActionButtonRenderer actionRenderer = new ActionButtonRenderer(bang, productModel, this);
         bang.getColumnModel().getColumn(8).setCellRenderer(actionRenderer);
         bang.getColumnModel().getColumn(8).setCellEditor(actionRenderer);
@@ -364,7 +353,7 @@ public class SanPhamPanel extends JPanel {
         UIUtils.styleScrollPane(bangScroll);
         content.add(bangScroll, BorderLayout.CENTER);
 
-        // Header
+        
         JPanel spHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
         spHeader.setBackground(new Color(0xF8F7FF));
         spHeader.setBorder(BorderFactory.createCompoundBorder(
@@ -392,7 +381,7 @@ public class SanPhamPanel extends JPanel {
         return panel;
     }
 
-    // Custom renderer for action buttons that are always visible
+    
     private static class ActionButtonRenderer extends AbstractCellEditor implements TableCellRenderer, TableCellEditor {
         private final JButton button;
         private final JTable table;
@@ -406,9 +395,9 @@ public class SanPhamPanel extends JPanel {
             this.button = UIUtils.makeActionButton("Xem chi tiết", new Color(0x6677C8));
             button.setPreferredSize(new Dimension(100, 32));
 
-            // Add action listener to the button
+            
             button.addActionListener(e -> {
-                stopCellEditing(); // Stop editing when button is clicked
+                stopCellEditing(); 
                 int row = table.getSelectedRow();
                 if (row >= 0) {
                     int modelRow = table.convertRowIndexToModel(row);
@@ -443,7 +432,7 @@ public class SanPhamPanel extends JPanel {
         }
     }
 
-    // Dialog methods moved to SanPhamAddDialog and SanPhamDetailDialog
+    
 
     void loadProducts() {
         productModel.setRowCount(0);
@@ -471,16 +460,16 @@ public class SanPhamPanel extends JPanel {
                     icon,
                     p.getName(),
                     giaBan,
-                    giaVon,                 // giá vốn
-                    p.getMinStockLevel(),   // tồn kho tối thiểu
+                    giaVon,                 
+                    p.getMinStockLevel(),   
                     ngayHH,
                     dm,
                     "",
                     p.getDescription() != null ? p.getDescription() : "-",
                     ncc,
                     dm,
-                    qty,        // số lượng (hidden)
-                    kho,        // trạng thái kho (hidden)
+                    qty,        
+                    kho,        
                     p.getMadeIn() != null ? p.getMadeIn() : "-",
                     ngaySX,
                     p.getPosition() != null ? p.getPosition() : "-",

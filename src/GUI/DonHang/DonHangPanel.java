@@ -5,14 +5,7 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.Dialog;
 
-/**
- * Panel quản lý đơn hàng.
- * Orchestrates 4 inner cards via CardLayout:
- *   TABLE → DETAIL → INVOICE → CREATE
- *
- * Each card lives in its own class:
- *   DonHangTableCard, DonHangDetailCard, DonHangInvoiceCard, DonHangCreateCard
- */
+
 public class DonHangPanel extends JPanel {
 
     static final String CARD_TABLE   = "TABLE";
@@ -98,7 +91,7 @@ public class DonHangPanel extends JPanel {
         showCard(CARD_INVOICE);
     }
 
-    /** Shared button factory used by all cards */
+    
     static JButton makeFootBtn(String text, Color bg) {
         JButton b = new JButton(text);
         b.setFont(new Font("Arial", Font.BOLD, 14));

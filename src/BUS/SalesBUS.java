@@ -74,16 +74,16 @@ public boolean confirmSale(String saleCode){
 
     try{
 
-        // 1. cập nhật trạng thái đơn
+        
         saleDAO.updateStatus(saleCode, SaleStatus.CONFIRMED);
 
-        // 2. lấy danh sách sản phẩm trong đơn
+        
         List<SalesInvoiceItemDTO> items = saleItemDAO.getBySaleCode(saleCode);
 
 System.out.println("SaleCode: " + saleCode);
 System.out.println("Items size: " + items.size());
 
-        // 3. trừ kho
+        
         for(SalesInvoiceItemDTO item : items){
 
             productDAO.decreaseStock(
@@ -112,7 +112,7 @@ System.out.println("Items size: " + items.size());
     }
 
     public String generateSaleCode() {
-        // Tìm số lớn nhất hiện tại
+        
         String sql = "SELECT MAX(CAST(SUBSTRING(sale_code, 3) AS UNSIGNED)) as max_num FROM sales WHERE sale_code LIKE 'DH%'";
         
         try (Connection con = DBConnection.getConnection();
@@ -134,10 +134,7 @@ System.out.println("Items size: " + items.size());
     }
 
 
-    /**
-     * Lấy doanh thu tuần hiện tại (Thứ 2 - Chủ nhật)
-     * Trả về mảng 7 phần tử: [T2, T3, T4, T5, T6, T7, CN]
-     */
+    
     public double[] getWeeklyRevenue() {
         double[] weekRevenue = new double[7];
         
@@ -145,10 +142,10 @@ System.out.println("Items size: " + items.size());
             ArrayList<SaleDTO> allSales = getAllSales();
             LocalDate today = LocalDate.now();
             
-            // Tìm ngày đầu tuần (Thứ 2)
+            
             LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
             
-            // Tính doanh thu từng ngày trong tuần
+            
             for (int i = 0; i < 7; i++) {
                 LocalDate currentDay = monday.plusDays(i);
                 
@@ -169,9 +166,7 @@ System.out.println("Items size: " + items.size());
         return weekRevenue;
     }
 
-    /**
-     * Tìm giá trị max trong mảng doanh thu
-     */
+    
     public double getMaxRevenue(double[] revenues) {
         double max = 0;
         for (double rev : revenues) {
@@ -180,10 +175,7 @@ System.out.println("Items size: " + items.size());
         return max;
     }
 
-    /**
-     * Doanh thu theo tuần của tháng hiện tại (4 tuần)
-     * Trả về mảng 4 phần tử: [Tuần 1, Tuần 2, Tuần 3, Tuần 4]
-     */
+    
     public double[] getMonthlyRevenue() {
         double[] monthRevenue = new double[4];
         try {
@@ -204,10 +196,7 @@ System.out.println("Items size: " + items.size());
         return monthRevenue;
     }
 
-    /**
-     * Doanh thu theo tháng của năm hiện tại (12 tháng)
-     * Trả về mảng 12 phần tử: [T1, T2, ..., T12]
-     */
+    
     public double[] getYearlyRevenue() {
         double[] yearRevenue = new double[12];
         try {

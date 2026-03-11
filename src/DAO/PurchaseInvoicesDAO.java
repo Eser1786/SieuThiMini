@@ -45,7 +45,7 @@ public class PurchaseInvoicesDAO {
                 invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 invoice.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
 
-                // Lấy chi tiết items
+                
                 invoice.setItems(getItemsByInvoiceId(invoice.getInvoiceId()));
 
                 list.add(invoice);
@@ -125,7 +125,7 @@ public class PurchaseInvoicesDAO {
                 invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 invoice.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
 
-                // Lấy chi tiết items
+                
                 invoice.setItems(getItemsByInvoiceId(invoice.getInvoiceId()));
             }
         } catch (SQLException e) {
@@ -143,7 +143,7 @@ public class PurchaseInvoicesDAO {
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            // Validate supplier is not deleted
+            
             if (isSupplierDeleted(invoice.getSupplierId())) {
                 throw new SQLException("Nhà cung cấp đã bị xóa, không thể nhập hàng từ nhà cung cấp này");
             }
@@ -168,7 +168,7 @@ public class PurchaseInvoicesDAO {
                 if (generatedKeys.next()) {
                     invoice.setInvoiceId(generatedKeys.getLong(1));
                 }
-                // Thêm chi tiết items
+                
                 addItems(invoice.getInvoiceId(), invoice.getItems());
                 result = true;
             }
@@ -187,7 +187,7 @@ public class PurchaseInvoicesDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             for (PurchaseInvoiceItemsDTO item : items) {
-                // Validate product is not deleted
+                
                 if (isProductDeleted(item.getProductId())) {
                     throw new SQLException("Sản phẩm ID " + item.getProductId() + " đã bị xóa, không thể nhập hàng");
                 }
@@ -261,7 +261,7 @@ public class PurchaseInvoicesDAO {
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
-                // Cập nhật items: xóa cũ và thêm mới
+                
                 deleteItemsByInvoiceId(invoice.getInvoiceId());
                 addItems(invoice.getInvoiceId(), invoice.getItems());
                 result = true;
@@ -325,7 +325,7 @@ public class PurchaseInvoicesDAO {
 
     public boolean deletePurchaseInvoice(Long invoiceId) throws SQLException {
         boolean result = false;
-        // Xóa items trước
+        
         deleteItemsByInvoiceId(invoiceId);
 
         String sql = "DELETE FROM purchase_invoices WHERE invoice_id = ?";

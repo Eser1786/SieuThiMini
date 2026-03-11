@@ -40,7 +40,7 @@ public class CustomerBUS {
     }
 
     private String generateCustomerCode() {
-        // Logic tạo code: 'NV' + số tăng dần (tìm max code từ DB + 1)
+        
         String sql = "SELECT MAX(customer_code) FROM customers WHERE customer_code LIKE 'KH%'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -56,7 +56,7 @@ public class CustomerBUS {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "default";  // Default nếu lỗi
+        return "default";  
     }
 
     public boolean updateCustomer(CustomerDTO customer) {

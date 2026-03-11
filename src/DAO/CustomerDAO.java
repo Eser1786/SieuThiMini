@@ -7,7 +7,7 @@ import DAO.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
-// import java.time.LocalDateTime;
+
 
 
 public class CustomerDAO {
@@ -241,18 +241,17 @@ public class CustomerDAO {
         return result;
     }
 
-    /** Fix UTF-8 data that was stored/returned as ISO-8859-1 (mojibake).
-     *  Skip if string already contains proper Unicode chars (> U+00FF). */
+    
     private static String fixEncoding(String s) {
         if (s == null) return null;
         for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) > 0xFF) return s; // Already proper Unicode, no fix needed
+            if (s.charAt(i) > 0xFF) return s; 
         }
         try {
             String d = new String(s.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1),
                                   java.nio.charset.StandardCharsets.UTF_8);
             for (int i = 0; i < d.length(); i++) {
-                if (d.charAt(i) > 0xFF) return d; // Successfully decoded mojibake
+                if (d.charAt(i) > 0xFF) return d; 
             }
         } catch (Exception ignored) {}
         return s;

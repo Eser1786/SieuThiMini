@@ -1,4 +1,4 @@
-// NhanVienPanel.java
+
 package GUI.NhanVien;
 
 import BUS.EmployeeBUS;
@@ -22,7 +22,7 @@ import javax.swing.table.*;
 
 public class NhanVienPanel extends JPanel {
 
-    // Color constants
+    
     private static final Color PAGE_BG   = new Color(0xF8F7FF);
     private static final Color ACCENT    = new Color(0x5C4A7F);
     private static final Color CARD_LEFT = new Color(0xD1C4E9);
@@ -30,12 +30,12 @@ public class NhanVienPanel extends JPanel {
     private static final Color BTN_IDLE  = new Color(0xD9D9D9);
     private static final Color BTN_HOVER = new Color(0xC5B3E6);
 
-    // Column indices
+    
     static final int COL_MA = 0, COL_TEN = 1, COL_CHUCVU = 2;
     static final int COL_SDT = 3, COL_EMAIL = 4, COL_NGAY = 5, COL_PASS = 6;
-    static final int COL_ID = 7; // hidden: employee_id
+    static final int COL_ID = 7; 
 
-    // Fields
+    
     DefaultTableModel tableModel;
     private final EmployeeBUS empBUS = new EmployeeBUS();
     List<RoleDTO> roles = new ArrayList<>();
@@ -45,10 +45,10 @@ public class NhanVienPanel extends JPanel {
     private TableRowSorter<DefaultTableModel> sorter;
     private int selectedModelRow = -1;
 
-    // Photo map: maNV -> absolute path
+    
     final Map<String, String> photoPathMap = new HashMap<>();
 
-    // Detail card
+    
     private JLabel lbName, lbRole, lbMaNV, lbGioiTinh, lbCMND, lbNgaySinh,
                    lbNgayTG, lbEmail, lbSdt, lbSalary;
     private JPanel avatarBox;
@@ -74,7 +74,7 @@ public class NhanVienPanel extends JPanel {
         });
     }
 
-    // Roles
+    
     private void loadRoles() {
         try {
             List<RoleDTO> r = new RoleBUS().getAllRoles();
@@ -99,7 +99,7 @@ public class NhanVienPanel extends JPanel {
         }
     }
 
-    // Header
+    
     private JPanel buildHeader() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 12));
         p.setBackground(PAGE_BG);
@@ -117,7 +117,7 @@ public class NhanVienPanel extends JPanel {
         return p;
     }
 
-    // Detail card
+    
     private JPanel buildDetailCard() {
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(PAGE_BG);
@@ -180,7 +180,7 @@ public class NhanVienPanel extends JPanel {
 
         JPanel body = new JPanel(new GridLayout(1, 2));
 
-        // Left - avatar + name + role
+        
         JPanel left = new JPanel();
         left.setBackground(CARD_LEFT);
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
@@ -228,7 +228,7 @@ public class NhanVienPanel extends JPanel {
         left.add(lbRole);
         left.add(Box.createVerticalGlue());
 
-        // Right - fields grid
+        
         JPanel right = new JPanel(new GridBagLayout());
         right.setBackground(Color.WHITE);
         right.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
@@ -299,12 +299,12 @@ public class NhanVienPanel extends JPanel {
             l.setText("");
     }
 
-    // List section
+    
     private JPanel buildListSection() {
         JPanel section = new JPanel(new BorderLayout(0, 8));
         section.setBackground(PAGE_BG);
 
-        // Toolbar: filters LEFT, actions RIGHT (same pattern as SanPham)
+        
         JPanel toolbar = new JPanel(new GUI.WrapLayout(FlowLayout.LEFT, 8, 4));
         toolbar.setBackground(PAGE_BG);
         toolbar.setBorder(BorderFactory.createCompoundBorder(
@@ -398,7 +398,7 @@ public class NhanVienPanel extends JPanel {
         int[] prefW = {75, 145, 110, 100, 155, 115, 120};
         for (int i = 0; i < prefW.length; i++)
             table.getColumnModel().getColumn(i).setPreferredWidth(prefW[i]);
-        // hide employee_id column
+        
         table.getColumnModel().getColumn(COL_ID).setMinWidth(0);
         table.getColumnModel().getColumn(COL_ID).setMaxWidth(0);
         table.getColumnModel().getColumn(COL_ID).setWidth(0);
@@ -413,7 +413,7 @@ public class NhanVienPanel extends JPanel {
                     Object ma = tableModel.getValueAt(modelRow, COL_MA);
                     EmployeeDTO me = UserSession.getCurrentUser();
                     if (me != null && ma != null && ma.toString().equals(me.getCode())) {
-                        setBackground(new Color(0xC8E6C9)); // active: logged-in employee
+                        setBackground(new Color(0xC8E6C9)); 
                     } else {
                         setBackground(r % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
                     }
@@ -507,7 +507,7 @@ public class NhanVienPanel extends JPanel {
         return section;
     }
 
-    // Password cell renderer
+    
     private class PasswordCellRenderer extends DefaultTableCellRenderer {
         private boolean revealed = false;
         @Override public Component getTableCellRendererComponent(
@@ -548,7 +548,7 @@ public class NhanVienPanel extends JPanel {
         }
     }
 
-    // Data
+    
     private void loadEmployees() {
         tableModel.setRowCount(0);
         revealedRows.clear();
@@ -586,7 +586,7 @@ public class NhanVienPanel extends JPanel {
         lbEmail.setText(tableModel.getValueAt(modelRow, COL_EMAIL).toString());
         lbNgayTG.setText(tableModel.getValueAt(modelRow, COL_NGAY).toString());
         
-        // Lấy lương từ database
+        
         int empId = (Integer) tableModel.getValueAt(modelRow, COL_ID);
         try {
             EmployeeDTO emp = empBUS.getEmployeeById(empId);
@@ -607,7 +607,7 @@ public class NhanVienPanel extends JPanel {
             try { avatarImage = ImageIO.read(new File(path)).getScaledInstance(90, 90, Image.SCALE_SMOOTH); }
             catch (Exception ignored) {}
         }
-        // Fallback: scan img/employees/<maNV>.<ext>
+        
         if (avatarImage == null) {
             for (String ext : new String[]{".jpg", ".jpeg", ".png"}) {
                 File f = new File("img/employees/" + ma + ext);

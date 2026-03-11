@@ -7,7 +7,7 @@ import DTO.enums.DiscountEnum.DiscountStatus;
 import java.sql.*;
 public class DiscountDAO {
 
-    // ── Code generation ──────────────────────────────────────────────────────
+    
     private static final String CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     private String generateUniqueCode() {
@@ -120,7 +120,7 @@ public class DiscountDAO {
 
     int discountId = -1;
 
-    // Generate a unique 6-char alphanumeric code before inserting
+    
     String code = generateUniqueCode();
     d.setDiscountCode(code);
 

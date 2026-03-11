@@ -15,16 +15,16 @@ class DonHangDetailCard extends JPanel {
     private final DonHangPanel parent;
     private final SalesInvoiceBUS salesInvoiceBUS = new SalesInvoiceBUS();
 
-    /* ── form fields ── */
+    
     private JLabel lbMaDon, lbNgayDat, lbNgayGiao, lbIdTK;
     private JComboBox<String> cbTrangThai;
     private JTextField tfTenND, tfSdt, tfDiaChi, tfTongTT;
     private JLabel lbTongCong, lbVAT, lbPhiVC, lbMaGiam, lbHinhThuc;
     private DefaultTableModel chitietModel;
 
-    /* ── footer buttons ── */
+    
     private JButton btnSua, btnLuu, btnXoa, btnInHoaDon, btnHuyDon, btnThanhToan, btnXacNhan, btnHoanTac;
-    /* ── edit snapshot (for undo) ── */
+    
     private String origTenND, origSdt, origDiaChi, origTrangThai;
     private JLabel lbNhanVien;
 
@@ -37,7 +37,7 @@ class DonHangDetailCard extends JPanel {
     private void buildUI() {
         setBackground(new Color(0xF4F4F4));
 
-        /* Header */
+        
         JPanel header = new JPanel(new BorderLayout(0, 0));
         header.setBackground(new Color(0xF4F4F4));
         header.setBorder(BorderFactory.createCompoundBorder(
@@ -59,11 +59,11 @@ class DonHangDetailCard extends JPanel {
         header.add(btnBack, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
 
-        /* Wrapper */
+        
         JPanel wrapper = new JPanel(new GridBagLayout());
         wrapper.setBackground(new Color(0xF4F4F4));
 
-        /* Body */
+        
         JPanel body = new JPanel(new GridBagLayout());
         body.setBackground(Color.WHITE);
         body.setBorder(BorderFactory.createCompoundBorder(
@@ -169,7 +169,7 @@ class DonHangDetailCard extends JPanel {
         bodyScroll.getVerticalScrollBar().setUnitIncrement(16);
         add(bodyScroll, BorderLayout.CENTER);
 
-        /* Footer */
+        
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 16));
         footer.setBackground(new Color(0xF4F4F4));
 
@@ -257,7 +257,7 @@ class DonHangDetailCard extends JPanel {
         String maKMTbl   = parent.tableModel.getValueAt(modelRow, 3).toString();
 
         lbMaDon.setText(maDon);
-        // Restore full combo before setting selection
+        
         cbTrangThai.setModel(new DefaultComboBoxModel<>(new String[]{
                 "Chờ xác nhận", "Đã xác nhận", "Chờ vận chuyển",
                 "Đang giao", "Đã giao", "Đã hủy"}));
@@ -309,12 +309,12 @@ class DonHangDetailCard extends JPanel {
                 lbPhiVC.setText("Miễn phí");
                 tfTongTT.setText(String.format("%,.0fđ", (double) finalTot));
             } else {
-                // Try to parse items from note
+                
                 String note = sale.getNote();
                 if (note != null && !note.isEmpty()) {
                     parseItemsFromNote(note);
                 } else {
-                    // Mock item
+                    
                     if (sale.getTotalQuantity() > 0) {
                         long unitPrice = sale.getTotalAmount().divide(java.math.BigDecimal.valueOf(sale.getTotalQuantity())).longValue();
                         chitietModel.addRow(new Object[]{ "1",
@@ -329,10 +329,10 @@ class DonHangDetailCard extends JPanel {
                 tfTongTT.setText(String.format("%,.0fđ", (double) sale.getTotalAmount().longValue()));
             }
         } else {
-            // Fallback to in-memory data or sample data
+            
             DonHangPanel.OrderDetailData od = parent.orderDataMap.get(maDon);
             if (od != null) {
-                // Real order created from the create form
+                
                 lbNgayDat.setText(od.time);
                 lbNgayGiao.setText("Dự kiến giao sau 1-3 ngày");
                 tfTenND.setText(od.ten);
@@ -359,7 +359,7 @@ class DonHangDetailCard extends JPanel {
                 lbPhiVC.setText("Miễn phí");
                 tfTongTT.setText(String.format("%,.0fđ", (double) tot));
             } else {
-                // Fallback for pre-existing sample orders
+                
                 lbNgayDat.setText("05/03/2026 (22:28)");
                 lbNgayGiao.setText("06/03/2026 (08:00)");
                 tfTenND.setText(nguoiMua);
@@ -389,7 +389,7 @@ class DonHangDetailCard extends JPanel {
         int stt = 1;
         for (String part : parts) {
             if (part.startsWith("NOTE:")) {
-                // User note, skip for items
+                
                 continue;
             }
             String[] itemParts = part.split("\\|");
@@ -408,7 +408,7 @@ class DonHangDetailCard extends JPanel {
                         String.format("%,.0fđ", (double) line)
                     });
                 } catch (NumberFormatException e) {
-                    // Skip invalid item
+                    
                 }
             }
         }
@@ -424,12 +424,12 @@ class DonHangDetailCard extends JPanel {
             origTenND  = tfTenND.getText();
             origSdt    = tfSdt.getText();
             origDiaChi = tfDiaChi.getText();
-            // Rebuild combo to only show valid forward transitions
+            
             cbTrangThai.setModel(new DefaultComboBoxModel<>(buildValidStatusOptions(tt)));
             cbTrangThai.setSelectedItem(tt);
             cbTrangThai.setEnabled(!isFinal);
         } else {
-            // Restore full combo for display
+            
             cbTrangThai.setModel(new DefaultComboBoxModel<>(new String[]{
                     "Chờ xác nhận", "Đã xác nhận", "Chờ vận chuyển",
                     "Đang giao", "Đã giao", "Đã hủy"}));
@@ -437,11 +437,11 @@ class DonHangDetailCard extends JPanel {
             cbTrangThai.setEnabled(false);
         }
 
-        // name/phone/address only editable before shipping
+        
         tfTenND.setEditable(editable && !isShippingOrMore);
         tfSdt.setEditable(editable && !isShippingOrMore);
         tfDiaChi.setEditable(editable && !isShippingOrMore);
-        tfTongTT.setEditable(false); // always read-only
+        tfTongTT.setEditable(false); 
 
         if (btnSua      != null) btnSua.setVisible(!editable && !isFinal);
         if (btnLuu      != null) btnLuu.setVisible(editable);
@@ -526,7 +526,7 @@ class DonHangDetailCard extends JPanel {
         }
     }
 
-    /* ── helpers ── */
+    
     private JLabel makeVal(Font f) {
         JLabel l = new JLabel(); l.setFont(f); return l;
     }

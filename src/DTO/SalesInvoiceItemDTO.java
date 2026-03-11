@@ -7,13 +7,13 @@ public class SalesInvoiceItemDTO {
     private Long invoiceId;
     private Long productId;
     private String productCode;
-    private String productName;  // Để hiển thị
+    private String productName;  
     private int quantity;
     private BigDecimal unitPrice;
     private BigDecimal subtotal;
     private String notes;
 
-    // Getter & Setter (dùng IDE generate hoặc Lombok)
+    
     public Long getId() {
         return id;
     }
