@@ -262,6 +262,30 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 
 ---
 
+## Session 2026-03-11 (phần 5) — Fix tồn kho đơn hàng, cột Tồn kho trong dialog
+
+### Thay đổi
+
+- **Chặn mua quá tồn kho** (`DonHangCreateCard`):
+  - `OrderItem` thêm field `int stock` để lưu tồn kho hiện tại của sản phẩm
+  - `addProductToOrder()` nhận thêm param `int stock`:
+    - Nếu `stock <= 0` → hiển thị cảnh báo "Hết hàng", từ chối thêm
+    - Nếu sản phẩm đã có trong đơn và `qty >= stock` → cảnh báo đạt tối đa
+    - Tăng `qty` chỉ khi `qty < it.stock` (bỏ giới hạn cứng 9999)
+  - `SpinnerNumberModel` max = `it.stock` thay vì 9999 → không thể kéo quá tồn kho
+  - `pickRows()` truyền `(int) p.getTotalQuantity()` làm stock khi gọi `addProductToOrder`
+
+- **Cột "Tồn kho" trong dialog Duyệt sản phẩm**:
+  - Thêm cột "Tồn kho" (index 3) hiển thị số lượng tồn
+  - Màu xanh lá nếu còn hàng, đỏ nếu hết hàng (0)
+  - Filter tìm kiếm trong dialog cũng populate cột mới
+
+### File thay đổi
+
+- `src/GUI/DonHang/DonHangCreateCard.java`
+
+---
+
 ## Session 2026-03-11 (phần 4) — Hạng tự động, tích điểm, reload KH/SP
 
 ### Thay đổi

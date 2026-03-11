@@ -183,7 +183,7 @@ class DonHangCreateCard extends JPanel {
         lbSub.setHorizontalAlignment(SwingConstants.RIGHT);
 
         
-        SpinnerNumberModel mdl = new SpinnerNumberModel(it.qty, 1, 9999, 1);
+        SpinnerNumberModel mdl = new SpinnerNumberModel(it.qty, 1, it.stock, 1);
         JSpinner spinner = new JSpinner(mdl);
         spinner.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         spinner.setPreferredSize(new Dimension(64, 30));
@@ -242,18 +242,27 @@ class DonHangCreateCard extends JPanel {
     }
 
     
-   private void addProductToOrder(long productId, String code, String name, long unitPrice) {
+   private void addProductToOrder(long productId, String code, String name, long unitPrice, int stock) {
+    if (stock <= 0) {
+        JOptionPane.showMessageDialog(DonHangCreateCard.this,
+            "\u201c" + name + "\u201d hi\u1ec7n kh\u00f4ng c\u00f2n h\u00e0ng trong kho.",
+            "H\u1ebft h\u00e0ng", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
 
     for (OrderItem it : items) {
         if (it.productId == productId) {
-            if (it.qty < 9999) it.qty++;
+            if (it.qty < it.stock) it.qty++;
+            else JOptionPane.showMessageDialog(DonHangCreateCard.this,
+                "\u201c" + it.name + "\u201d \u0111\u00e3 \u0111\u1ea1t t\u1ed1i \u0111a s\u1ed1 l\u01b0\u1ee3ng t\u1ed3n kho (" + it.stock + ").",
+                "H\u1ebft h\u00e0ng", JOptionPane.WARNING_MESSAGE);
             rebuildList();
             updateTotals();
             return;
         }
     }
 
-    items.add(new OrderItem(productId, code, name, unitPrice, 1));
+    items.add(new OrderItem(productId, code, name, unitPrice, 1, stock));
     rebuildList();
     updateTotals();
 }
@@ -932,7 +941,7 @@ if(cbMaKM.getSelectedIndex() > 0){
         JTextField dlgSearch = cf();
 
         DefaultTableModel dlgModel = new DefaultTableModel(
-                new String[]{ "M\u00e3 SP", "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1" }, 0) {
+                new String[]{ "M\u00e3 SP", "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1", "T\u1ed3n kho" }, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         for (ProductDTO p : allProducts) {
@@ -940,7 +949,8 @@ if(cbMaKM.getSelectedIndex() > 0){
             dlgModel.addRow(new Object[]{
                 p.getCode(),
                 p.getName() != null ? p.getName() : "(Kh\u00f4ng t\u00ean)",
-                String.format("%,.0f\u0111", (double) price)
+                String.format("%,.0f\u0111", (double) price),
+                p.getTotalQuantity()
             });
         }
 
@@ -955,8 +965,9 @@ if(cbMaKM.getSelectedIndex() > 0){
         dlgTable.setGridColor(new Color(0xEEEEEE));
         dlgTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         dlgTable.getColumnModel().getColumn(0).setPreferredWidth(80);
-        dlgTable.getColumnModel().getColumn(1).setPreferredWidth(240);
-        dlgTable.getColumnModel().getColumn(2).setPreferredWidth(120);
+        dlgTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+        dlgTable.getColumnModel().getColumn(2).setPreferredWidth(110);
+        dlgTable.getColumnModel().getColumn(3).setPreferredWidth(80);
 
         DefaultTableCellRenderer priceR = new DefaultTableCellRenderer() {
             @Override public Component getTableCellRendererComponent(JTable t, Object v,
@@ -975,9 +986,25 @@ if(cbMaKM.getSelectedIndex() > 0){
                 return c;
             }
         };
+        DefaultTableCellRenderer stockR = new DefaultTableCellRenderer() {
+            @Override public Component getTableCellRendererComponent(JTable t, Object v,
+                    boolean sel, boolean foc, int row, int col) {
+                Component c = super.getTableCellRendererComponent(t, v, sel, foc, row, col);
+                if (!sel) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF7F5FF));
+                    long qty = v instanceof Number ? ((Number) v).longValue() : 0L;
+                    c.setForeground(qty <= 0 ? new Color(0xE53935) : new Color(0x2E7D32));
+                } else {
+                    c.setForeground(Color.WHITE);
+                }
+                return c;
+            }
+        };
+        stockR.setHorizontalAlignment(SwingConstants.CENTER);
         dlgTable.getColumnModel().getColumn(0).setCellRenderer(altR);
         dlgTable.getColumnModel().getColumn(1).setCellRenderer(altR);
         dlgTable.getColumnModel().getColumn(2).setCellRenderer(priceR);
+        dlgTable.getColumnModel().getColumn(3).setCellRenderer(stockR);
 
         dlgSearch.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { filter(); }
@@ -994,7 +1021,8 @@ if(cbMaKM.getSelectedIndex() > 0){
                         dlgModel.addRow(new Object[]{
                             p.getCode(),
                             p.getName() != null ? p.getName() : "(Kh\u00f4ng t\u00ean)",
-                            String.format("%,.0f\u0111", (double) price)
+                            String.format("%,.0f\u0111", (double) price),
+                            p.getTotalQuantity()
                         });
                     }
                 }
@@ -1077,7 +1105,8 @@ if(cbMaKM.getSelectedIndex() > 0){
                         p.getId(),   
                         p.getCode(),
                         p.getName(),
-                        price
+                        price,
+                        (int) p.getTotalQuantity()
                 );
 
                 break;
@@ -1184,13 +1213,15 @@ if(cbMaKM.getSelectedIndex() > 0){
     String name;
     long unitPrice;
     int qty;
+    int stock;
 
-    OrderItem(long productId, String code, String name, long unitPrice, int qty) {
+    OrderItem(long productId, String code, String name, long unitPrice, int qty, int stock) {
         this.productId = productId;
         this.code = code;
         this.name = name;
         this.unitPrice = unitPrice;
         this.qty = qty;
+        this.stock = stock;
     }
 }
     
