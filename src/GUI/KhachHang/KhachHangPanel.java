@@ -67,11 +67,15 @@ public class KhachHangPanel extends JPanel {
 
     
     public void triggerAddCustomer() {
-    clearForm();
-    enableFormFields(true);
-    editingRow = -1;
-    innerCard.show(this, CARD_THEM);
-}
+        clearForm();
+        enableFormFields(true);
+        tfMaKH.setEditable(false);
+        tfMaKH.setBackground(new Color(0xE8E6F0));
+        tfMaKH.setForeground(new Color(0x888888));
+        tfMaKH.setText(new CustomerBUS().generateCustomerCode());
+        editingRow = -1;
+        innerCard.show(this, CARD_THEM);
+    }
 
     void loadCustomers() {
         tableModel.setRowCount(0);
@@ -140,9 +144,11 @@ public class KhachHangPanel extends JPanel {
 
     void enableFormFields(boolean enable) {
         for (JTextField f : new JTextField[]{
-                tfMaKH, tfTen, tfSdt, tfEmail, tfDiaChi,
+                tfTen, tfSdt, tfEmail, tfDiaChi,
                 tfDiem, tfTgDK, tfLanCuoiMua, tfTongTien, tfHang, tfTrangThai})
             f.setEditable(enable);
+        // tfMaKH is always read-only (auto-generated)
+        tfMaKH.setEditable(false);
     }
 
     void loadFormData(int row) {
@@ -166,11 +172,21 @@ public class KhachHangPanel extends JPanel {
                 "Vui lòng nhập Mã KH, Tên và Số điện thoại!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        tableModel.addRow(new Object[]{
-            tfMaKH.getText(), tfTen.getText(), tfSdt.getText(), tfEmail.getText(),
-            tfDiaChi.getText(), tfHang.getText(), tfTrangThai.getText(), "",
-            "0", "", "", "0đ", 0
-        });
+        CustomerDTO dto = new CustomerDTO();
+        dto.setCode(tfMaKH.getText().trim());
+        dto.setFullName(tfTen.getText().trim());
+        dto.setPhone(tfSdt.getText().trim());
+        dto.setEmail(tfEmail.getText().trim());
+        dto.setAddress(tfDiaChi.getText().trim());
+        dto.setType(CustomerType.REGULAR);
+        dto.setStatus(CustomerStatus.ACTIVE);
+        boolean ok = new CustomerBUS().AddCustomer(dto);
+        if (!ok) {
+            JOptionPane.showMessageDialog(this, "Không thể thêm khách hàng. Mã hoặc SĐT có thể đã tồn tại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        JOptionPane.showMessageDialog(this, "Thêm khách hàng thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+        loadCustomers();
         clearForm();
         innerCard.show(this, CARD_TABLE);
     }

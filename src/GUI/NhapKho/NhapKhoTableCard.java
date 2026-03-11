@@ -1,7 +1,11 @@
 package GUI.NhapKho;
 
+import BUS.EmployeeBUS;
 import BUS.PurchaseInvoicesBUS;
+import BUS.UserSession;
+import DTO.EmployeeDTO;
 import DTO.PurchaseInvoicesDTO;
+import DTO.RoleDTO;
 import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
 import GUI.UIUtils;
 import GUI.WrapLayout;
@@ -240,12 +244,20 @@ class NhapKhoTableCard extends JPanel {
             public void mouseEntered(java.awt.event.MouseEvent e) { btnNew.setBackground(new Color(0xC5B3E6)); }
             public void mouseExited(java.awt.event.MouseEvent e)  { btnNew.setBackground(new Color(0xD9D9D9)); }
         });
-        btnNew.addActionListener(e -> parent.openCreatePopup(SwingUtilities.getWindowAncestor(this)));
-
-        JButton btnExportPDF   = GUI.ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
+        btnNew.addActionListener(e -> parent.openCreatePopup(SwingUtilities.getWindowAncestor(this)));        // Only show create button for ADMIN or WAREHOUSE roles
+        try {
+            EmployeeDTO cu = UserSession.getCurrentUser();
+            String role = "";
+            if (cu != null) {
+                RoleDTO r = new EmployeeBUS().getRole((long) cu.getId());
+                if (r != null) role = r.getName();
+            }
+            btnNew.setVisible("ADMIN".equals(role) || "WAREHOUSE".equals(role));
+        } catch (Exception ignored) { btnNew.setVisible(false); }
+        JButton btnExportPDF   = GUI.ExportUtils.makeExportButton("In PDF",   new Color(0x7B52AB));
         btnExportPDF.addActionListener(e -> GUI.ExportUtils.xuatPDF(this, model, "Danh sach phieu nhap kho"));
 
-        JButton btnExportExcel = GUI.ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
+        JButton btnExportExcel = GUI.ExportUtils.makeExportButton("In Excel", new Color(0x2E7D32));
         btnExportExcel.addActionListener(e -> GUI.ExportUtils.xuatCSV(this, model, "Danh sach phieu nhap kho"));
 
         top.add(pLoc);

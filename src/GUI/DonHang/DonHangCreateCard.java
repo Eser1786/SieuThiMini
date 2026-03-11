@@ -55,6 +55,7 @@ class DonHangCreateCard extends JPanel {
     
     private JLabel lbSubVal;
     private JLabel lbTotVal;
+    private JLabel lbVatVal;
     private long discAmt = 0L;
 
     DonHangCreateCard(DonHangPanel parent) {
@@ -108,7 +109,9 @@ class DonHangCreateCard extends JPanel {
         long sub = 0;
         for (OrderItem it : items) sub += it.unitPrice * it.qty;
         long tot = Math.max(0, sub - discAmt);
+        long vat = tot * 10L / 110;
         lbSubVal.setText(String.format("%,.0f\u0111", (double) sub));
+        lbVatVal.setText(String.format("%,.0f\u0111", (double) vat));
         lbTotVal.setText(String.format("%,.0f\u0111", (double) tot));
     }
 
@@ -282,7 +285,10 @@ class DonHangCreateCard extends JPanel {
         
         lbSubVal = new JLabel("0\u0111");
         lbTotVal = new JLabel("0\u0111");
+        lbVatVal = new JLabel("0\u0111");
         lbSubVal.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lbVatVal.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lbVatVal.setForeground(new Color(0x555555));
         lbTotVal.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lbTotVal.setForeground(new Color(0x5B4FCC));
 
@@ -430,6 +436,15 @@ class DonHangCreateCard extends JPanel {
         lbSubVal.setHorizontalAlignment(SwingConstants.RIGHT);
         subRow.add(lbSubLbl, BorderLayout.WEST); subRow.add(lbSubVal, BorderLayout.EAST);
 
+        JPanel vatRow = new JPanel(new BorderLayout());
+        vatRow.setBackground(Color.WHITE);
+        vatRow.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
+        JLabel lbVatLbl = new JLabel("VAT (10%, \u0111\u00e3 bao g\u1ed3m):");
+        lbVatLbl.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lbVatLbl.setForeground(new Color(0x555555));
+        lbVatVal.setHorizontalAlignment(SwingConstants.RIGHT);
+        vatRow.add(lbVatLbl, BorderLayout.WEST); vatRow.add(lbVatVal, BorderLayout.EAST);
+
         JPanel totRow = new JPanel(new BorderLayout());
         totRow.setBackground(Color.WHITE);
         totRow.setBorder(BorderFactory.createCompoundBorder(
@@ -463,7 +478,8 @@ class DonHangCreateCard extends JPanel {
         lc.gridy = 7; lc.insets = new Insets(0,0,2,0);  leftContent.add(discRow, lc);
         lc.gridy = 8; lc.insets = new Insets(0,0,6,0);  leftContent.add(discInfoRow, lc);
         lc.gridy = 9; lc.insets = new Insets(4,0,4,0);  leftContent.add(subRow, lc);
-        lc.gridy = 10; lc.insets = new Insets(0,0,0,0); leftContent.add(totRow, lc);
+        lc.gridy = 10; lc.insets = new Insets(0,0,4,0);  leftContent.add(vatRow, lc);
+        lc.gridy = 11; lc.insets = new Insets(0,0,0,0);  leftContent.add(totRow, lc);
 
         JPanel leftCard = new JPanel(new BorderLayout());
         leftCard.setBackground(Color.WHITE);
@@ -555,10 +571,28 @@ try {
                 cbNhanVien.addItem(e.getCode() + " - " + e.getFullName());
     } 
     else {
-        // User thường → chỉ hiện chính mình
+        // Non-admin → show only cashier-role employees
+        cbNhanVien.addItem("-- Ch\u1ecdn nh\u00e2n vi\u00ean --");
+        try {
+            List<EmployeeDTO> emps = new EmployeeBUS().getAllEmployees();
+            if (emps != null) {
+                for (EmployeeDTO emp : emps) {
+                    RoleDTO empRole = new EmployeeBUS().getRole((long) emp.getId());
+                    if (empRole != null && "CASHIER".equals(empRole.getName())) {
+                        cbNhanVien.addItem(emp.getCode() + " - " + emp.getFullName());
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        // Auto-select current user if they are a cashier
         if (currentUser != null) {
-            cbNhanVien.addItem(currentUser.getCode() + " - " + currentUser.getFullName());
-            cbNhanVien.setEditable(false);
+            String selfLabel = currentUser.getCode() + " - " + currentUser.getFullName();
+            for (int i = 0; i < cbNhanVien.getItemCount(); i++) {
+                if (selfLabel.equals(cbNhanVien.getItemAt(i))) {
+                    cbNhanVien.setSelectedIndex(i);
+                    break;
+                }
+            }
         }
     }
 } catch (Exception ignored) {}
@@ -721,7 +755,8 @@ invoice.setInvoiceCode(invoiceDAO.generateInvoiceCode());
 invoice.setSaleId(saleId);
 invoice.setSubtotal(BigDecimal.valueOf(tongCong + discAmt));
 invoice.setDiscountAmount(BigDecimal.valueOf(discAmt));
-invoice.setTaxAmount(BigDecimal.ZERO);
+long vatAmt = tongCong * 10L / 110;
+invoice.setTaxAmount(BigDecimal.valueOf(vatAmt));
 invoice.setTotalAmount(BigDecimal.valueOf(tongCong));
 invoice.setStatus("PENDING");
 

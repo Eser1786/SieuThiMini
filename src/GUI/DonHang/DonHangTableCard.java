@@ -105,10 +105,10 @@ class DonHangTableCard extends JPanel {
         });
         btnTao.addActionListener(e -> parent.openCreatePopup(SwingUtilities.getWindowAncestor(this)));
 
-        JButton btnPDF = ExportUtils.makeExportButton("Xu\u1ea5t PDF", new Color(0x7B52AB));
+        JButton btnPDF = ExportUtils.makeExportButton("In PDF", new Color(0x7B52AB));
         btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, parent.tableModel, "Danh s\u00e1ch \u0111\u01a1n h\u00e0ng"));
 
-        JButton btnExcel = ExportUtils.makeExportButton("Xu\u1ea5t Excel", new Color(0x2E7D32));
+        JButton btnExcel = ExportUtils.makeExportButton("In Excel", new Color(0x2E7D32));
         btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, parent.tableModel, "don_hang"));
 
         top.add(pLoc);

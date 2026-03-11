@@ -40,7 +40,7 @@ class SanPhamDetailDialog {
             "Xuất xứ", "Ngày sản xuất", "Ngày hết hạn",
             "Vị trí", "Đơn vị", "Trạng thái"
         };
-        int[] colIdx = { 0, 2, 9, 10, 11, 12, 3, 4, 13, 14, 15, 6, 16, 17, 18 };
+        int[] colIdx = { 0, 2, 9, 10, 11, 4, 3, 12, 5, 14, 15, 6, 16, 17, 18 };
 
         JPanel body = new JPanel(new GridLayout(lbls.length, 2, 12, 10));
         body.setBackground(new Color(0xF0EFF8));
@@ -202,10 +202,10 @@ class SanPhamDetailDialog {
         String getMoTa = val(model, modelRow, 9);
         String getNCC  = val(model, modelRow, 10);
         String getDM   = val(model, modelRow, 11);
-        String getGiaVon = val(model, modelRow, 12);
+        String getGiaVon = val(model, modelRow, 4);
         String getGiaBan = val(model, modelRow, 3);
-        String getSL     = val(model, modelRow, 4);
-        String getTonMin = val(model, modelRow, 13);
+        String getSL     = val(model, modelRow, 12);
+        String getTonMin = val(model, modelRow, 5);
         String getXX     = val(model, modelRow, 14);
         String getNgaySX = val(model, modelRow, 15);
         String getNgayHH = val(model, modelRow, 6);

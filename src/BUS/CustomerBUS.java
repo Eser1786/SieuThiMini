@@ -39,7 +39,7 @@ public class CustomerBUS {
         return customerDAO.addCustomer(customer);
     }
 
-    private String generateCustomerCode() {
+    public String generateCustomerCode() {
         
         String sql = "SELECT MAX(customer_code) FROM customers WHERE customer_code LIKE 'KH%'";
         try (Connection conn = DBConnection.getConnection();

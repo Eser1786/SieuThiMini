@@ -355,8 +355,8 @@ public class NhanVienPanel extends JPanel {
         btnRefresh.setIcon(UIUtils.iconRefresh(14, new Color(0x388E3C)));
         btnRefresh.setHorizontalTextPosition(SwingConstants.RIGHT);
         btnRefresh.setIconTextGap(4);
-        JButton btnPDF     = ExportUtils.makeExportButton("Xu\u1ea5t PDF",   new Color(0x7B52AB));
-        JButton btnExcel   = ExportUtils.makeExportButton("Xu\u1ea5t Excel", new Color(0x2E7D32));
+        JButton btnPDF     = ExportUtils.makeExportButton("In PDF",   new Color(0x7B52AB));
+        JButton btnExcel   = ExportUtils.makeExportButton("In Excel", new Color(0x2E7D32));
         JButton btnImport  = ExportUtils.makeImportButton("Nh\u1eadp CSV");
         Font btnFont = new Font("Arial", Font.BOLD, 13);
         for (JButton b : new JButton[]{btnPDF, btnExcel, btnImport}) {

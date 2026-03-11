@@ -195,7 +195,7 @@ public class MainPanel extends JPanel {
         }
 
         
-        if (isAdmin) {
+        if (isAdmin || isCashier) {
             mainCards.add(new KhuyenMaiPanel(), KHUYEN_MAI);
             btnKhuyenMai = createNavButton("Khuyến mãi");
             btnKhuyenMai.addActionListener(e -> navigate(mainCards, KHUYEN_MAI, btnKhuyenMai));

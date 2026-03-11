@@ -121,8 +121,8 @@ public class KhuyenMaiPanel extends JPanel {
         });
         btnThem.addActionListener(e -> showAddDialog());
 
-        JButton btnPDF    = ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
-        JButton btnExcel  = ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
+        JButton btnPDF    = ExportUtils.makeExportButton("In PDF",   new Color(0x7B52AB));
+        JButton btnExcel  = ExportUtils.makeExportButton("In Excel", new Color(0x2E7D32));
         JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
         JButton btnReset = new JButton("Reset");
         btnReset.setFocusPainted(false);
