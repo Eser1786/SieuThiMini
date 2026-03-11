@@ -280,6 +280,13 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
   - Màu xanh lá nếu còn hàng, đỏ nếu hết hàng (0)
   - Filter tìm kiếm trong dialog cũng populate cột mới
 
+- **Validation tồn kho lúc lưu đơn** (bổ sung sau):
+  - Ngay trước khi lưu, query live `ProductDAO.getComputedStock()` cho từng sản phẩm trong đơn
+  - Nếu bất kỳ sản phẩm nào `qty > stock` → hiện popup lỗi liệt kê TẤT CẢ vi phạm với format:
+    `"Tên SP": yêu cầu X, tồn kho chỉ còn Y`
+  - Dừng lưu — người dùng phải sửa số lượng trước
+  - Dùng `getComputedStock` (tính từ DB thực tế) thay vì `it.stock` (snapshot khi mở form)
+
 ### File thay đổi
 
 - `src/GUI/DonHang/DonHangCreateCard.java`

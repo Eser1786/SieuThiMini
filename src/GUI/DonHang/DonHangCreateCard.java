@@ -801,6 +801,28 @@ addFieldToCard(empCard, "Nhân viên:", cbNhanVien);
                     "L\u1ed7i nh\u1eadp li\u1ec7u", JOptionPane.WARNING_MESSAGE);
                 if (firstBad != null) firstBad.requestFocus(); return;
             }
+
+            // Ki\u1ec3m tra t\u1ed3n kho tr\u01b0\u1edbc khi l\u01b0u
+            {
+                ProductDAO stockDAO = new ProductDAO();
+                java.util.List<String> stockErrors = new java.util.ArrayList<>();
+                for (OrderItem it : items) {
+                    long avail = stockDAO.getComputedStock(it.productId);
+                    if (it.qty > avail) {
+                        stockErrors.add(String.format(
+                            "\u2022 \u201c%s\u201d: y\u00eau c\u1ea7u %d, t\u1ed3n kho ch\u1ec9 c\u00f2n %d",
+                            it.name, it.qty, avail));
+                    }
+                }
+                if (!stockErrors.isEmpty()) {
+                    JOptionPane.showMessageDialog(this,
+                        "S\u1ed1 l\u01b0\u1ee3ng \u0111\u1eb7t h\u00e0ng v\u01b0\u1ee3t qu\u00e1 t\u1ed3n kho:\n"
+                            + String.join("\n", stockErrors),
+                        "V\u01b0\u1ee3t t\u1ed3n kho", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+
             long tongCong = 0;
             for (OrderItem it : items) tongCong += it.unitPrice * it.qty;
             tongCong = Math.max(0, tongCong - discAmt);
