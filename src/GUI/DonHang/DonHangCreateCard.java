@@ -109,8 +109,9 @@ class DonHangCreateCard extends JPanel {
     private void updateTotals() {
         long sub = 0;
         for (OrderItem it : items) sub += it.unitPrice * it.qty;
-        long tot = Math.max(0, sub - discAmt);
-        long vat = tot * 10L / 110;
+        long base = Math.max(0, sub - discAmt);
+        long vat = base * 10L / 100;
+        long tot = base + vat;
         lbSubVal.setText(String.format("%,.0f\u0111", (double) sub));
         lbVatVal.setText(String.format("%,.0f\u0111", (double) vat));
         lbTotVal.setText(String.format("%,.0f\u0111", (double) tot));
@@ -463,7 +464,7 @@ class DonHangCreateCard extends JPanel {
         JPanel vatRow = new JPanel(new BorderLayout());
         vatRow.setBackground(Color.WHITE);
         vatRow.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
-        JLabel lbVatLbl = new JLabel("VAT (10%, \u0111\u00e3 bao g\u1ed3m):");
+        JLabel lbVatLbl = new JLabel("VAT (10%):");
         lbVatLbl.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lbVatLbl.setForeground(new Color(0x555555));
         lbVatVal.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -837,9 +838,11 @@ addFieldToCard(empCard, "Nhân viên:", cbNhanVien);
                 }
             }
 
-            long tongCong = 0;
-            for (OrderItem it : items) tongCong += it.unitPrice * it.qty;
-            tongCong = Math.max(0, tongCong - discAmt);
+            long subTotal = 0;
+            for (OrderItem it : items) subTotal += it.unitPrice * it.qty;
+            long base = Math.max(0, subTotal - discAmt);
+            long vatAmt0 = base * 10L / 100;
+            long tongCong = base + vatAmt0;
             int totalQty = 0; for (OrderItem it : items) totalQty += it.qty;
             
             
@@ -867,7 +870,7 @@ addFieldToCard(empCard, "Nhân viên:", cbNhanVien);
                 sale.setEmployeeName(employee.getFullName());
             }
             
-            sale.setSubTotal(BigDecimal.valueOf(tongCong + discAmt));
+            sale.setSubTotal(BigDecimal.valueOf(subTotal));
             sale.setDiscountAmount(BigDecimal.valueOf(discAmt));
             sale.setTotalAmount(BigDecimal.valueOf(tongCong));
             sale.setTotalQuantity(totalQty);
@@ -899,10 +902,9 @@ SalesInvoiceDTO invoice = new SalesInvoiceDTO();
 
 invoice.setInvoiceCode(invoiceDAO.generateInvoiceCode());
 invoice.setSaleId(saleId);
-invoice.setSubtotal(BigDecimal.valueOf(tongCong + discAmt));
+invoice.setSubtotal(BigDecimal.valueOf(subTotal));
 invoice.setDiscountAmount(BigDecimal.valueOf(discAmt));
-long vatAmt = tongCong * 10L / 110;
-invoice.setTaxAmount(BigDecimal.valueOf(vatAmt));
+invoice.setTaxAmount(BigDecimal.valueOf(vatAmt0));
 invoice.setTotalAmount(BigDecimal.valueOf(tongCong));
 invoice.setStatus("PENDING");
 

@@ -148,7 +148,7 @@ class DonHangDetailCard extends JPanel {
         lbHinhThuc = makeVal(valFont);
 
         addRow2(body, g, 13, "T\u1ea1m t\u00ednh:",                   lbTongCong, valFont);
-        addRow2(body, g, 14, "VAT (10%, \u0111\u00e3 bao g\u1ed3m):", lbVAT,      valFont);
+        addRow2(body, g, 14, "VAT (10%):", lbVAT, valFont);
         addRow2(body, g, 15, "Phí vận chuyển:",              lbPhiVC,    valFont);
         addRow2(body, g, 16, "Khuyến mãi:",                  lbMaGiam,   valFont);
         addRow2(body, g, 17, "Tổng số tiền cần thanh toán:", tfTongTT,   valFont);
