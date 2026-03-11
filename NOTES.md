@@ -222,6 +222,46 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 
 ---
 
+## Session 2026-03-11 — Role-based access, KH auto-code, VAT, UI fixes
+
+### Thay đổi
+
+- **CustomerBUS.java**: `generateCustomerCode()` đổi từ `private` → `public` để GUI gọi được
+
+- **KhachHangPanel.java**:
+  - `triggerAddCustomer()`: tự điền `tfMaKH` bằng `new CustomerBUS().generateCustomerCode()`, set read-only (background `0xE8E6F0`)
+  - `enableFormFields()`: loại `tfMaKH` ra — luôn không editable dù ở add hay edit mode
+  - `saveNewCustomer()`: thay `tableModel.addRow()` bằng `new CustomerBUS().AddCustomer(dto)` → lưu vào DB thật; thành công thì `loadCustomers()` để reload từ DB
+
+- **DonHangCreateCard.java**:
+  - **btnTaoKH**: từ `setVisible(false)` → `setVisible(true)`; action listener mở `JDialog` mini ngay trong cửa sổ hiện tại (nhập Họ tên/SĐT/Địa chỉ → auto-generate mã → `CustomerBUS.AddCustomer()` → reload `cbKhachHang` → tự chọn khách mới tạo)
+  - **cbNhanVien**: Admin thấy tất cả nhân viên; non-Admin thấy danh sách nhân viên có role `CASHIER`, auto-chọn current user nếu họ là cashier
+  - **VAT**: thêm `lbVatVal` label hiển thị "VAT (10%, đã bao gồm)"; `updateTotals()` tính `vat = tot * 10L / 110`; khi lưu invoice, `setTaxAmount(BigDecimal.valueOf(tongCong * 10L / 110))` thay vì `BigDecimal.ZERO`
+
+- **NhapKhoTableCard.java**: `btnNew` (Tạo phiếu nhập) chỉ `setVisible(true)` nếu role là `ADMIN` hoặc `WAREHOUSE`; `false` cho tất cả role khác
+
+- **MainPanel.java**: Khuyến mãi tab từ `if (isAdmin)` → `if (isAdmin || isCashier)` — cashier giờ thấy tab Khuyến mãi
+
+- **SanPhamDetailDialog.java**:
+  - Fix `colIdx[]` trong `showDetail()`: `{0,2,9,10,11,4,3,12,5,14,15,6,16,17,18}` (đúng thứ tự: Giá vốn→col4, Giá bán→col3, Số lượng→col12, Tồn kho tối thiểu→col5)
+  - Fix `val()` extractions trong `showEdit()` dùng cùng index đúng
+
+- **Nút In PDF / In Excel** (toàn bộ app):
+  - Thay "Xuất PDF" → **"In PDF"**, "Xuất Excel" → **"In Excel"** ở tất cả các panel: NhapKhoTableCard, KhachHangTableCard, NhanVienPanel, DonHangTableCard, KhuyenMaiPanel, SupplierPanel, CategoryPanel, SanPhamPanel, KhoTableCard
+
+### Pattern — role-based visibility
+
+- Lấy role: `UserSession.getCurrentUser()` → `new EmployeeBUS().getRole((long) user.getId())` → `role.getName()`
+- Role names: `"ADMIN"`, `"MANAGER"`, `"CASHIER"`, `"WAREHOUSE"`, `"SUPPORT"`
+- Dùng `setVisible(bool)` cho button, hoặc `if (isAdmin || isCashier)` block cho toàn bộ panel/tab
+
+### Pattern — tạo khách hàng mới inline (trong dialog phụ)
+
+- Vì `DonHangCreateCard` chạy trong `JDialog` (APPLICATION_MODAL), không thể navigate sang `MainPanel.navigateToKhachHangAndAdd()` (disruptive)
+- Giải pháp: `JDialog` nhỏ modal on top, chỉ 3 field, auto-generate code, lưu DB, reload combobox parent
+
+---
+
 ## Cấu trúc thư mục quan trọng
 
 ```text
