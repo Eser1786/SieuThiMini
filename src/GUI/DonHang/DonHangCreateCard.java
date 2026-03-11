@@ -5,6 +5,7 @@ import BUS.DiscountBUS;
 import BUS.EmployeeBUS;
 import BUS.ProductBUS;
 import BUS.SalesBUS;
+import BUS.UserSession;
 import DAO.DBConnection;
 import DAO.ProductDAO;
 import DAO.SalesInvoiceDAO;
@@ -14,12 +15,15 @@ import DTO.CustomerDTO;
 import DTO.DiscountDTO;
 import DTO.EmployeeDTO;
 import DTO.ProductDTO;
+import DTO.RoleDTO;
 import DTO.SaleDTO;
 import DTO.SalesInvoiceDTO;
 import DTO.SalesInvoiceDiscountDTO;
 import DTO.SalesInvoiceItemDTO;
 import DTO.enums.SaleEnum.SalePaymentMethod;
 import DTO.enums.SaleEnum.SaleStatus;
+import GUI.MainPanel;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
@@ -495,12 +499,22 @@ class DonHangCreateCard extends JPanel {
         btnTaoKH.setBackground(new Color(0x2E7D32)); btnTaoKH.setForeground(Color.WHITE);
         btnTaoKH.setFocusPainted(false); btnTaoKH.setBorderPainted(false); btnTaoKH.setOpaque(true);
         btnTaoKH.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnTaoKH.setVisible(false);
         btnTaoKH.addActionListener(e -> {
-            java.awt.Container mp = SwingUtilities.getAncestorOfClass(GUI.MainPanel.class, DonHangCreateCard.this);
-            if (mp instanceof GUI.MainPanel mainPanel) {
-                mainPanel.navigateToKhachHangAndAdd();
-            }
-        });
+
+    Component c = DonHangCreateCard.this;
+
+    while (c != null && !(c instanceof MainPanel)) {
+        c = c.getParent();
+    }
+
+    if (c instanceof MainPanel mainPanel) {
+        mainPanel.navigateToKhachHangAndAdd();
+    } else {
+        System.out.println("Không tìm thấy MainPanel");
+    }
+
+});
         JPanel custCard = makeRightCard("Kh\u00e1ch h\u00e0ng");
         addFieldToCard(custCard, "Ch\u1ecdn kh\u00e1ch:", cbKhachHang);
         {
@@ -517,16 +531,41 @@ class DonHangCreateCard extends JPanel {
         addFieldToCard(custCard, "\u0110\u1ecba ch\u1ec9 giao h\u00e0ng:", tfDiaChi);
 
         JComboBox<String> cbNhanVien = new JComboBox<>();
-        cbNhanVien.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cbNhanVien.addItem("-- Ch\u1ecdn nh\u00e2n vi\u00ean --");
-        try {
-            List<EmployeeDTO> emps = new EmployeeBUS().getAllEmployees();
-            if (emps != null && !emps.isEmpty())
-                for (EmployeeDTO e : emps) cbNhanVien.addItem(e.getCode() + " - " + e.getFullName());
-            else addFallbackEmployees(cbNhanVien);
-        } catch (Exception ignored) { addFallbackEmployees(cbNhanVien); }
-        JPanel empCard = makeRightCard("Nh\u00e2n vi\u00ean ti\u1ebfp nh\u1eadn");
-        addFieldToCard(empCard, "Nh\u00e2n vi\u00ean:", cbNhanVien);
+cbNhanVien.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+EmployeeDTO currentUser = UserSession.getCurrentUser();
+String roleName = "";
+
+try {
+    if (currentUser != null) {
+        RoleDTO role = new EmployeeBUS().getRole((long) currentUser.getId());
+        if (role != null) roleName = role.getName();
+    }
+} catch (Exception e) {
+    e.printStackTrace();
+}
+
+try {
+    if ("ADMIN".equals(roleName)) {
+        // ADMIN → hiển thị tất cả nhân viên
+        cbNhanVien.addItem("-- Chọn nhân viên --");
+        List<EmployeeDTO> emps = new EmployeeBUS().getAllEmployees();
+        if (emps != null)
+            for (EmployeeDTO e : emps)
+                cbNhanVien.addItem(e.getCode() + " - " + e.getFullName());
+    } 
+    else {
+        // User thường → chỉ hiện chính mình
+        if (currentUser != null) {
+            cbNhanVien.addItem(currentUser.getCode() + " - " + currentUser.getFullName());
+            cbNhanVien.setEditable(false);
+        }
+    }
+} catch (Exception ignored) {}
+
+JPanel empCard = makeRightCard("Nhân viên tiếp nhận");
+addFieldToCard(empCard, "Nhân viên:", cbNhanVien);
+
 
         JComboBox<String> cbHinhThuc = new JComboBox<>(new String[]{
             "Thanh to\u00e1n khi nh\u1eadn h\u00e0ng", "Chuy\u1ec3n kho\u1ea3n", "Th\u1ebb t\u00edn d\u1ee5ng" });

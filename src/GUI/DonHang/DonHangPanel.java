@@ -34,6 +34,7 @@ public class DonHangPanel extends JPanel {
     JDialog createDialog = null;
 
     public DonHangPanel() {
+        
         setLayout(innerCard);
         tableCard  = new DonHangTableCard(this);
         detailCard  = new DonHangDetailCard(this);

@@ -67,9 +67,11 @@ public class KhachHangPanel extends JPanel {
 
     
     public void triggerAddCustomer() {
-        innerCard.show(this, CARD_TABLE);
-        if (tableCard != null) tableCard.triggerAdd();
-    }
+    clearForm();
+    enableFormFields(true);
+    editingRow = -1;
+    innerCard.show(this, CARD_THEM);
+}
 
     void loadCustomers() {
         tableModel.setRowCount(0);

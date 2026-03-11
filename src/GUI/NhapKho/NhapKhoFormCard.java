@@ -745,4 +745,5 @@ if (purchaseId <= 0) {
     items.clear();
     rebuildList();
 }
+
 }
