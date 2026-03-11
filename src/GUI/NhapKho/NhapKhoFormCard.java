@@ -4,6 +4,7 @@ import BUS.EmployeeBUS;
 import BUS.ProductBUS;
 import BUS.PurchaseInvoicesBUS;
 import BUS.SupplierBUS;
+import BUS.UserSession;
 import DTO.*;
 import DTO.enums.PurchaseInvoicesEnum.PurchaseInvoicesStatus;
 import BUS.PurchasesBUS;
@@ -354,10 +355,36 @@ class NhapKhoFormCard extends JPanel {
         
         JPanel infoCard = makeRightCard("Th\u00f4ng tin chung");
 
-        cbEmployee = new JComboBox<>();
-        cbEmployee.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cbEmployee.addItem("-- Ch\u1ecdn nh\u00e2n vi\u00ean --");
-        for (EmployeeDTO e : allEmployees) cbEmployee.addItem(e.getFullName());
+       cbEmployee = new JComboBox<>();
+cbEmployee.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+EmployeeDTO currentUser = UserSession.getCurrentUser();
+String roleName = "";
+
+try {
+    if (currentUser != null) {
+        RoleDTO role = new EmployeeBUS().getRole((long) currentUser.getId());
+        if (role != null) roleName = role.getName();
+    }
+} catch (Exception e) {
+    e.printStackTrace();
+}
+
+cbEmployee.addItem("-- Chọn nhân viên --");
+
+if ("ADMIN".equals(roleName)) {
+    // admin thấy tất cả nhân viên
+    for (EmployeeDTO e : allEmployees) {
+        cbEmployee.addItem(e.getFullName());
+    }
+} else {
+    // nhân viên thường chỉ thấy chính mình
+    if (currentUser != null) {
+        cbEmployee.addItem(currentUser.getFullName());
+        cbEmployee.setSelectedIndex(1);
+        cbEmployee.setEnabled(false); // khóa không cho đổi
+    }
+}
 
         txtNote.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         txtNote.setLineWrap(true); txtNote.setWrapStyleWord(true);

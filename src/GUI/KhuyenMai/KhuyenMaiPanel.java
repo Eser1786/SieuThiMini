@@ -907,6 +907,7 @@ cbCategory.addActionListener(e -> applyFilter.run());
         JDateChooser dc = new JDateChooser();
         dc.setDateFormatString("dd/MM/yyyy");
         dc.setPreferredSize(new Dimension(200, 36));
+         dc.setMinSelectableDate(new java.util.Date());
         return dc;
     }
 
