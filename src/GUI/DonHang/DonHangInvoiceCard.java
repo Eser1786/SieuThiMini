@@ -279,7 +279,10 @@ class DonHangInvoiceCard extends JPanel {
         for (int i = 0; i < cells.length; i++) {
             gc.gridx = i;
             gc.weightx = i < weights.length ? weights[i] : 10;
-            JLabel l = new JLabel(cells[i], i == 0 ? SwingConstants.LEFT : SwingConstants.CENTER);
+            int align = i == 0 ? SwingConstants.LEFT
+                      : i == 1 ? SwingConstants.CENTER
+                      : SwingConstants.RIGHT;
+            JLabel l = new JLabel(cells[i], align);
             l.setFont(new Font("Arial", bold ? Font.BOLD : Font.PLAIN, 12));
             row.add(l, gc);
         }

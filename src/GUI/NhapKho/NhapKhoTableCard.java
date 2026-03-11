@@ -254,10 +254,10 @@ class NhapKhoTableCard extends JPanel {
             }
             btnNew.setVisible("ADMIN".equals(role) || "WAREHOUSE".equals(role));
         } catch (Exception ignored) { btnNew.setVisible(false); }
-        JButton btnExportPDF   = GUI.ExportUtils.makeExportButton("In PDF",   new Color(0x7B52AB));
+        JButton btnExportPDF   = GUI.ExportUtils.makeExportButton("Xuất PDF",   new Color(0x7B52AB));
         btnExportPDF.addActionListener(e -> GUI.ExportUtils.xuatPDF(this, model, "Danh sach phieu nhap kho"));
 
-        JButton btnExportExcel = GUI.ExportUtils.makeExportButton("In CSV", new Color(0x2E7D32));
+        JButton btnExportExcel = GUI.ExportUtils.makeExportButton("Xuất Excel", new Color(0x2E7D32));
         btnExportExcel.addActionListener(e -> GUI.ExportUtils.xuatCSV(this, model, "Danh sach phieu nhap kho"));
 
         top.add(pLoc);

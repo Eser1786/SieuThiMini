@@ -36,60 +36,70 @@ public class ExportUtils {
         return fc;
     }
 
-    public static void xuatCSV(Component parent, DefaultTableModel model, String tenFile) {
-        JFileChooser fc = getSystemFileChooser("Lưu file Excel (CSV)", "CSV Files (*.csv)", "csv");
-        fc.setSelectedFile(new File(tenFile + ".csv"));
+    public static void xuatExcel(Component parent, DefaultTableModel model, String tenFile) {
+        JFileChooser fc = getSystemFileChooser("L\u01b0u file Excel", "Excel Files (*.xls)", "xls");
+        fc.setSelectedFile(new File(tenFile + ".xls"));
 
         if (fc.showSaveDialog(parent) != JFileChooser.APPROVE_OPTION)
             return;
 
         File file = fc.getSelectedFile();
-        if (!file.getName().toLowerCase().endsWith(".csv"))
-            file = new File(file.getAbsolutePath() + ".csv");
+        if (!file.getName().toLowerCase().endsWith(".xls"))
+            file = new File(file.getAbsolutePath() + ".xls");
 
         try (BufferedWriter bw = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
 
-            bw.write('\uFEFF');
+            bw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            bw.write("<?mso-application progid=\"Excel.Sheet\"?>\n");
+            bw.write("<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\"\n");
+            bw.write(" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\">\n");
+            bw.write("<Styles><Style ss:ID=\"h\"><Font ss:Bold=\"1\"/><Interior ss:Color=\"#AF9FCB\" ss:Pattern=\"Solid\"/></Style></Styles>\n");
+            bw.write("<Worksheet ss:Name=\"Sheet1\"><Table>\n");
 
             int cols = model.getColumnCount();
-            StringBuilder sb = new StringBuilder();
-            for (int c = 0; c < cols; c++) {
-                if (model.getColumnName(c).equalsIgnoreCase("Thao tác"))
-                    continue;
-                if (sb.length() > 0)
-                    sb.append(',');
-                sb.append('"').append(model.getColumnName(c).replace("\"", "\"\"")).append('"');
-            }
-            bw.write(sb.toString());
-            bw.newLine();
 
+            // header row
+            bw.write("<Row>");
+            for (int c = 0; c < cols; c++) {
+                if (model.getColumnName(c).equalsIgnoreCase("Thao t\u00e1c")) continue;
+                bw.write("<Cell ss:StyleID=\"h\"><Data ss:Type=\"String\">"
+                    + escapeXml(model.getColumnName(c)) + "</Data></Cell>");
+            }
+            bw.write("</Row>\n");
+
+            // data rows
             for (int r = 0; r < model.getRowCount(); r++) {
-                sb.setLength(0);
-                boolean dau = true;
+                bw.write("<Row>");
                 for (int c = 0; c < cols; c++) {
-                    if (model.getColumnName(c).equalsIgnoreCase("Thao tác"))
-                        continue;
-                    if (!dau)
-                        sb.append(',');
-                    dau = false;
+                    if (model.getColumnName(c).equalsIgnoreCase("Thao t\u00e1c")) continue;
                     Object val = model.getValueAt(r, c);
                     String cell = val == null ? "" : val.toString();
-                    sb.append('"').append(cell.replace("\"", "\"\"")).append('"');
+                    bw.write("<Cell><Data ss:Type=\"String\">" + escapeXml(cell) + "</Data></Cell>");
                 }
-                bw.write(sb.toString());
-                bw.newLine();
+                bw.write("</Row>\n");
             }
 
+            bw.write("</Table></Worksheet></Workbook>");
+
             JOptionPane.showMessageDialog(parent,
-                    "Xuất file thành công!\n" + file.getAbsolutePath(),
-                    "Xuất Excel (CSV)", JOptionPane.INFORMATION_MESSAGE);
+                    "Xu\u1ea5t file th\u00e0nh c\u00f4ng!\n" + file.getAbsolutePath(),
+                    "Xu\u1ea5t Excel", JOptionPane.INFORMATION_MESSAGE);
 
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(parent,
-                    "Lỗi khi xuất file: " + ex.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    "L\u1ed7i khi xu\u1ea5t file: " + ex.getMessage(),
+                    "L\u1ed7i", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private static String escapeXml(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
+    /** @deprecated Use xuatExcel instead */
+    public static void xuatCSV(Component parent, DefaultTableModel model, String tenFile) {
+        xuatExcel(parent, model, tenFile);
     }
 
     public static void xuatPDF(Component parent, DefaultTableModel model, String tieuDe) {

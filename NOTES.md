@@ -262,6 +262,37 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 
 ---
 
+## Session 2026-03-11 (phần 3) — Xuất Excel thật, đổi nhãn nút, fix DH002, cửa sổ fullscreen
+
+### Thay đổi
+
+- **ExportUtils.java** — Thêm `xuatExcel()` xuất file `.xls` thật (SpreadsheetML XML, không cần Apache POI):
+  - Header row màu tím `#AF9FCB`, in đậm
+  - Bỏ cột "Thao tác" khi xuất
+  - `xuatCSV()` giờ là deprecated wrapper gọi sang `xuatExcel()`
+
+- **Đổi nhãn nút xuất** (toàn bộ 9 panel):
+  - `"In CSV"` → `"Xuất Excel"` (tất cả nút Excel)
+  - `"In PDF"` → `"Xuất PDF"` (tất cả nút PDF)
+  - Các panel: `KhachHangTableCard`, `KhuyenMaiPanel`, `DonHangTableCard`, `KhoTableCard`, `NhapKhoTableCard`, `NhanVienPanel`, `CategoryPanel`, `SanPhamPanel`, `SupplierPanel`
+
+- **sql-init/04_seed_data_clean.sql** — Fix DH002 total sai:
+  - `total_amount` + `subtotal`: `65000` → `110000` (5×5000 + 1×30000 + 5×11000 = 110,000)
+
+- **GUI.java** — Kích thước cửa sổ:
+  - Windowed mặc định: `1000×700` (trước là `1440×1024`)
+  - Minimum size: `800×600`
+  - Khởi động sau đăng nhập: `setExtendedState(JFrame.MAXIMIZED_BOTH)` → toàn màn hình
+  - Vẫn cho phép resize tự do
+
+### Lưu ý
+
+- SpreadsheetML: viết XML với `<?mso-application progid="Excel.Sheet"?>` → Excel mở được `.xls` không cần thư viện ngoài
+- `setExtendedState(MAXIMIZED_BOTH)` phải gọi sau khi `new GUI()` và trước `setVisible(true)`
+- `setSize(800, 600)` là size khi restore-down từ maximize
+
+---
+
 ## Session 2026-03-11 (phần 2) — In CSV, NhapKho invoice code, KH inline, last_purchase, UI fixes
 
 ### Thay đổi

@@ -19,8 +19,8 @@ public class GUI extends JFrame {
             if (iconFile.exists())
                 setIconImage(new javax.swing.ImageIcon(iconFile.getAbsolutePath()).getImage());
         } catch (Exception ignored) {}
-        setSize(1440, 1024);
-        setMinimumSize(new Dimension(1000, 700));
+        setSize(1000, 700);
+        setMinimumSize(new Dimension(800, 600));
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -85,6 +85,7 @@ public class GUI extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             GUI frame = new GUI();
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             frame.setVisible(true);
         });
     }
