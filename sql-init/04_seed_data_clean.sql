@@ -315,7 +315,7 @@ VALUES
     (
         'SP011',
         'Pin AA',
-        'img/products/no-product.png',
+        'img/products/Pin AA.png',
         7,
         8,
         20000.00,
@@ -332,7 +332,7 @@ VALUES
     (
         'SP012',
         'Vở học sinh',
-        'img/products/no-product.png',
+        'img/products/Vở học sinh.png',
         8,
         4,
         7000.00,

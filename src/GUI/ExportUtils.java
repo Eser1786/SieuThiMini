@@ -63,6 +63,7 @@ public class ExportUtils {
             bw.write("<Row>");
             for (int c = 0; c < cols; c++) {
                 if (model.getColumnName(c).equalsIgnoreCase("Thao t\u00e1c")) continue;
+                if (model.getColumnName(c).equalsIgnoreCase("H\u00ecnh \u1ea3nh")) continue;
                 bw.write("<Cell ss:StyleID=\"h\"><Data ss:Type=\"String\">"
                     + escapeXml(model.getColumnName(c)) + "</Data></Cell>");
             }
@@ -73,6 +74,7 @@ public class ExportUtils {
                 bw.write("<Row>");
                 for (int c = 0; c < cols; c++) {
                     if (model.getColumnName(c).equalsIgnoreCase("Thao t\u00e1c")) continue;
+                    if (model.getColumnName(c).equalsIgnoreCase("H\u00ecnh \u1ea3nh")) continue;
                     Object val = model.getValueAt(r, c);
                     String cell = val == null ? "" : val.toString();
                     bw.write("<Cell><Data ss:Type=\"String\">" + escapeXml(cell) + "</Data></Cell>");
