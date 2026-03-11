@@ -212,6 +212,20 @@ class DonHangCreateCard extends JPanel {
         g.gridx = 4; g.insets = new Insets(0, 0, 0, 8);
         row.add(lbSub, g);
 
+        // T\u1ed3n kho
+        JLabel lbStock = new JLabel(String.valueOf(it.stock));
+        lbStock.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lbStock.setPreferredSize(new Dimension(60, 24));
+        lbStock.setHorizontalAlignment(SwingConstants.CENTER);
+        if (it.stock <= 0)
+            lbStock.setForeground(new Color(0xE53935));
+        else if (it.qty >= it.stock)
+            lbStock.setForeground(new Color(0xE65100));
+        else
+            lbStock.setForeground(new Color(0x2E7D32));
+        g.gridx = 5; g.insets = new Insets(0, 0, 0, 8);
+        row.add(lbStock, g);
+
         
         JButton btnX = new JButton("X");
         btnX.setFont(new Font("Segoe UI", Font.BOLD, 11));
@@ -231,11 +245,11 @@ class DonHangCreateCard extends JPanel {
             rebuildList();
             updateTotals();
         });
-        g.gridx = 5; g.insets = new Insets(0, 0, 0, 0);
+        g.gridx = 6; g.insets = new Insets(0, 0, 0, 0);
         row.add(btnX, g);
 
         
-        g.gridx = 6; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
+        g.gridx = 7; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
         row.add(new JLabel(), g);
 
         return row;
@@ -312,16 +326,16 @@ class DonHangCreateCard extends JPanel {
         GridBagConstraints lhg = new GridBagConstraints();
         lhg.gridy = 0; lhg.anchor = GridBagConstraints.WEST; lhg.insets = new Insets(0, 0, 0, 8);
         String[] hdrTxt = { "M\u00e3 SP", "T\u00ean s\u1ea3n ph\u1ea9m", "\u0110\u01a1n gi\u00e1",
-                            "S\u1ed1 l\u01b0\u1ee3ng", "Th\u00e0nh ti\u1ec1n", "", "" };
-        int[]    hdrW   = { 70, 160, 90, 64, 75, 34, 0 };
-        double[] hdrWx  = { 0, 0, 0, 0, 0, 0, 1.0 };
+                            "S\u1ed1 l\u01b0\u1ee3ng", "Th\u00e0nh ti\u1ec1n", "T\u1ed3n kho", "", "" };
+        int[]    hdrW   = { 70, 160, 90, 64, 75, 60, 34, 0 };
+        double[] hdrWx  = { 0, 0, 0, 0, 0, 0, 0, 1.0 };
         for (int i = 0; i < hdrTxt.length; i++) {
             JLabel h = new JLabel(hdrTxt[i]);
             h.setFont(new Font("Segoe UI", Font.BOLD, 13));
             h.setForeground(new Color(0x333333));
             if (hdrW[i] > 0) h.setPreferredSize(new Dimension(hdrW[i], 20));
             if (i == 2 || i == 4) h.setHorizontalAlignment(SwingConstants.RIGHT);
-            if (i == 3) h.setHorizontalAlignment(SwingConstants.CENTER);
+            if (i == 3 || i == 5) h.setHorizontalAlignment(SwingConstants.CENTER);
             lhg.gridx = i; lhg.weightx = hdrWx[i];
             lhg.fill = (i == 6 ? GridBagConstraints.HORIZONTAL : GridBagConstraints.NONE);
             listHeader.add(h, lhg);
