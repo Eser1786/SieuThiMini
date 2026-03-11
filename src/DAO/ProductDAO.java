@@ -203,8 +203,8 @@ public class ProductDAO {
     
     public long getComputedStock(long productId) {
         String sql =
-            "SELECT " +
-            "  COALESCE((SELECT SUM(pii.quantity) " +
+            "SELECT p.total_quantity " +
+            "+ COALESCE((SELECT SUM(pii.quantity) " +
             "            FROM purchase_invoice_items pii " +
             "            JOIN purchase_invoices pi ON pii.invoice_id = pi.invoice_id " +
             "            WHERE pii.product_id = ? AND pi.status = 'RECEIVED'), 0) " +
@@ -212,11 +212,13 @@ public class ProductDAO {
             "            FROM sales_invoice_items sii " +
             "            JOIN sales_invoices sinv ON sii.invoice_id = sinv.invoice_id " +
             "            WHERE sii.product_id = ? AND sinv.status = 'COMPLETED'), 0) " +
-            "AS computed_stock";
+            "AS computed_stock " +
+            "FROM products p WHERE p.product_id = ?";
         try (java.sql.Connection conn = DAO.DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, productId);
             ps.setLong(2, productId);
+            ps.setLong(3, productId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return rs.getLong("computed_stock");
         } catch (SQLException e) {
