@@ -128,7 +128,7 @@ class DonHangInvoiceCard extends JPanel {
                     stt++;
                 }
                 finalTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue() : subTotal;
-                vatAmt   = inv.getTaxAmount() != null ? inv.getTaxAmount().longValue() : finalTot * 10L / 110;
+                vatAmt   = finalTot * 10L / 110;
                 disc     = sale.getDiscountAmount() != null ? sale.getDiscountAmount().longValue() : 0;
             } else {
                 // no sales_invoice — parse from note field
@@ -158,8 +158,7 @@ class DonHangInvoiceCard extends JPanel {
                     disc     = sale.getDiscountAmount() != null ? sale.getDiscountAmount().longValue() : 0;
                     finalTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue()
                                                              : Math.max(0, subTotal - disc);
-                    long netSub = subTotal - disc;
-                    vatAmt = finalTot > netSub ? finalTot - netSub : 0;
+                    vatAmt   = finalTot * 10L / 110;
                 } else {
                     DonHangPanel.OrderDetailData od = parent.orderDataMap.get(maDon);
                     if (od != null && !od.items.isEmpty()) {
@@ -179,7 +178,7 @@ class DonHangInvoiceCard extends JPanel {
                         finalTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue() : 0;
                         subTotal = finalTot;
                     }
-                    vatAmt = 0;
+                    vatAmt = finalTot * 10L / 110;
                 }
             }
         } else {

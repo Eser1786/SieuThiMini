@@ -147,8 +147,8 @@ class DonHangDetailCard extends JPanel {
         tfTongTT   = UIUtils.makeField();
         lbHinhThuc = makeVal(valFont);
 
-        addRow2(body, g, 13, "Tổng cộng (ước tính):",       lbTongCong, valFont);
-        addRow2(body, g, 14, "VAT (10%):",                   lbVAT,      valFont);
+        addRow2(body, g, 13, "T\u1ea1m t\u00ednh:",                   lbTongCong, valFont);
+        addRow2(body, g, 14, "VAT (10%, \u0111\u00e3 bao g\u1ed3m):", lbVAT,      valFont);
         addRow2(body, g, 15, "Phí vận chuyển:",              lbPhiVC,    valFont);
         addRow2(body, g, 16, "Khuyến mãi:",                  lbMaGiam,   valFont);
         addRow2(body, g, 17, "Tổng số tiền cần thanh toán:", tfTongTT,   valFont);
@@ -300,14 +300,11 @@ class DonHangDetailCard extends JPanel {
                         String.format("%,.0fđ", (double) line)
                     });
                 }
-                long finalSub = sale.getSubTotal() != null ? sale.getSubTotal().longValue() : sub;
                 long finalTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue() : sub;
-                lbTongCong.setText(String.format("%,.0fđ", (double) finalSub));
-                lbVAT.setText(inv.getTaxAmount() != null
-                    ? String.format("%,.0fđ", inv.getTaxAmount().doubleValue())
-                    : String.format("%,.0fđ", (double)(finalTot * 10L / 110)));
-                lbPhiVC.setText("Miễn phí");
-                tfTongTT.setText(String.format("%,.0fđ", (double) finalTot));
+                lbTongCong.setText(String.format("%,.0f\u0111", (double) sub));
+                lbVAT.setText(String.format("%,.0f\u0111", (double)(finalTot * 10L / 110)));
+                lbPhiVC.setText("Mi\u1ec5n ph\u00ed");
+                tfTongTT.setText(String.format("%,.0f\u0111", (double) finalTot));
             } else {
                 
                 String note = sale.getNote();
@@ -323,13 +320,11 @@ class DonHangDetailCard extends JPanel {
                             String.format("%,.0fđ", (double) sale.getTotalAmount().longValue()) });
                     }
                 }
-                lbTongCong.setText(String.format("%,.0fđ", (double) (sale.getSubTotal() != null ? sale.getSubTotal().longValue() : sale.getTotalAmount().longValue())));
                 long noteTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue() : 0;
-                long noteSub = sale.getSubTotal()   != null ? sale.getSubTotal().longValue()   : noteTot;
-                long noteVAT = noteTot > noteSub ? noteTot - noteSub : 0;
-                lbVAT.setText(String.format("%,.0fđ", (double) noteVAT));
-                lbPhiVC.setText("Miễn phí");
-                tfTongTT.setText(String.format("%,.0fđ", (double) noteTot));
+                lbTongCong.setText(String.format("%,.0f\u0111", (double)(sale.getSubTotal() != null ? sale.getSubTotal().longValue() : noteTot)));
+                lbVAT.setText(String.format("%,.0f\u0111", (double)(noteTot * 10L / 110)));
+                lbPhiVC.setText("Mi\u1ec5n ph\u00ed");
+                tfTongTT.setText(String.format("%,.0f\u0111", (double) noteTot));
             }
         } else {
             
