@@ -554,15 +554,12 @@ class DonHangCreateCard extends JPanel {
             fMaKH.setBackground(new Color(0xE8E6F0));
             fMaKH.setForeground(new Color(0x888888));
 
-            JComboBox<String> cbHang2 = new JComboBox<>(new String[]{"\u0110\u1ed3ng", "B\u1ea1c", "V\u00e0ng", "Kim c\u01b0\u01a1ng"});
-            cbHang2.setPreferredSize(fd);
             JComboBox<String> cbTT2 = new JComboBox<>(new String[]{"Ho\u1ea1t \u0111\u1ed9ng", "Kh\u00f4ng ho\u1ea1t \u0111\u1ed9ng"});
             cbTT2.setPreferredSize(fd);
 
             Object[][] frows = {
                 { "M\u00e3 KH:",         fMaKH,  "T\u00ean kh\u00e1ch h\u00e0ng:", fTen   },
                 { "S\u1ed1 \u0111i\u1ec7n tho\u1ea1i:", fSdt, "Email:", fEmail },
-                { "H\u1ea1ng:",          cbHang2, "Tr\u1ea1ng th\u00e1i:",     cbTT2  },
             };
             for (int i = 0; i < frows.length; i++) {
                 g.gridy = i;
@@ -576,6 +573,9 @@ class DonHangCreateCard extends JPanel {
             g.gridy = frows.length; g.gridx = 0; g.weightx = 0; g.gridwidth = 1;
             JLabel lbDC = new JLabel("\u0110\u1ecba ch\u1ec9:"); lbDC.setFont(lf); form.add(lbDC, g);
             g.gridx = 1; g.weightx = 1; g.gridwidth = 3; form.add(fDiaChi, g); g.gridwidth = 1;
+            g.gridy = frows.length + 1; g.gridx = 0; g.weightx = 0;
+            JLabel lbTT2 = new JLabel("Tr\u1ea1ng th\u00e1i:"); lbTT2.setFont(lf); form.add(lbTT2, g);
+            g.gridx = 1; g.weightx = 1; form.add(cbTT2, g);
             dlg.add(form, BorderLayout.CENTER);
 
             JPanel ftr = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
@@ -601,13 +601,7 @@ class DonHangCreateCard extends JPanel {
                 newCust.setPhone(fSdt.getText().trim());
                 newCust.setEmail(fEmail.getText().trim());
                 newCust.setAddress(fDiaChi.getText().trim());
-                String hangStr = cbHang2.getSelectedItem().toString();
-                newCust.setType(switch (hangStr) {
-                    case "B\u1ea1c" -> CustomerType.SILVER;
-                    case "V\u00e0ng" -> CustomerType.GOLD;
-                    case "Kim c\u01b0\u01a1ng" -> CustomerType.DIAMOND;
-                    default -> CustomerType.REGULAR;
-                });
+                newCust.setType(CustomerType.REGULAR);
                 newCust.setStatus("Ho\u1ea1t \u0111\u1ed9ng".equals(cbTT2.getSelectedItem().toString()) ? CustomerStatus.ACTIVE : CustomerStatus.INACTIVE);
                 newCust.setLoyaltyPoints(0);
                 newCust.setTotalSpent(BigDecimal.ZERO);
@@ -901,9 +895,11 @@ if(cbMaKM.getSelectedIndex() > 0){
     
     if (customer != null) {
         try {
-            new CustomerBUS().updateLastPurchase(customer.getId(), LocalDateTime.now());
+            CustomerBUS cb = new CustomerBUS();
+            cb.updateLastPurchase(customer.getId(), LocalDateTime.now());
+            cb.addLoyaltyPoints(customer.getId(), tongCong);
         } catch (Exception ex) {
-            System.err.println("L\u1ed7i c\u1eadp nh\u1eadt last_purchase cho kh\u00e1ch h\u00e0ng: " + ex.getMessage());
+            System.err.println("L\u1ed7i c\u1eadp nh\u1eadt kh\u00e1ch h\u00e0ng: " + ex.getMessage());
         }
     }
 }

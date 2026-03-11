@@ -2,6 +2,7 @@ package GUI.KhachHang;
 
 import BUS.CustomerBUS;
 import DTO.CustomerDTO;
+import DTO.enums.CustomerEnum.CustomerType;
 import GUI.ExportUtils;
 import GUI.UIUtils;
 import javax.swing.*;
@@ -141,6 +142,21 @@ class KhachHangTableCard extends JPanel {
         top.add(btnPDF);
         top.add(btnExcel);
         top.add(btnImport);
+
+        JButton btnRefresh = new JButton("Làm mới");
+        btnRefresh.setFocusPainted(false);
+        btnRefresh.setBackground(new Color(0xD9D9D9));
+        btnRefresh.setFont(new Font("Arial", Font.BOLD, 13));
+        btnRefresh.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnRefresh.setOpaque(true);
+        btnRefresh.setBorderPainted(false);
+        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRefresh.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnRefresh.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnRefresh.setBackground(new Color(0xD9D9D9)); }
+        });
+        btnRefresh.addActionListener(e -> parent.loadCustomers());
+        top.add(btnRefresh);
 
         
         bang.setRowHeight(52);
@@ -407,10 +423,6 @@ class KhachHangTableCard extends JPanel {
         JTextField fEmail  = UIUtils.makeField(); fEmail.setPreferredSize(fd);
         JTextField fDiaChi = UIUtils.makeField(); fDiaChi.setPreferredSize(fd);
 
-        JComboBox<String> cbHang = new JComboBox<>(new String[]{"Đồng", "Bạc", "Vàng", "Kim cương"});
-        cbHang.setPreferredSize(fd);
-        UIUtils.styleComboBox(cbHang);
-
         JComboBox<String> cbTT = new JComboBox<>(new String[]{"Hoạt động", "Không hoạt động"});
         cbTT.setPreferredSize(fd);
         UIUtils.styleComboBox(cbTT);
@@ -418,7 +430,6 @@ class KhachHangTableCard extends JPanel {
         Object[][] rows = {
             { "Mã KH:",         fMaKH,  "Tên khách hàng:", fTen   },
             { "Số điện thoại:", fSdt,   "Email:",           fEmail  },
-            { "Hạng:",          cbHang, "Trạng thái:",      cbTT   },
         };
         for (int i = 0; i < rows.length; i++) {
             g.gridy = i;
@@ -440,6 +451,11 @@ class KhachHangTableCard extends JPanel {
         g.gridx = 1; g.weightx = 1; g.gridwidth = 3;
         form.add(fDiaChi, g);
         g.gridwidth = 1;
+        g.gridy = rows.length + 1; g.gridx = 0; g.weightx = 0;
+        JLabel lbTT = new JLabel("Trạng thái:"); lbTT.setFont(lf);
+        form.add(lbTT, g);
+        g.gridx = 1; g.weightx = 1;
+        form.add(cbTT, g);
 
         dlg.add(form, BorderLayout.CENTER);
 
@@ -478,7 +494,7 @@ class KhachHangTableCard extends JPanel {
             dto.setPhone(fSdt.getText().trim());
             dto.setEmail(fEmail.getText().trim());
             dto.setAddress(fDiaChi.getText().trim());
-            dto.setType(KhachHangPanel.vnToType(cbHang.getSelectedItem().toString()));
+            dto.setType(CustomerType.REGULAR);
             dto.setStatus(KhachHangPanel.vnToStatus(cbTT.getSelectedItem().toString()));
             dto.setLoyaltyPoints(0);
             dto.setTotalSpent(java.math.BigDecimal.ZERO);
@@ -488,7 +504,7 @@ class KhachHangTableCard extends JPanel {
                 .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             parent.tableModel.addRow(new Object[]{
                 dto.getCode(), dto.getFullName(), dto.getPhone(), dto.getEmail(),
-                dto.getAddress(), cbHang.getSelectedItem().toString(),
+                dto.getAddress(), "Đồng",
                 cbTT.getSelectedItem().toString(), "",
                 "0", today, "", "0đ", dto.getId()
             });
@@ -533,15 +549,21 @@ class KhachHangTableCard extends JPanel {
         JTextField fSdt    = UIUtils.makeField(); fSdt.setPreferredSize(fd);    fSdt.setText(sdt);
         JTextField fEmail  = UIUtils.makeField(); fEmail.setPreferredSize(fd);  fEmail.setText(email);
         JTextField fDiaChi = UIUtils.makeField(); fDiaChi.setPreferredSize(fd); fDiaChi.setText(diaChi);
-        JComboBox<String> cbHang = new JComboBox<>(new String[]{"Đồng", "Bạc", "Vàng", "Kim cương"});
-        cbHang.setPreferredSize(fd); UIUtils.styleComboBox(cbHang); cbHang.setSelectedItem(hang);
-        JComboBox<String> cbTT = new JComboBox<>(new String[]{"Hoạt động", "Không hoạt động"});
+        JLabel lbHangVal = new JLabel(hang);
+        lbHangVal.setFont(new Font("Arial", Font.BOLD, 13));
+        switch (hang) {
+            case "Đồng"      -> lbHangVal.setForeground(new Color(0x8B4513));
+            case "Bạc"       -> lbHangVal.setForeground(new Color(0x808080));
+            case "Vàng"      -> lbHangVal.setForeground(new Color(0xFFD700));
+            case "Kim cương" -> lbHangVal.setForeground(new Color(0x00BFFF));
+        }
+        JComboBox<String> cbTT = new JComboBox<>(new String[]{"Hoạt động", "Không hoạt động", "Bị chặn"});
         cbTT.setPreferredSize(fd); UIUtils.styleComboBox(cbTT); cbTT.setSelectedItem(trangThai);
 
         Object[][] rows = {
-            { "Mã KH:",         fMaKH2, "Tên khách hàng:", fTen    },
-            { "Số điện thoại:", fSdt,   "Email:",           fEmail  },
-            { "Hạng:",          cbHang, "Trạng thái:",      cbTT    },
+            { "Mã KH:",         fMaKH2,    "Tên khách hàng:", fTen    },
+            { "Số điện thoại:", fSdt,      "Email:",           fEmail  },
+            { "Hạng:",          lbHangVal, "Trạng thái:",      cbTT    },
         };
         for (int i = 0; i < rows.length; i++) {
             g.gridy = i; g.gridx = 0; g.weightx = 0;
@@ -581,7 +603,7 @@ class KhachHangTableCard extends JPanel {
             parent.tableModel.setValueAt(fSdt.getText().trim(),   modelRow, 2);
             parent.tableModel.setValueAt(fEmail.getText().trim(), modelRow, 3);
             parent.tableModel.setValueAt(fDiaChi.getText().trim(), modelRow, 4);
-            parent.tableModel.setValueAt(cbHang.getSelectedItem().toString(), modelRow, 5);
+            parent.tableModel.setValueAt(hang, modelRow, 5);
             parent.tableModel.setValueAt(cbTT.getSelectedItem().toString(), modelRow, 6);
             if (customerId > 0) {
                 try {
@@ -589,7 +611,7 @@ class KhachHangTableCard extends JPanel {
                     dto.setId(customerId); dto.setCode(maKH);
                     dto.setFullName(fTen.getText().trim()); dto.setPhone(fSdt.getText().trim());
                     dto.setEmail(fEmail.getText().trim());  dto.setAddress(fDiaChi.getText().trim());
-                    dto.setType(KhachHangPanel.vnToType(cbHang.getSelectedItem().toString()));
+                    dto.setType(KhachHangPanel.vnToType(hang));
                     dto.setStatus(KhachHangPanel.vnToStatus(cbTT.getSelectedItem().toString()));
                     new CustomerBUS().updateCustomer(dto);
                 } catch (Exception ex) { ex.printStackTrace(); }

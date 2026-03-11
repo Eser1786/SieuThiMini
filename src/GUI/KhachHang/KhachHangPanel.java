@@ -145,9 +145,9 @@ public class KhachHangPanel extends JPanel {
     void enableFormFields(boolean enable) {
         for (JTextField f : new JTextField[]{
                 tfTen, tfSdt, tfEmail, tfDiaChi,
-                tfDiem, tfTgDK, tfLanCuoiMua, tfTongTien, tfHang, tfTrangThai})
+                tfDiem, tfTgDK, tfLanCuoiMua, tfTongTien, tfTrangThai})
             f.setEditable(enable);
-        // tfMaKH is always read-only (auto-generated)
+        tfHang.setEditable(false); // always read-only: auto-calculated from loyalty points
         tfMaKH.setEditable(false);
     }
 

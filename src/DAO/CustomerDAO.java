@@ -243,6 +243,26 @@ public class CustomerDAO {
         return result;
     }
 
+    public boolean updateLoyaltyAndType(int customerId, int newPoints, CustomerType newType) {
+        boolean result = false;
+        if (openConnection()) {
+            try {
+                PreparedStatement pstm = con.prepareStatement(
+                    "UPDATE customers SET loyalty_points=?, customer_type=? WHERE customer_id=?");
+                pstm.setInt(1, newPoints);
+                pstm.setString(2, newType.getValue());
+                pstm.setInt(3, customerId);
+                result = pstm.executeUpdate() >= 1;
+            } catch (SQLException e) {
+                System.out.println("Kh\u00f4ng th\u1ec3 c\u1eadp nh\u1eadt \u0111i\u1ec3m! CustomerDAO - updateLoyaltyAndType");
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return result;
+    }
+
     public boolean softDeleteCustomer(int id) {
         boolean result = false;
         if (openConnection()) {

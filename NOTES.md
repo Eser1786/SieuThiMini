@@ -262,6 +262,38 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 
 ---
 
+## Session 2026-03-11 (phần 4) — Hạng tự động, tích điểm, reload KH/SP
+
+### Thay đổi
+
+- **Hạng khách hàng tự động** (không cho phép chọn tay):
+  - Bỏ dropdown "Hạng" khỏi dialog Thêm KH (KhachHangTableCard), Sửa KH (readonly JLabel), dialog inline từ tạo đơn hàng (DonHangCreateCard)
+  - `tfHang` trong KhachHangFormCard luôn read-only
+  - Hạng tính theo điểm tích lũy (`CustomerBUS.tierFromPoints()`):
+    - 0–99 điểm → Đồng (REGULAR)
+    - 100–499 điểm → Bạc (SILVER)
+    - 500–1.999 điểm → Vàng (GOLD)
+    - ≥ 2.000 điểm → Kim cương (DIAMOND)
+
+- **Tích điểm tự động khi hoàn thành đơn hàng**:
+  - Tỉ lệ: 1 điểm / 10.000 VNĐ
+  - `CustomerBUS.addLoyaltyPoints(id, totalAmount)` → cộng điểm + cập nhật hạng
+  - `CustomerDAO.updateLoyaltyAndType(id, newPoints, newType)` → UPDATE loyalty_points + customer_type
+  - Gọi sau khi lưu đơn thành công trong `DonHangCreateCard`
+
+- **Nút "Làm mới"** thêm vào:
+  - Tab Khách hàng (`KhachHangTableCard`) → reload từ DB
+  - Tab Sản phẩm (`SanPhamPanel`) → reload từ DB
+  - Thiết kế clone từ tab Kho
+
+### Lưu ý
+
+- `CustomerBUS.tierFromPoints()` là `static` → có thể gọi trực tiếp từ bất kỳ đâu
+- `updateCustomer()` trong CustomerDAO KHÔNG cập nhật loyalty_points/customer_type → dùng riêng `updateLoyaltyAndType()`
+- Khi tạo KH mới luôn gán REGULAR (0 điểm), hạng sẽ tự nâng khi tích điểm đủ
+
+---
+
 ## Session 2026-03-11 (phần 3) — Xuất Excel thật, đổi nhãn nút, fix DH002, cửa sổ fullscreen
 
 ### Thay đổi

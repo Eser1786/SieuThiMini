@@ -277,8 +277,20 @@ public class SanPhamPanel extends JPanel {
         top.add(btnExcel);
         top.add(btnImport);
 
-        JPanel content = new JPanel(new BorderLayout());
-        content.setBackground(new Color(0xF8F7FF));
+        JButton btnRefreshSP = new JButton("Làm mới");
+        btnRefreshSP.setFocusPainted(false);
+        btnRefreshSP.setBackground(new Color(0xD9D9D9));
+        btnRefreshSP.setFont(new Font("Arial", Font.BOLD, 13));
+        btnRefreshSP.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        btnRefreshSP.setOpaque(true);
+        btnRefreshSP.setBorderPainted(false);
+        btnRefreshSP.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRefreshSP.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btnRefreshSP.setBackground(new Color(0xC5B3E6)); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btnRefreshSP.setBackground(new Color(0xD9D9D9)); }
+        });
+        btnRefreshSP.addActionListener(e -> loadProducts());
+        top.add(btnRefreshSP);
 
         bang.setRowHeight(52);
         bang.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -348,6 +360,9 @@ public class SanPhamPanel extends JPanel {
         ActionButtonRenderer actionRenderer = new ActionButtonRenderer(bang, productModel, this);
         bang.getColumnModel().getColumn(8).setCellRenderer(actionRenderer);
         bang.getColumnModel().getColumn(8).setCellEditor(actionRenderer);
+
+        JPanel content = new JPanel(new BorderLayout());
+        content.setBackground(new Color(0xF8F7FF));
 
         JScrollPane bangScroll = new JScrollPane(bang);
         UIUtils.styleScrollPane(bangScroll);
