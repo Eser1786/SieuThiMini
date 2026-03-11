@@ -167,7 +167,7 @@ INSERT IGNORE INTO products (
 INSERT IGNORE INTO customers (customer_code, full_name, phone, email, address, loyalty_points, total_spent, customer_type, STATUS) VALUES
     ('KH001', 'Nguyễn Văn An',   '0987654321', 'an.nguyen@gmail.com',   'Quận 1, TP.HCM',  1250,  4500000.00, 'GOLD',    'ACTIVE'),
     ('KH002', 'Trần Thị Bình',   '0909123456', 'binhbong@gmail.com',                    'Quận 4, TP.HCM',   320,   980000.00, 'SILVER',  'ACTIVE'),
-    ('KH003', 'Thành Nhân',   '0123456789', 'sang@gmail.com',        'Thủ Đức, TP.HCM',  150,  1200000.00, 'SILVER',  'ACTIVE'),
+    ('KH003', 'Thanh Nhan',   '0123456789', 'sang@gmail.com',        'Thủ Đức, TP.HCM',  150,  1200000.00, 'SILVER',  'ACTIVE'),
     ('KH004', 'Lê Như',          '0987654000', 'gao@gmail.com',         'Sao Hỏa',         1920, 20000000.00, 'DIAMOND', 'ACTIVE'),
     ('KH005', 'Nguyễn văn B',         '0132456798', 'noparents@gmail.com',   'Hang Dơi',         200,   900000.00, 'REGULAR', 'ACTIVE'),
     ('KH006', 'Lê Văn Cường',    '0369852411', 'cuong.le@gmail.com',    'Quận 7, TP.HCM',    80,   350000.00, 'REGULAR', 'ACTIVE'),
