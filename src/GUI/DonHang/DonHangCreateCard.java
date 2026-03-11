@@ -20,9 +20,10 @@ import DTO.SaleDTO;
 import DTO.SalesInvoiceDTO;
 import DTO.SalesInvoiceDiscountDTO;
 import DTO.SalesInvoiceItemDTO;
+import DTO.enums.CustomerEnum.CustomerStatus;
+import DTO.enums.CustomerEnum.CustomerType;
 import DTO.enums.SaleEnum.SalePaymentMethod;
 import DTO.enums.SaleEnum.SaleStatus;
-import GUI.MainPanel;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -515,22 +516,128 @@ class DonHangCreateCard extends JPanel {
         btnTaoKH.setBackground(new Color(0x2E7D32)); btnTaoKH.setForeground(Color.WHITE);
         btnTaoKH.setFocusPainted(false); btnTaoKH.setBorderPainted(false); btnTaoKH.setOpaque(true);
         btnTaoKH.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnTaoKH.setVisible(false);
+        btnTaoKH.setVisible(true);
         btnTaoKH.addActionListener(e -> {
+            Window win = SwingUtilities.getWindowAncestor(DonHangCreateCard.this);
+            JDialog dlg = new JDialog(win, "Th\u00eam kh\u00e1ch h\u00e0ng", java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+            dlg.setResizable(false);
+            dlg.setLayout(new BorderLayout());
 
-    Component c = DonHangCreateCard.this;
+            JPanel hdr = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 14));
+            hdr.setBackground(new Color(0xAF9FCB));
+            JLabel hdrLbl = new JLabel("Th\u00eam kh\u00e1ch h\u00e0ng m\u1edbi");
+            hdrLbl.setFont(new Font("Arial", Font.BOLD, 18));
+            hdrLbl.setForeground(Color.WHITE);
+            hdr.add(hdrLbl);
+            dlg.add(hdr, BorderLayout.NORTH);
 
-    while (c != null && !(c instanceof MainPanel)) {
-        c = c.getParent();
-    }
+            JPanel form = new JPanel(new GridBagLayout());
+            form.setBackground(new Color(0xF0EFF8));
+            form.setBorder(BorderFactory.createEmptyBorder(18, 28, 18, 28));
+            GridBagConstraints g = new GridBagConstraints();
+            g.fill = GridBagConstraints.HORIZONTAL;
+            g.insets = new Insets(7, 6, 7, 6);
+            Font lf = new Font("Arial", Font.BOLD, 13);
+            Dimension fd = new Dimension(200, 36);
+            javax.swing.border.Border fb = BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xBBBBBB)),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8));
 
-    if (c instanceof MainPanel mainPanel) {
-        mainPanel.navigateToKhachHangAndAdd();
-    } else {
-        System.out.println("Không tìm thấy MainPanel");
-    }
+            JTextField fMaKH   = new JTextField(); fMaKH.setPreferredSize(fd);   fMaKH.setBorder(fb);   fMaKH.setFont(new Font("Arial", Font.PLAIN, 13));
+            JTextField fTen    = new JTextField(); fTen.setPreferredSize(fd);    fTen.setBorder(fb);    fTen.setFont(new Font("Arial", Font.PLAIN, 13));
+            JTextField fSdt    = new JTextField(); fSdt.setPreferredSize(fd);    fSdt.setBorder(fb);    fSdt.setFont(new Font("Arial", Font.PLAIN, 13));
+            JTextField fEmail  = new JTextField(); fEmail.setPreferredSize(fd);  fEmail.setBorder(fb);  fEmail.setFont(new Font("Arial", Font.PLAIN, 13));
+            JTextField fDiaChi = new JTextField(); fDiaChi.setPreferredSize(fd); fDiaChi.setBorder(fb); fDiaChi.setFont(new Font("Arial", Font.PLAIN, 13));
 
-});
+            try { fMaKH.setText(new CustomerBUS().generateCustomerCode()); } catch (Exception ex) { fMaKH.setText("KH???"); }
+            fMaKH.setEditable(false);
+            fMaKH.setBackground(new Color(0xE8E6F0));
+            fMaKH.setForeground(new Color(0x888888));
+
+            JComboBox<String> cbHang2 = new JComboBox<>(new String[]{"\u0110\u1ed3ng", "B\u1ea1c", "V\u00e0ng", "Kim c\u01b0\u01a1ng"});
+            cbHang2.setPreferredSize(fd);
+            JComboBox<String> cbTT2 = new JComboBox<>(new String[]{"Ho\u1ea1t \u0111\u1ed9ng", "Kh\u00f4ng ho\u1ea1t \u0111\u1ed9ng"});
+            cbTT2.setPreferredSize(fd);
+
+            Object[][] frows = {
+                { "M\u00e3 KH:",         fMaKH,  "T\u00ean kh\u00e1ch h\u00e0ng:", fTen   },
+                { "S\u1ed1 \u0111i\u1ec7n tho\u1ea1i:", fSdt, "Email:", fEmail },
+                { "H\u1ea1ng:",          cbHang2, "Tr\u1ea1ng th\u00e1i:",     cbTT2  },
+            };
+            for (int i = 0; i < frows.length; i++) {
+                g.gridy = i;
+                g.gridx = 0; g.weightx = 0;
+                JLabel l0 = new JLabel((String) frows[i][0]); l0.setFont(lf); form.add(l0, g);
+                g.gridx = 1; g.weightx = 1; form.add((Component) frows[i][1], g);
+                g.gridx = 2; g.weightx = 0;
+                JLabel l1 = new JLabel((String) frows[i][2]); l1.setFont(lf); form.add(l1, g);
+                g.gridx = 3; g.weightx = 1; form.add((Component) frows[i][3], g);
+            }
+            g.gridy = frows.length; g.gridx = 0; g.weightx = 0; g.gridwidth = 1;
+            JLabel lbDC = new JLabel("\u0110\u1ecba ch\u1ec9:"); lbDC.setFont(lf); form.add(lbDC, g);
+            g.gridx = 1; g.weightx = 1; g.gridwidth = 3; form.add(fDiaChi, g); g.gridwidth = 1;
+            dlg.add(form, BorderLayout.CENTER);
+
+            JPanel ftr = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
+            ftr.setBackground(new Color(0xF0EFF8));
+            ftr.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xCCCCCC)));
+            JButton bLuu = new JButton("L\u01b0u");
+            bLuu.setFont(new Font("Arial", Font.BOLD, 13)); bLuu.setBackground(new Color(0x5C4A7F)); bLuu.setForeground(Color.WHITE);
+            bLuu.setBorder(BorderFactory.createEmptyBorder(9, 22, 9, 22));
+            bLuu.setOpaque(true); bLuu.setBorderPainted(false); bLuu.setFocusPainted(false); bLuu.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            JButton bHuy = new JButton("H\u1ee7y");
+            bHuy.setFont(new Font("Arial", Font.BOLD, 13)); bHuy.setBackground(new Color(0x9B8EA8)); bHuy.setForeground(Color.WHITE);
+            bHuy.setBorder(BorderFactory.createEmptyBorder(9, 22, 9, 22));
+            bHuy.setOpaque(true); bHuy.setBorderPainted(false); bHuy.setFocusPainted(false); bHuy.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            bHuy.addActionListener(eh -> dlg.dispose());
+            bLuu.addActionListener(eh -> {
+                if (fTen.getText().trim().isEmpty() || fSdt.getText().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(dlg, "Vui l\u00f2ng nh\u1eadp T\u00ean v\u00e0 S\u1ed1 \u0111i\u1ec7n tho\u1ea1i!", "C\u1ea3nh b\u00e1o", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                CustomerDTO newCust = new CustomerDTO();
+                newCust.setCode(fMaKH.getText().trim());
+                newCust.setFullName(fTen.getText().trim());
+                newCust.setPhone(fSdt.getText().trim());
+                newCust.setEmail(fEmail.getText().trim());
+                newCust.setAddress(fDiaChi.getText().trim());
+                String hangStr = cbHang2.getSelectedItem().toString();
+                newCust.setType(switch (hangStr) {
+                    case "B\u1ea1c" -> CustomerType.SILVER;
+                    case "V\u00e0ng" -> CustomerType.GOLD;
+                    case "Kim c\u01b0\u01a1ng" -> CustomerType.DIAMOND;
+                    default -> CustomerType.REGULAR;
+                });
+                newCust.setStatus("Ho\u1ea1t \u0111\u1ed9ng".equals(cbTT2.getSelectedItem().toString()) ? CustomerStatus.ACTIVE : CustomerStatus.INACTIVE);
+                newCust.setLoyaltyPoints(0);
+                newCust.setTotalSpent(BigDecimal.ZERO);
+                newCust.setCreatedAt(LocalDateTime.now());
+                try {
+                    new CustomerBUS().AddCustomer(newCust);
+                    java.util.ArrayList<CustomerDTO> reloaded = new CustomerBUS().getAllCustomers();
+                    if (reloaded != null) allCustomers = reloaded;
+                    cbKhachHang.removeAllItems();
+                    cbKhachHang.addItem("-- Ch\u1ecdn kh\u00e1ch h\u00e0ng --");
+                    int selectIdx = 0;
+                    for (int i = 0; i < allCustomers.size(); i++) {
+                        CustomerDTO cu = allCustomers.get(i);
+                        String label = (cu.getCode() != null ? cu.getCode() : "") + " - "
+                            + (cu.getFullName() != null ? cu.getFullName() : "")
+                            + (cu.getPhone() != null ? " (" + cu.getPhone() + ")" : "");
+                        cbKhachHang.addItem(label);
+                        if (newCust.getCode().equals(cu.getCode())) selectIdx = i + 1;
+                    }
+                    cbKhachHang.setSelectedIndex(selectIdx);
+                } catch (Exception ex) { ex.printStackTrace(); }
+                dlg.dispose();
+            });
+            ftr.add(bLuu); ftr.add(bHuy);
+            dlg.add(ftr, BorderLayout.SOUTH);
+            dlg.pack();
+            dlg.setMinimumSize(new Dimension(640, dlg.getPreferredSize().height));
+            dlg.setLocationRelativeTo(DonHangCreateCard.this);
+            dlg.setVisible(true);
+        });
         JPanel custCard = makeRightCard("Kh\u00e1ch h\u00e0ng");
         addFieldToCard(custCard, "Ch\u1ecdn kh\u00e1ch:", cbKhachHang);
         {
@@ -793,12 +900,10 @@ if(cbMaKM.getSelectedIndex() > 0){
 
     
     if (customer != null) {
-        customer.setLastPurchaseAt(java.time.LocalDateTime.now());
         try {
-            CustomerBUS customerBUS = new CustomerBUS();
-            customerBUS.updateCustomer(customer);
+            new CustomerBUS().updateLastPurchase(customer.getId(), LocalDateTime.now());
         } catch (Exception ex) {
-            System.err.println("Lỗi cập nhật last_purchase cho khách hàng: " + ex.getMessage());
+            System.err.println("L\u1ed7i c\u1eadp nh\u1eadt last_purchase cho kh\u00e1ch h\u00e0ng: " + ex.getMessage());
         }
     }
 }

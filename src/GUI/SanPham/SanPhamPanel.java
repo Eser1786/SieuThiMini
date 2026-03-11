@@ -255,7 +255,7 @@ public class SanPhamPanel extends JPanel {
         });
 
         JButton btnPDF    = ExportUtils.makeExportButton("In PDF",   new Color(0x7B52AB));
-        JButton btnExcel  = ExportUtils.makeExportButton("In Excel", new Color(0x2E7D32));
+        JButton btnExcel  = ExportUtils.makeExportButton("In CSV", new Color(0x2E7D32));
         JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
         for (JButton b : new JButton[]{btnPDF, btnExcel, btnImport})
             b.setFont(new Font("Arial", Font.BOLD, 13));

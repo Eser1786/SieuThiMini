@@ -262,6 +262,40 @@ Phần mềm quản lý siêu thị mini desktop (Java Swing), kết nối DB qu
 
 ---
 
+## Session 2026-03-11 (phần 2) — In CSV, NhapKho invoice code, KH inline, last_purchase, UI fixes
+
+### Thay đổi
+
+- **Nút "In Excel" → "In CSV"** (toàn bộ app):
+  - Đổi label `"In Excel"` → `"In CSV"` ở tất cả 9 panel: `KhachHangTableCard`, `KhuyenMaiPanel`, `DonHangTableCard`, `KhoTableCard`, `NhapKhoTableCard`, `NhanVienPanel`, `CategoryPanel`, `SanPhamPanel`, `SupplierPanel`
+
+- **NhapKhoFormCard.java** — Fix "Số HĐ nhập" preview:
+  - Trước: tạo random `NK-yyyyMMdd-XXXX`
+  - Sau: gọi `new PurchaseInvoicesBUS().generateInvoiceCode()` → tạo `PN{yyyyMMdd}-{seq}` đúng chuẩn (ví dụ `PN20260311-003`)
+  - `PurchaseInvoicesBUS.generateInvoiceCode()` đổi từ `private` → `public`
+
+- **CategoryPanel.java** — Fix cột STT:
+  - Thêm `setMinWidth(50)` + `setMaxWidth(60)` cho cột 0 → không bị dãn rộng
+  - Áp `centerRenderer` riêng cho cột 0 → số STT hiển thị chính giữa
+
+- **DonHangCreateCard.java** — Tạo khách hàng mới inline:
+  - `btnTaoKH` từ `setVisible(false)` → `setVisible(true)`
+  - Action mở `JDialog` đầy đủ (Mã KH auto, Tên, SĐT, Email, Địa chỉ, Hạng, Trạng thái)
+  - Sau khi lưu: reload `allCustomers` từ DB, repopulate `cbKhachHang`, auto-chọn khách vừa tạo
+
+- **CustomerDAO.java + CustomerBUS.java** — Fix `last_purchase` không được ghi DB:
+  - Thêm method `updateLastPurchase(int customerId, LocalDateTime)` → `UPDATE customers SET last_purchase=? WHERE customer_id=?`
+  - `updateCustomer()` cũ KHÔNG có `last_purchase` trong SQL → không bao giờ lưu được
+  - `DonHangCreateCard` khi lưu đơn gọi `customerBUS.updateLastPurchase(id, now())` thay vì `updateCustomer()`
+
+### Lưu ý
+
+- Format mã phiếu nhập kho: `PN` + `yyyyMMdd` + `-` + 3 chữ số tuần tự (`PN20260301-001`)
+- Format mã đơn bán hàng: `HN` + `yyyyMMdd` + `-` + 3 chữ số tuần tự (`HN20260301-001`)
+- `updateCustomer()` trong `CustomerDAO` chỉ update: `full_name, phone, email, address, customer_type, status` — KHÔNG update `last_purchase`. Dùng `updateLastPurchase()` riêng khi cần.
+
+---
+
 ## Cấu trúc thư mục quan trọng
 
 ```text

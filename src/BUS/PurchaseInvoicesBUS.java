@@ -127,7 +127,7 @@ public class PurchaseInvoicesBUS {
         return purchaseInvoicesDAO.deletePurchaseInvoice(invoiceId);
     }
 
-    private String generateInvoiceCode() {
+    public String generateInvoiceCode() {
         
         LocalDateTime now = LocalDateTime.now();
         String datePart = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));

@@ -257,7 +257,7 @@ class NhapKhoTableCard extends JPanel {
         JButton btnExportPDF   = GUI.ExportUtils.makeExportButton("In PDF",   new Color(0x7B52AB));
         btnExportPDF.addActionListener(e -> GUI.ExportUtils.xuatPDF(this, model, "Danh sach phieu nhap kho"));
 
-        JButton btnExportExcel = GUI.ExportUtils.makeExportButton("In Excel", new Color(0x2E7D32));
+        JButton btnExportExcel = GUI.ExportUtils.makeExportButton("In CSV", new Color(0x2E7D32));
         btnExportExcel.addActionListener(e -> GUI.ExportUtils.xuatCSV(this, model, "Danh sach phieu nhap kho"));
 
         top.add(pLoc);

@@ -63,6 +63,10 @@ public class CustomerBUS {
         return customerDAO.updateCustomer(customer);
     }
 
+    public boolean updateLastPurchase(int customerId, java.time.LocalDateTime lastPurchase) {
+        return customerDAO.updateLastPurchase(customerId, lastPurchase);
+    }
+
     public boolean softDeleteCustomer(int id) {
         return customerDAO.softDeleteCustomer(id);
     }

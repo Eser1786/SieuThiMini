@@ -113,7 +113,7 @@ public class CategoryPanel extends JPanel {
         });
 
         JButton btnPDF    = ExportUtils.makeExportButton("In PDF",   new Color(0x7B52AB));
-        JButton btnExcel  = ExportUtils.makeExportButton("In Excel", new Color(0x2E7D32));
+        JButton btnExcel  = ExportUtils.makeExportButton("In CSV", new Color(0x2E7D32));
         JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");
         for (JButton b : new JButton[]{btnPDF, btnExcel, btnImport})
             b.setFont(new Font("Arial", Font.BOLD, 13));
@@ -165,12 +165,13 @@ public class CategoryPanel extends JPanel {
         table.getColumnModel().getColumn(1).setWidth(0);
 
         
-        table.getColumnModel().getColumn(0).setPreferredWidth(50);   
-        table.getColumnModel().getColumn(2).setPreferredWidth(200);  
-        table.getColumnModel().getColumn(3).setPreferredWidth(300);  
-        table.getColumnModel().getColumn(4).setPreferredWidth(120);  
+        table.getColumnModel().getColumn(0).setMinWidth(50);
+        table.getColumnModel().getColumn(0).setMaxWidth(60);
+        table.getColumnModel().getColumn(0).setPreferredWidth(55);
+        table.getColumnModel().getColumn(2).setPreferredWidth(200);
+        table.getColumnModel().getColumn(3).setPreferredWidth(300);
+        table.getColumnModel().getColumn(4).setPreferredWidth(120);
 
-        
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -179,12 +180,26 @@ public class CategoryPanel extends JPanel {
                 if (!isSelected) {
                     c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
                 }
-                setHorizontalAlignment(column == 3 ? SwingConstants.CENTER : SwingConstants.LEFT);
+                setHorizontalAlignment(SwingConstants.LEFT);
                 return c;
             }
         };
 
-        for (int i = 1; i < 4; i++) {
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF3F0FA));
+                }
+                setHorizontalAlignment(SwingConstants.CENTER);
+                return c;
+            }
+        };
+
+        table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+        for (int i = 2; i < 4; i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
 

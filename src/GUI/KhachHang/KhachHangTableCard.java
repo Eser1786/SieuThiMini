@@ -125,7 +125,7 @@ class KhachHangTableCard extends JPanel {
         JButton btnPDF = ExportUtils.makeExportButton("In PDF", new Color(0x7B52AB));
         btnPDF.addActionListener(e -> ExportUtils.xuatPDF(parent, parent.tableModel, "Danh sách khách hàng"));
 
-        JButton btnExcel = ExportUtils.makeExportButton("In Excel", new Color(0x2E7D32));
+        JButton btnExcel = ExportUtils.makeExportButton("In CSV", new Color(0x2E7D32));
         btnExcel.addActionListener(e -> ExportUtils.xuatCSV(parent, parent.tableModel, "khach_hang"));
 
         JButton btnImport = ExportUtils.makeImportButton("Nhập CSV");

@@ -108,7 +108,7 @@ class DonHangTableCard extends JPanel {
         JButton btnPDF = ExportUtils.makeExportButton("In PDF", new Color(0x7B52AB));
         btnPDF.addActionListener(e -> ExportUtils.xuatPDF(this, parent.tableModel, "Danh s\u00e1ch \u0111\u01a1n h\u00e0ng"));
 
-        JButton btnExcel = ExportUtils.makeExportButton("In Excel", new Color(0x2E7D32));
+        JButton btnExcel = ExportUtils.makeExportButton("In CSV", new Color(0x2E7D32));
         btnExcel.addActionListener(e -> ExportUtils.xuatCSV(this, parent.tableModel, "don_hang"));
 
         top.add(pLoc);

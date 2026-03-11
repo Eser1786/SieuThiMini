@@ -224,6 +224,25 @@ public class CustomerDAO {
         return result;
     }
 
+    public boolean updateLastPurchase(int customerId, java.time.LocalDateTime lastPurchase) {
+        boolean result = false;
+        if (openConnection()) {
+            try {
+                PreparedStatement pstm = con.prepareStatement(
+                    "UPDATE customers SET last_purchase=? WHERE customer_id=?");
+                pstm.setTimestamp(1, lastPurchase != null ? Timestamp.valueOf(lastPurchase) : null);
+                pstm.setInt(2, customerId);
+                result = pstm.executeUpdate() >= 1;
+            } catch (SQLException e) {
+                System.out.println("Kh\u00f4ng th\u1ec3 c\u1eadp nh\u1eadt last_purchase! CustomerDAO - updateLastPurchase");
+                e.printStackTrace();
+            } finally {
+                closeConnection();
+            }
+        }
+        return result;
+    }
+
     public boolean softDeleteCustomer(int id) {
         boolean result = false;
         if (openConnection()) {

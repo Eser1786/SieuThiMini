@@ -93,9 +93,7 @@ class NhapKhoFormCard extends JPanel {
 
         
         if (existing == null) {
-            String datePart = new java.text.SimpleDateFormat("yyyyMMdd").format(new Date());
-            String randPart = String.format("%04d", (int)(Math.random() * 10000));
-            txtInvoiceRef.setText("NK-" + datePart + "-" + randPart);
+            txtInvoiceRef.setText(new PurchaseInvoicesBUS().generateInvoiceCode());
         }
         txtInvoiceRef.setEditable(false);
         txtInvoiceRef.setBackground(new Color(0xE8E6F0));
