@@ -35,26 +35,141 @@ INSERT IGNORE INTO products (
     cost_price, selling_price, total_quantity, min_stock_level,
     unit, made_in, production_date, expire_date, STATUS, is_visible
 ) VALUES
-    ('SP001', '7 Up',                      'img/products/7up.png',               1, 1,  22000.00,  32000.00, 120, 20, 'Lon',   'Việt Nam', '2026-02-01', '2026-08-01', 'ACTIVE', 1),
-    ('SP002', 'Mì Hảo Hảo tôm chua cay',  'img/products/mitrontrung.png',       2, 3,   3500.00,   5000.00, 400, 50, 'Gói',   'Việt Nam', '2026-01-15', '2026-07-15', 'ACTIVE', 1),
-    ('SP003', 'Fanta Việt Quất',           'img/products/Fanta Viet Quat.png',   1, 1,   4000.00,   7000.00, 250, 30, 'Chai',  'Việt Nam', '2026-02-10', '2027-02-10', 'ACTIVE', 1),
-    ('SP004', 'Sữa Vinamilk Tươi Tiệt Trùng', 'img/products/sua.png',                     3, 1,  12000.00,  18000.00, 200, 30, 'Hộp',   'Việt Nam', '2026-03-01', '2026-09-01', 'ACTIVE', 1),
-    ('SP005', 'Pepsi lon 330ml',           'img/products/pepsi.png',                         1, 1,   8000.00,  12000.00, 180, 30, 'Lon',   'Việt Nam', '2026-02-20', '2026-08-20', 'ACTIVE', 1),
-    ('SP006', 'Snack Oishi tôm',           'img/products/khanluaf.png',                         2, 6,   4500.00,   7500.00, 300, 40, 'Gói',   'Việt Nam', '2026-01-10', '2026-10-10', 'ACTIVE', 1),
-    ('SP007', 'Nước rửa chén Sunlight',    'img/products/nuocruatay.png',                         4, 2,  18000.00,  25000.00,  80, 10, 'Chai',  'Việt Nam', '2025-12-01', '2027-12-01', 'ACTIVE', 1),
-    ('SP008', 'Bột giặt OMO 3kg',         'img/products/no-product.png',                         4, 2,  95000.00, 135000.00,  50, 10, 'Túi',   'Việt Nam', '2025-11-01', '2027-11-01', 'ACTIVE', 1),
-    ('SP009', 'Xúc xích CP',              'img/products/xucxichchebien.png',                         5, 5,  22000.00,  30000.00, 100, 15, 'Gói',   'Việt Nam', '2026-03-01', '2026-04-15', 'ACTIVE', 1),
-    ('SP010', 'Dầu gội Clear bạc hà',     'img/products/daugoiclear.png',                         6, 7,  45000.00,  65000.00,  60, 10, 'Chai',  'Việt Nam', '2025-10-01', '2027-10-01', 'ACTIVE', 1),
-    ('SP011', 'Pin AA Energizer (vỉ 2)',   'img/products/no-product.png',                         7, 8,  20000.00,  30000.00, 150, 20, 'Vỉ',    'Nhật Bản', '2025-01-01', '2030-01-01', 'ACTIVE', 1),
-    ('SP012', 'Vở học sinh 200 trang',     'img/products/no-product.png',                         8, 4,   7000.00,  11000.00, 500, 50, 'Quyển', 'Việt Nam', '2025-06-01', '2028-06-01', 'ACTIVE', 1);
+('SP001', '7 Up',
+ 'img/products/7up.png',
+ 1, 1, 22000.00, 32000.00, 120, 20,
+ 'Lon', 'Việt Nam', '2026-02-01', '2026-08-01', 'ACTIVE', 1),
+
+('SP002', 'Mì Hảo Hảo tôm chua cay',
+ 'img/products/mitrontrung.png',
+ 2, 3, 3500.00, 5000.00, 400, 50,
+ 'Gói', 'Việt Nam', '2026-01-15', '2026-07-15', 'ACTIVE', 1),
+
+('SP003', 'Fanta Việt Quất',
+ 'img/products/Fanta Viet Quat.png',
+ 1, 1, 4000.00, 7000.00, 250, 30,
+ 'Chai', 'Việt Nam', '2026-02-10', '2027-02-10', 'ACTIVE', 1),
+
+('SP004', 'Sữa Vivant',
+ 'img/products/vivant.png',
+ 3, 1, 12000.00, 18000.00, 200, 30,
+ 'Chai', 'Việt Nam', '2026-03-01', '2026-09-01', 'ACTIVE', 1),
+
+('SP005', 'Pepsi lon 330ml',
+ 'img/products/pepsi.png',
+ 1, 1, 8000.00, 12000.00, 180, 30,
+ 'Lon', 'Việt Nam', '2026-02-20', '2026-08-20', 'ACTIVE', 1),
+
+('SP006', 'Bánh Koala',
+ 'img/products/koala.png',
+ 2, 6, 4500.00, 7500.00, 300, 40,
+ 'Hộp', 'Việt Nam', '2026-01-10', '2026-10-10', 'ACTIVE', 1),
+
+('SP007', 'Nước rửa tay',
+ 'img/products/nuocruatay.png',
+ 4, 2, 18000.00, 25000.00, 80, 10,
+ 'Chai', 'Việt Nam', '2025-12-01', '2027-12-01', 'ACTIVE', 1),
+
+('SP008', 'Khăn ướt',
+ 'img/products/khanuot.png',
+ 4, 2, 95000.00, 135000.00, 50, 10,
+ 'Gói', 'Việt Nam', '2025-11-01', '2027-11-01', 'ACTIVE', 1),
+
+('SP009', 'Xúc xích chế biến',
+ 'img/products/xucxichchebien.png',
+ 5, 5, 22000.00, 30000.00, 100, 15,
+ 'Gói', 'Việt Nam', '2026-03-01', '2026-04-15', 'ACTIVE', 1),
+
+('SP010', 'Dầu gội Clear',
+ 'img/products/daugoiclear.png',
+ 6, 7, 45000.00, 65000.00, 60, 10,
+ 'Chai', 'Việt Nam', '2025-10-01', '2027-10-01', 'ACTIVE', 1),
+
+('SP011', 'Pin AA',
+ 'img/products/no-product.png',
+ 7, 8, 20000.00, 30000.00, 150, 20,
+ 'Vỉ', 'Nhật Bản', '2025-01-01', '2030-01-01', 'ACTIVE', 1),
+
+('SP012', 'Vở học sinh',
+ 'img/products/no-product.png',
+ 8, 4, 7000.00, 11000.00, 500, 50,
+ 'Quyển', 'Việt Nam', '2025-06-01', '2028-06-01', 'ACTIVE', 1),
+ ('SP013','Alpenliebe Caramel','img/products/alpenliebe.png',2,6,4000,7000,200,20,'Gói','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP014','Alpenliebe Dâu','img/products/alpenliebe 2.png',2,6,4000,7000,200,20,'Gói','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP015','Aquafina','img/products/Aquafina.png',1,1,4000,7000,300,30,'Chai','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP016','Bàn chải đánh răng','img/products/banchay.png',4,7,12000,20000,150,20,'Cây','Việt Nam','2026-01-01','2029-01-01','ACTIVE',1),
+
+('SP017','Bánh bao cadé','img/products/banhbaocade.png',5,4,10000,18000,80,10,'Cái','Việt Nam','2026-01-01','2026-03-01','ACTIVE',1),
+
+('SP018','Bánh bao khoai môn','img/products/banhbaokhoaimon.png',5,4,10000,18000,80,10,'Cái','Việt Nam','2026-01-01','2026-03-01','ACTIVE',1),
+
+('SP019','Bánh bao trứng cút','img/products/banhbaotrungcut.png',5,4,10000,18000,80,10,'Cái','Việt Nam','2026-01-01','2026-03-01','ACTIVE',1),
+
+('SP020','Bánh gạo Orion','img/products/banhgaoorion.png',2,6,12000,20000,120,20,'Hộp','Hàn Quốc','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP021','Bánh giò','img/products/banhgio.png',5,4,12000,20000,90,10,'Cái','Việt Nam','2026-01-01','2026-02-15','ACTIVE',1),
+
+('SP022','Bánh mì','img/products/banhmiopla.png',5,4,15000,25000,100,10,'Ổ','Việt Nam','2026-01-01','2026-01-10','ACTIVE',1),
+
+('SP023','Ba rọi','img/products/baroi.png',5,5,80000,120000,60,10,'Kg','Việt Nam','2026-01-01','2026-02-01','ACTIVE',1),
+
+('SP024','Cá hồi','img/products/cahoi.png',5,5,120000,180000,40,5,'Kg','Na Uy','2026-01-01','2026-02-01','ACTIVE',1),
+
+('SP025','Chanh','img/products/chanh.png',5,5,15000,25000,200,20,'Kg','Việt Nam','2026-01-01','2026-04-01','ACTIVE',1),
+
+('SP026','Choco Pie','img/products/chocopie.png',2,6,25000,35000,120,20,'Hộp','Hàn Quốc','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP027','Chupa Chups','img/products/chupa chups.png',2,6,2000,4000,500,50,'Cây','Tây Ban Nha','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP028','Coca Cola','img/products/coca.png',1,1,8000,12000,300,30,'Lon','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP029','Custas','img/products/custas.png',2,6,12000,18000,150,20,'Hộp','Hàn Quốc','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP030','Dầu gội Clear','img/products/daugoiclear.png',6,7,45000,65000,80,10,'Chai','Việt Nam','2026-01-01','2028-01-01','ACTIVE',1),
+
+('SP031','Dầu xả Dove','img/products/dauxadove.png',6,7,45000,65000,80,10,'Chai','Việt Nam','2026-01-01','2028-01-01','ACTIVE',1),
+
+('SP032','Dimsum','img/products/dimsum.png',5,4,20000,35000,100,10,'Hộp','Việt Nam','2026-01-01','2026-03-01','ACTIVE',1),
+
+('SP033','Dưa leo','img/products/dualeo.png',5,5,15000,25000,150,20,'Kg','Việt Nam','2026-01-01','2026-03-01','ACTIVE',1),
+
+('SP034','Fanta Cam','img/products/Fanta Cam.png',1,1,8000,12000,200,20,'Lon','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP035','Fanta Việt Quất','img/products/Fanta Viet Quat.png',1,1,8000,12000,200,20,'Lon','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP036','KitKat','img/products/kitkat.png',2,6,12000,20000,200,20,'Thanh','Nhật','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP037','Koala','img/products/koala.png',2,6,10000,18000,200,20,'Hộp','Nhật','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP038','Mì trộn','img/products/mitron.png',2,3,5000,8000,300,30,'Gói','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP039','Mì trộn Indomie','img/products/mitronindomie.png',2,3,5000,8000,300,30,'Gói','Indonesia','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP040','Pepsi','img/products/pepsi.png',1,1,8000,12000,200,20,'Lon','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP041','Redbull','img/products/redbull.png',1,1,10000,15000,200,20,'Lon','Thái Lan','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP042','Sprite','img/products/sprite.png',1,1,8000,12000,200,20,'Lon','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP043','Soda','img/products/soda.png',1,1,7000,10000,200,20,'Lon','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1),
+
+('SP044','Trứng gà','img/products/trungga.png',5,5,25000,35000,200,20,'Vỉ','Việt Nam','2026-01-01','2026-02-01','ACTIVE',1),
+
+('SP045','Trứng vịt','img/products/trungvit.png',5,5,30000,40000,200,20,'Vỉ','Việt Nam','2026-01-01','2026-02-01','ACTIVE',1),
+
+('SP046','Vivant','img/products/vivant.png',1,1,6000,9000,200,20,'Chai','Việt Nam','2026-01-01','2027-01-01','ACTIVE',1);
+
 
 -- ─── 4. CUSTOMERS (7 khách hàng) ────────────────────────────────────────────
 INSERT IGNORE INTO customers (customer_code, full_name, phone, email, address, loyalty_points, total_spent, customer_type, STATUS) VALUES
     ('KH001', 'Nguyễn Văn An',   '0987654321', 'an.nguyen@gmail.com',   'Quận 1, TP.HCM',  1250,  4500000.00, 'GOLD',    'ACTIVE'),
     ('KH002', 'Trần Thị Bình',   '0909123456', 'binhbong@gmail.com',                    'Quận 4, TP.HCM',   320,   980000.00, 'SILVER',  'ACTIVE'),
-    ('KH003', 'Đoàn Văn Sáng',   '0123456789', 'sang@gmail.com',        'Thủ Đức, TP.HCM',  150,  1200000.00, 'SILVER',  'ACTIVE'),
-    ('KH004', 'Gao Đỏ',          '0987654000', 'gao@gmail.com',         'Sao Hỏa',         1920, 20000000.00, 'DIAMOND', 'ACTIVE'),
-    ('KH005', 'Bát Man',         '0132456798', 'noparents@gmail.com',   'Hang Dơi',         200,   900000.00, 'REGULAR', 'ACTIVE'),
+    ('KH003', 'Thành Nhân',   '0123456789', 'sang@gmail.com',        'Thủ Đức, TP.HCM',  150,  1200000.00, 'SILVER',  'ACTIVE'),
+    ('KH004', 'Lê Như',          '0987654000', 'gao@gmail.com',         'Sao Hỏa',         1920, 20000000.00, 'DIAMOND', 'ACTIVE'),
+    ('KH005', 'Nguyễn văn B',         '0132456798', 'noparents@gmail.com',   'Hang Dơi',         200,   900000.00, 'REGULAR', 'ACTIVE'),
     ('KH006', 'Lê Văn Cường',    '0369852411', 'cuong.le@gmail.com',    'Quận 7, TP.HCM',    80,   350000.00, 'REGULAR', 'ACTIVE'),
     ('KH007', 'Phạm Thị Diệu',   '0356789012', 'dieu.pham@gmail.com',  'Bình Thạnh, TP.HCM', 0,        0.00, 'REGULAR', 'ACTIVE');
 
@@ -150,8 +265,8 @@ INSERT IGNORE INTO purchases (purchase_code, purchase_date, supplier_id, employe
     ('PN20260305-002', '2026-03-05 08:30:00', 3, 4, 1400000.00, 0.00, 0.00, 1400000.00, 'CONFIRM');
 
 INSERT IGNORE INTO purchase_invoices (invoice_code, purchase_id, date_in, supplier_id, employee_id, subtotal, discount_amount, tax_amount, total_amount, payment_method, STATUS) VALUES
-    ('HN20260301-001', 1, '2026-03-01 10:00:00', 1, 4, 4560000.00, 0.00, 0.00, 4560000.00, 'TRANSFER', 'RECEIVED'),
-    ('HN20260305-002', 2, '2026-03-05 10:30:00', 3, 4, 1400000.00, 0.00, 0.00, 1400000.00, 'TRANSFER', 'RECEIVED');
+    ('HN20260301-001', 1, '2026-03-01 10:00:00', 1, 4, 4560000.00, 0.00, 0.00, 4560000.00, 'TRANSFER', 'PENDING'),
+    ('HN20260305-002', 2, '2026-03-05 10:30:00', 3, 4, 1400000.00, 0.00, 0.00, 1400000.00, 'TRANSFER', 'PENDING');
 
 INSERT IGNORE INTO purchase_invoice_items (invoice_id, product_id, quantity, unit_price, subtotal) VALUES
     (1, 1, 100, 22000.00, 2200000.00),

@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 
 public class DBConnection {
 
-    private static final String URL = "jdbc:mysql:
+    private static final String URL = "jdbc:mysql://localhost:3307/sieuthiminiv2" +
                                       "?useSSL=false" +
                                       "&allowPublicKeyRetrieval=true" +
                                       "&serverTimezone=UTC" +

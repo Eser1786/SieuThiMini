@@ -162,7 +162,7 @@ public class TrangChuPanel extends JPanel {
         JPanel orderHeader = new JPanel(new BorderLayout());
         orderHeader.setOpaque(false);
         
-        JLabel orderTitle = new JLabel("Đơn hàng gần đây");
+        JLabel orderTitle = new JLabel("ĐH gần đây");
         orderTitle.setFont(new Font("Playfair Display", Font.BOLD, 16));
         
         
