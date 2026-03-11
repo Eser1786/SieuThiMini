@@ -412,7 +412,7 @@ class DonHangTableCard extends JPanel {
                 });
         }
 
-        if (!trangThai.equals("Đã hủy")) {
+        if (trangThai.equals("Chờ xác nhận") || trangThai.equals("Chờ vận chuyển") || trangThai.equals("Đang giao")) {
             JButton btnTT = UIUtils.makeActionButton("Thanh toán", new Color(0x2E7D32));
             inner.add(btnTT);
             if (withAction) {
@@ -420,9 +420,18 @@ class DonHangTableCard extends JPanel {
                 String tongTien = parent.tableModel.getValueAt(modelRow, 4).toString();
                 btnTT.addActionListener(e -> {
                     stopEdit(table);
-                    JOptionPane.showMessageDialog(this,
+                    int c = JOptionPane.showConfirmDialog(this,
                             "Xác nhận thanh toán đơn hàng " + maDon + "\nSố tiền: " + tongTien,
-                            "Thanh toán", JOptionPane.INFORMATION_MESSAGE);
+                            "Thanh toán", JOptionPane.YES_NO_OPTION);
+                    if (c == JOptionPane.YES_OPTION) {
+                        boolean ok = salesBUS.confirmSale(maDon);
+                        if (ok) {
+                            JOptionPane.showMessageDialog(this,
+                                "Thanh toán thành công!\nĐơn hàng " + maDon + " đã được xác nhận.",
+                                "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                            loadSalesFromDatabase();
+                        }
+                    }
                 });
             }
         }
