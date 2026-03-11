@@ -324,9 +324,12 @@ class DonHangDetailCard extends JPanel {
                     }
                 }
                 lbTongCong.setText(String.format("%,.0fđ", (double) (sale.getSubTotal() != null ? sale.getSubTotal().longValue() : sale.getTotalAmount().longValue())));
-                lbVAT.setText("0đ");
+                long noteTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue() : 0;
+                long noteSub = sale.getSubTotal()   != null ? sale.getSubTotal().longValue()   : noteTot;
+                long noteVAT = noteTot > noteSub ? noteTot - noteSub : 0;
+                lbVAT.setText(String.format("%,.0fđ", (double) noteVAT));
                 lbPhiVC.setText("Miễn phí");
-                tfTongTT.setText(String.format("%,.0fđ", (double) sale.getTotalAmount().longValue()));
+                tfTongTT.setText(String.format("%,.0fđ", (double) noteTot));
             }
         } else {
             
@@ -399,6 +402,7 @@ class DonHangDetailCard extends JPanel {
                     String name = itemParts[1];
                     long unitPrice = Long.parseLong(itemParts[2]);
                     int qty = Integer.parseInt(itemParts[3]);
+                    if (qty <= 0) continue;
                     long line = unitPrice * qty;
                     chitietModel.addRow(new Object[]{
                         String.valueOf(stt++),

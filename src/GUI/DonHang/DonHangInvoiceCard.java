@@ -1,5 +1,10 @@
 package GUI.DonHang;
 
+import BUS.SalesBUS;
+import BUS.SalesInvoiceBUS;
+import DTO.SaleDTO;
+import DTO.SalesInvoiceDTO;
+import DTO.SalesInvoiceItemDTO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.print.*;
@@ -60,8 +65,7 @@ class DonHangInvoiceCard extends JPanel {
     }
 
     void loadInvoice(int modelRow) {
-        String maDon  = parent.tableModel.getValueAt(modelRow, 0).toString();
-        String tongTT = parent.tableModel.getValueAt(modelRow, 4).toString();
+        String maDon = parent.tableModel.getValueAt(modelRow, 0).toString();
         invoiceCenter.removeAll();
 
         JPanel receipt = new JPanel() {
@@ -81,70 +85,151 @@ class DonHangInvoiceCard extends JPanel {
         receipt.setBorder(BorderFactory.createEmptyBorder(22, 30, 22, 30));
         receipt.setPreferredSize(new Dimension(430, 660));
 
+        // --- fetch DB data ---
+        SalesBUS salesBUS = new SalesBUS();
+        SalesInvoiceBUS salesInvoiceBUS = new SalesInvoiceBUS();
+        SaleDTO sale = salesBUS.getSaleByCode(maDon);
+
+        // header
         receipt.add(rLine("TH36", new Font("Arial", Font.BOLD, 26)));
         receipt.add(Box.createVerticalStrut(4));
         receipt.add(dotLine());
-        receipt.add(rLine("Hoá đơn giao hàng | Mã đơn: " + maDon, new Font("Arial", Font.PLAIN, 12)));
-        String nv = parent.nhanVienMap.getOrDefault(maDon, "NGUYỄN THỊ THÉO").toUpperCase();
-        receipt.add(rLine("Quầy: TH36-01    NV: " + nv, new Font("Arial", Font.PLAIN, 12)));
-        String timestamp = parent.timeMap.getOrDefault(maDon, "05/03/2026 (22:28)");
+        receipt.add(rLine("Ho\u00e1 \u0111\u01a1n giao h\u00e0ng | M\u00e3 \u0111\u01a1n: " + maDon, new Font("Arial", Font.PLAIN, 12)));
+        String nv = (sale != null && sale.getEmployeeName() != null)
+            ? sale.getEmployeeName().toUpperCase()
+            : parent.nhanVienMap.getOrDefault(maDon, "NGUY\u1ec4N TH\u1eca TH\u00c9O").toUpperCase();
+        receipt.add(rLine("Qu\u1ea7y: TH36-01    NV: " + nv, new Font("Arial", Font.PLAIN, 12)));
+        String timestamp = (sale != null && sale.getSaleDate() != null)
+            ? sale.getSaleDate().toString()
+            : parent.timeMap.getOrDefault(maDon, "");
         receipt.add(rLine(timestamp, new Font("Arial", Font.PLAIN, 12)));
         receipt.add(dotLine());
-        receipt.add(gridRow(true, "Tên", "SL", "Đơn giá", "Thành tiền"));
+        receipt.add(gridRow(true, "T\u00ean", "SL", "\u0110\u01a1n gi\u00e1", "Th\u00e0nh ti\u1ec1n"));
 
-        DonHangPanel.OrderDetailData od = parent.orderDataMap.get(maDon);
+        // items + totals
         long subTotal = 0;
-        if (od != null && !od.items.isEmpty()) {
-            int stt = 1;
-            for (DonHangPanel.OrderDetailData.Item it : od.items) {
-                long line = it.unitPrice * it.qty; subTotal += line;
-                receipt.add(gridRow(false,
-                    stt + "." + it.name,
-                    String.valueOf(it.qty),
-                    String.format("%,.0f", (double) it.unitPrice),
-                    String.format("%,.0f", (double) line)));
-                stt++;
+        long vatAmt   = 0;
+        long finalTot = 0;
+        long disc     = 0;
+
+        if (sale != null) {
+            SalesInvoiceDTO inv = salesInvoiceBUS.getSalesInvoiceBySaleId((long) sale.getSaleID());
+            if (inv != null && inv.getItems() != null && !inv.getItems().isEmpty()) {
+                int stt = 1;
+                for (SalesInvoiceItemDTO item : inv.getItems()) {
+                    long line = item.getSubtotal() != null ? item.getSubtotal().longValue()
+                              : (item.getUnitPrice() != null ? item.getUnitPrice().longValue() * item.getQuantity() : 0);
+                    subTotal += line;
+                    receipt.add(gridRow(false,
+                        stt + "." + item.getProductName(),
+                        String.valueOf(item.getQuantity()),
+                        item.getUnitPrice() != null ? String.format("%,.0f", item.getUnitPrice().doubleValue()) : "-",
+                        String.format("%,.0f", (double) line)));
+                    stt++;
+                }
+                finalTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue() : subTotal;
+                vatAmt   = inv.getTaxAmount() != null ? inv.getTaxAmount().longValue() : finalTot * 10L / 110;
+                disc     = sale.getDiscountAmount() != null ? sale.getDiscountAmount().longValue() : 0;
+            } else {
+                // no sales_invoice — parse from note field
+                String note = sale.getNote();
+                if (note != null && !note.isEmpty()) {
+                    int stt = 1;
+                    for (String part : note.split(";")) {
+                        if (part.startsWith("NOTE:")) continue;
+                        String[] p = part.split("\\|");
+                        if (p.length >= 4) {
+                            try {
+                                String iName = p[1];
+                                long iPrice  = Long.parseLong(p[2]);
+                                int  iQty    = Integer.parseInt(p[3]);
+                                if (iQty <= 0) continue;
+                                long iLine   = iPrice * iQty;
+                                subTotal += iLine;
+                                receipt.add(gridRow(false,
+                                    stt + "." + iName,
+                                    String.valueOf(iQty),
+                                    String.format("%,.0f", (double) iPrice),
+                                    String.format("%,.0f", (double) iLine)));
+                                stt++;
+                            } catch (NumberFormatException ignored) {}
+                        }
+                    }
+                    disc     = sale.getDiscountAmount() != null ? sale.getDiscountAmount().longValue() : 0;
+                    finalTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue()
+                                                             : Math.max(0, subTotal - disc);
+                    long netSub = subTotal - disc;
+                    vatAmt = finalTot > netSub ? finalTot - netSub : 0;
+                } else {
+                    DonHangPanel.OrderDetailData od = parent.orderDataMap.get(maDon);
+                    if (od != null && !od.items.isEmpty()) {
+                        int stt = 1;
+                        for (DonHangPanel.OrderDetailData.Item it : od.items) {
+                            long line = it.unitPrice * it.qty; subTotal += line;
+                            receipt.add(gridRow(false,
+                                stt + "." + it.name,
+                                String.valueOf(it.qty),
+                                String.format("%,.0f", (double) it.unitPrice),
+                                String.format("%,.0f", (double) line)));
+                            stt++;
+                        }
+                        disc     = od.discAmt;
+                        finalTot = Math.max(0, subTotal - disc);
+                    } else {
+                        finalTot = sale.getTotalAmount() != null ? sale.getTotalAmount().longValue() : 0;
+                        subTotal = finalTot;
+                    }
+                    vatAmt = 0;
+                }
             }
         } else {
-            String[][] fallback = {
-                { "1.Nước F trái K",  "2", "25.000", "50.000" },
-                { "2.Mì ý sốt kem",   "1", "36.000", "36.000" },
-                { "3.Pepsi kg calo",  "1", "10.000", "10.000" },
-            };
-            for (String[] s : fallback) {
-                subTotal += Long.parseLong(s[3].replaceAll("[^0-9]", ""));
-                receipt.add(gridRow(false, s));
+            // sale not in DB — fallback to in-memory map
+            DonHangPanel.OrderDetailData od = parent.orderDataMap.get(maDon);
+            if (od != null && !od.items.isEmpty()) {
+                int stt = 1;
+                for (DonHangPanel.OrderDetailData.Item it : od.items) {
+                    long line = it.unitPrice * it.qty; subTotal += line;
+                    receipt.add(gridRow(false,
+                        stt + "." + it.name,
+                        String.valueOf(it.qty),
+                        String.format("%,.0f", (double) it.unitPrice),
+                        String.format("%,.0f", (double) line)));
+                    stt++;
+                }
+                disc     = od.discAmt;
+                finalTot = Math.max(0, subTotal - disc);
+                vatAmt   = finalTot * 10L / 110;
+            } else {
+                String tongTT = parent.tableModel.getValueAt(modelRow, 4).toString();
+                finalTot = Long.parseLong(tongTT.replaceAll("[^0-9]", ""));
+                subTotal = finalTot;
+                vatAmt   = finalTot * 10L / 110;
             }
         }
+
+        receipt.add(dotLine());
+        sumRow(receipt, "T\u1ed5ng",                   String.format("%,.0f", (double) subTotal));
+        if (disc > 0) sumRow(receipt, "Chi\u1ebft kh\u1ea5u", String.format("%,.0f", (double) disc));
+        sumRow(receipt, "VAT(10%)",               String.format("%,.0f", (double) vatAmt));
+        sumRow(receipt, "T\u1ed5ng ti\u1ec1n",      String.format("%,.0f\u0111", (double) finalTot));
+        sumRow(receipt, "Ti\u1ec1n kh\u00e1ch tr\u1ea3",  String.format("%,.0f\u0111", (double) finalTot));
+        sumRow(receipt, "Ti\u1ec1n tr\u1ea3 l\u1ea1i cho kh\u00e1ch", "0");
         receipt.add(dotLine());
 
-        long disc = od != null ? od.discAmt : 0;
-        long tot  = od != null ? Math.max(0, subTotal - disc)
-                               : Long.parseLong(tongTT.replaceAll("[^0-9]", ""));
-        long vat  = tot * 10 / 110;
-
-        sumRow(receipt, "Tổng",                   String.format("%,.0f", (double) subTotal));
-        if (disc > 0) sumRow(receipt, "Chiết khấu", String.format("%,.0f", (double) disc));
-        sumRow(receipt, "VAT(10%)",               String.format("%,.0f", (double) vat));
-        sumRow(receipt, "Tổng tiền",              String.format("%,.0fđ", (double) tot));
-        sumRow(receipt, "Tiền khách trả",         String.format("%,.0fđ", (double) tot));
-        sumRow(receipt, "Tiền trả lại cho khách", "0");
-        receipt.add(dotLine());
-
-        JLabel bc = new JLabel("▌▌█▌█▌█▌▌▌█▌▌█▌█▌▌▌█▌█▌▌", SwingConstants.CENTER);
+        JLabel bc = new JLabel("\u258c\u258c\u2588\u258c\u2588\u258c\u2588\u258c\u258c\u258c\u2588\u258c\u258c\u2588\u258c\u2588\u258c\u258c\u258c\u2588\u258c\u2588\u258c\u258c", SwingConstants.CENTER);
         bc.setFont(new Font("Courier New", Font.PLAIN, 18));
         bc.setAlignmentX(Component.CENTER_ALIGNMENT);
         bc.setMaximumSize(new Dimension(400, 30));
         receipt.add(bc);
 
-        JLabel bcNum = new JLabel("VN2845598375038283", SwingConstants.CENTER);
+        JLabel bcNum = new JLabel("VN" + maDon.replaceAll("[^0-9A-Za-z]", "") + "283", SwingConstants.CENTER);
         bcNum.setFont(new Font("Courier New", Font.PLAIN, 10));
         bcNum.setAlignmentX(Component.CENTER_ALIGNMENT);
         bcNum.setMaximumSize(new Dimension(400, 18));
         receipt.add(bcNum);
         receipt.add(dotLine());
 
-        receipt.add(rLine("Hoá đơn chỉ có giá trị xuất trong ngày", new Font("Arial", Font.ITALIC, 10)));
+        receipt.add(rLine("Ho\u00e1 \u0111\u01a1n ch\u1ec9 c\u00f3 gi\u00e1 tr\u1ecb xu\u1ea5t trong ng\u00e0y", new Font("Arial", Font.ITALIC, 10)));
         receipt.add(rLine("Hotline: 09437767345", new Font("Arial", Font.ITALIC, 10)));
 
         invoiceCenter.add(receipt, new GridBagConstraints());
