@@ -106,7 +106,7 @@ public class LoginDialog extends JDialog {
         lbUser.setFont(labelFont);
         center.add(lbUser, gbc);
 
-        gbc.gridx = 1; gbc.gridwidth = 2; gbc.weightx = 1.0;
+        gbc.gridx = 1; gbc.gridwidth = 1; gbc.weightx = 1.0;
         txtUsername = new JTextField();
         txtUsername.setFont(fieldFont);
         txtUsername.setPreferredSize(new Dimension(220, 36));
