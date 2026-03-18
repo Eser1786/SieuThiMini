@@ -170,7 +170,7 @@ public class TrangChuPanel extends JPanel {
         filterPanel.setOpaque(false);
         
         filterPanel.add(new JLabel("Trạng thái:"));
-        statusFilter = new JComboBox<>(new String[]{"Tất cả", "PENDING", "CONFIRMED", "SHIPPING", "DELIVERING", "COMPLETED", "CANCELLED"});
+        statusFilter = new JComboBox<>(new String[]{"Tất cả", "PENDING", "COMPLETED", "CANCELLED"});
         UIUtils.styleComboBox(statusFilter);
         statusFilter.addActionListener(e -> loadRecentOrders());
         filterPanel.add(statusFilter);
@@ -215,9 +215,6 @@ public class TrangChuPanel extends JPanel {
                     String val = v == null ? "" : v.toString();
                     switch (val) {
                         case "PENDING" -> { setForeground(new Color(0xFF9800)); setText("Chờ xác nhận"); }
-                        case "CONFIRMED" -> { setForeground(new Color(0x2196F3)); setText("Đã xác nhận"); }
-                        case "SHIPPING" -> { setForeground(new Color(0x9C27B0)); setText("Đang giao"); }
-                        case "DELIVERING" -> { setForeground(new Color(0xFF5722)); setText("Đang vận chuyển"); }
                         case "COMPLETED" -> { setForeground(new Color(0x4CAF50)); setText("Hoàn thành"); }
                         case "CANCELLED" -> { setForeground(new Color(0xF44336)); setText("Đã hủy"); }
                         default -> setForeground(Color.BLACK);
